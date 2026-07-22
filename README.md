@@ -103,7 +103,7 @@
       <!-- Action Buttons -->
       <div class="flex items-center space-x-2">
         <button onclick="saveChanges()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm flex items-center gap-1.5 transition">
-          <i class="fa-solid fa-floppy-disk"></i> Save
+          <i class="fa-solid fa-floppy-disk"></i> Save Changes
         </button>
         <button onclick="exportToExcel()" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm flex items-center gap-1.5 transition">
           <i class="fa-solid fa-file-excel"></i> Export
@@ -128,9 +128,6 @@
         <div>
           <h2 class="text-xl font-bold tracking-tight">Hi Aniruddha, Welcome to your Business Portal 🤝</h2>
           <p class="text-indigo-100 text-xs mt-1">View, schedule, and organize room allocations and customer records.</p>
-        </div>
-        <div class="bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/20 text-[11px] text-indigo-100 flex items-center gap-1.5 hidden sm:flex">
-          <i class="fa-regular fa-clock"></i> Operational View
         </div>
       </div>
 
