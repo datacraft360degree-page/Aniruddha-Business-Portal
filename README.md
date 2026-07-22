@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -482,13 +483,13 @@
           roomNo: 2,
           agentInfo: "A2 1234567890",
           capacity: "2 Person",
-          checkIn: "2026-01-22T11:00",
-          checkOut: "2026-01-25T11:00",
-          noOfDays: 3,
+          checkIn: "2026-07-22T11:00",
+          checkOut: "2026-07-24T11:00",
+          noOfDays: 2,
           perDayPrice: 1200,
-          totalAmount: 3600,
-          advanced: 2000,
-          totalDue: 1600
+          totalAmount: 2400,
+          advanced: 1000,
+          totalDue: 1400
         }
       ],
       master: [
@@ -715,27 +716,30 @@
       const checkIn = document.getElementById('cust-checkin').value;
       const checkOut = document.getElementById('cust-checkout').value;
 
-      const newIn = new Date(checkIn);
-      const newOut = new Date(checkOut);
+      const newIn = new Date(checkIn).getTime();
+      const newOut = new Date(checkOut).getTime();
 
       if (newIn >= newOut) {
-        alert("Check-Out date & time must be after Check-In date & time.");
+        alert("Check-Out date & time must be strictly after Check-In date & time.");
         return;
       }
 
-      // Overlap Conflict Check
+      // Precise Hour/Minute Turnaround Overlap Check:
+      // Overlap occurs ONLY if: (New Check-In < Existing Check-Out) AND (New Check-Out > Existing Check-In)
       const conflict = state.bookings.find(b => {
         if (id && b.id === id) return false;
         if (parseInt(b.roomNo) !== roomNo) return false;
 
-        const existingIn = new Date(b.checkIn);
-        const existingOut = new Date(b.checkOut);
+        const existingIn = new Date(b.checkIn).getTime();
+        const existingOut = new Date(b.checkOut).getTime();
 
         return (newIn < existingOut && newOut > existingIn);
       });
 
       if (conflict) {
-        alert(`❌ Booking Conflict Alert!\n\nRoom ${roomNo} is already reserved from ${conflict.checkIn.replace('T', ' ')} to ${conflict.checkOut.replace('T', ' ')} for ${conflict.name}.\n\nPlease adjust:\n1. Change the Room Number, or\n2. Update the Check-In / Check-Out schedule.`);
+        const confInFormatted = conflict.checkIn.replace('T', ' ');
+        const confOutFormatted = conflict.checkOut.replace('T', ' ');
+        alert(`❌ Booking Conflict Alert!\n\nRoom ${roomNo} is already occupied by ${conflict.name} until ${confOutFormatted}.\n\nA new guest cannot check in before the previous check-out time is over (${confOutFormatted}).\n\nPlease select a check-in time after ${confOutFormatted} or assign a different room.`);
         return;
       }
       
