@@ -10,6 +10,22 @@
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
+    /* Custom Scrollbar for Clean UI */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
     /* Print-specific Styles to hide UI elements during printing */
     @media print {
       body * {
@@ -32,139 +48,152 @@
     }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col relative" onclick="hideTooltip()">
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col relative antialiased" onclick="hideTooltip()">
 
   <!-- Floating Tooltip for Calendar Hover/Click -->
-  <div id="cal-tooltip" class="hidden absolute z-50 bg-slate-900 text-white text-xs rounded-xl p-3 shadow-2xl border border-slate-700 pointer-events-none transition-opacity duration-150 space-y-1 min-w-[160px]">
+  <div id="cal-tooltip" class="hidden absolute z-50 bg-slate-900 text-white text-xs rounded-lg p-2.5 shadow-xl border border-slate-700 pointer-events-none transition-opacity duration-150 space-y-1 min-w-[160px]">
     <div class="font-bold text-indigo-300 border-b border-slate-700 pb-1 flex justify-between items-center">
       <span>Room Details</span>
       <i class="fa-solid fa-bed text-indigo-400"></i>
     </div>
-    <p><span class="text-slate-400">Room No:</span> <strong id="tt-room" class="text-white"></strong></p>
-    <p><span class="text-slate-400">Guest:</span> <strong id="tt-name" class="text-white"></strong></p>
-    <p><span class="text-slate-400">Status:</span> <strong id="tt-status" class="text-emerald-400"></strong></p>
+    <p><span class="text-slate-400">Room No:</span> <strong id="tt-room" class="text-white font-semibold"></strong></p>
+    <p><span class="text-slate-400">Guest:</span> <strong id="tt-name" class="text-white font-semibold"></strong></p>
+    <p><span class="text-slate-400">Status:</span> <strong id="tt-status" class="text-emerald-400 font-semibold"></strong></p>
   </div>
 
   <!-- Header & Navigation -->
-  <header class="bg-indigo-700 text-white shadow-lg sticky top-0 z-40 no-print">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+  <header class="bg-indigo-700 text-white shadow-md sticky top-0 z-40 no-print">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-3">
       <div class="flex items-center space-x-3">
-        <i class="fa-solid fa-hotel text-2xl text-indigo-200"></i>
-        <h1 class="text-xl font-bold tracking-wide">Business Portal</h1>
+        <div class="bg-indigo-600 p-2 rounded-lg border border-indigo-500 shadow-inner">
+          <i class="fa-solid fa-hotel text-xl text-indigo-100"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold tracking-wide leading-tight">Business Portal</h1>
+          <p class="text-[11px] text-indigo-200">Management & Booking Control System</p>
+        </div>
       </div>
       
       <!-- Tab Navigation -->
-      <nav class="flex space-x-1 sm:space-x-2 bg-indigo-800/60 p-1 rounded-xl text-sm font-medium">
-        <button onclick="switchTab('dashboard')" id="btn-dashboard" class="tab-btn px-3 py-1.5 rounded-lg transition-all duration-200 active-tab">Dashboard</button>
-        <button onclick="switchTab('booking')" id="btn-booking" class="tab-btn px-3 py-1.5 rounded-lg transition-all duration-200 text-indigo-100 hover:bg-indigo-600/50">Booking Details</button>
-        <button onclick="switchTab('master')" id="btn-master" class="tab-btn px-3 py-1.5 rounded-lg transition-all duration-200 text-indigo-100 hover:bg-indigo-600/50">Master Data</button>
-        <button onclick="switchTab('calendar')" id="btn-calendar" class="tab-btn px-3 py-1.5 rounded-lg transition-all duration-200 text-indigo-100 hover:bg-indigo-600/50">Calendar</button>
+      <nav class="flex space-x-1 bg-indigo-800/80 p-1 rounded-lg text-xs font-medium border border-indigo-600/50">
+        <button onclick="switchTab('dashboard')" id="btn-dashboard" class="tab-btn px-3.5 py-1.5 rounded-md transition-all duration-200 active-tab">Dashboard</button>
+        <button onclick="switchTab('booking')" id="btn-booking" class="tab-btn px-3.5 py-1.5 rounded-md transition-all duration-200 text-indigo-100 hover:bg-indigo-600/50">Booking Details</button>
+        <button onclick="switchTab('master')" id="btn-master" class="tab-btn px-3.5 py-1.5 rounded-md transition-all duration-200 text-indigo-100 hover:bg-indigo-600/50">Master Data</button>
+        <button onclick="switchTab('calendar')" id="btn-calendar" class="tab-btn px-3.5 py-1.5 rounded-md transition-all duration-200 text-indigo-100 hover:bg-indigo-600/50">Calendar</button>
       </nav>
 
       <!-- Action Buttons -->
-      <div class="flex items-center space-x-3">
-        <button onclick="saveChanges()" class="bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow flex items-center gap-2 transition">
-          <i class="fa-solid fa-floppy-disk"></i> Save Changes
+      <div class="flex items-center space-x-2">
+        <button onclick="saveChanges()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-floppy-disk"></i> Save
         </button>
-        <button onclick="exportToExcel()" class="bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow flex items-center gap-2 transition">
-          <i class="fa-solid fa-file-excel"></i> Export to Excel
+        <button onclick="exportToExcel()" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-file-excel"></i> Export
         </button>
       </div>
     </div>
   </header>
 
   <!-- Notification Toast -->
-  <div id="toast" class="hidden fixed bottom-5 right-5 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl z-50 flex items-center gap-3 transition-all duration-300 no-print">
-    <i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
-    <span id="toast-message">Changes saved successfully!</span>
+  <div id="toast" class="hidden fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-2.5 rounded-lg shadow-xl z-50 flex items-center gap-2.5 transition-all duration-300 no-print border border-slate-700 text-xs">
+    <i class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
+    <span id="toast-message" class="font-medium">Changes saved successfully!</span>
   </div>
 
-  <!-- Main Content Area -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full no-print">
+  <!-- Main Content Area (Compact Layout) -->
+  <main class="max-w-7xl mx-auto px-4 py-5 flex-1 w-full no-print space-y-5">
 
     <!-- DASHBOARD TAB -->
-    <section id="tab-dashboard" class="tab-content space-y-6">
-      <div class="bg-gradient-to-r from-indigo-600 to-blue-600 rounded-2xl p-6 text-white shadow-xl">
-        <h2 class="text-3xl font-extrabold mb-2">Hi Aniruddha, Welcome to your Business Portal 🤝</h2>
-        <p class="text-indigo-100">Manage multiple bookings, agent details, and schedules effortlessly.</p>
+    <section id="tab-dashboard" class="tab-content space-y-5">
+      <!-- Welcome Banner -->
+      <div class="bg-gradient-to-r from-indigo-700 via-indigo-600 to-blue-600 rounded-xl p-5 text-white shadow-md flex justify-between items-center">
+        <div>
+          <h2 class="text-xl font-bold tracking-tight">Hi Aniruddha, Welcome to your Business Portal 🤝</h2>
+          <p class="text-indigo-100 text-xs mt-1">View, schedule, and organize room allocations and customer records.</p>
+        </div>
+        <div class="bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/20 text-[11px] text-indigo-100 flex items-center gap-1.5 hidden sm:flex">
+          <i class="fa-regular fa-clock"></i> Operational View
+        </div>
       </div>
 
       <!-- Quick Summary Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
           <div>
-            <p class="text-xs uppercase font-semibold text-slate-400">Total Bookings</p>
-            <p id="dash-total-bookings" class="text-2xl font-bold text-slate-800 mt-1">1</p>
+            <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Total Bookings</p>
+            <p id="dash-total-bookings" class="text-2xl font-black text-slate-800 mt-0.5">1</p>
           </div>
-          <div class="p-3 bg-blue-50 text-blue-600 rounded-xl"><i class="fa-solid fa-bookmark text-xl"></i></div>
+          <div class="p-3 bg-blue-50 text-blue-600 rounded-xl"><i class="fa-solid fa-bookmark text-lg"></i></div>
         </div>
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
           <div>
-            <p class="text-xs uppercase font-semibold text-slate-400">Total Booking Amount</p>
-            <p id="dash-total-amount" class="text-2xl font-bold text-slate-800 mt-1">₹3,600</p>
+            <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Booking Amount</p>
+            <p id="dash-total-amount" class="text-2xl font-black text-slate-800 mt-0.5">₹3,600</p>
           </div>
-          <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl"><i class="fa-solid fa-receipt text-xl"></i></div>
+          <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl"><i class="fa-solid fa-receipt text-lg"></i></div>
         </div>
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
           <div>
-            <p class="text-xs uppercase font-semibold text-slate-400">Advance Received</p>
-            <p id="dash-advanced" class="text-2xl font-bold text-emerald-600 mt-1">₹2,000</p>
+            <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Advance Received</p>
+            <p id="dash-advanced" class="text-2xl font-black text-emerald-600 mt-0.5">₹2,000</p>
           </div>
-          <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><i class="fa-solid fa-wallet text-xl"></i></div>
+          <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><i class="fa-solid fa-wallet text-lg"></i></div>
         </div>
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
           <div>
-            <p class="text-xs uppercase font-semibold text-slate-400">Total Due</p>
-            <p id="dash-due" class="text-2xl font-bold text-rose-600 mt-1">₹1,600</p>
+            <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Total Due Amount</p>
+            <p id="dash-due" class="text-2xl font-black text-rose-600 mt-0.5">₹1,600</p>
           </div>
-          <div class="p-3 bg-rose-50 text-rose-600 rounded-xl"><i class="fa-solid fa-hand-holding-dollar text-xl"></i></div>
+          <div class="p-3 bg-rose-50 text-rose-600 rounded-xl"><i class="fa-solid fa-hand-holding-dollar text-lg"></i></div>
         </div>
       </div>
 
-      <!-- Years Grid (2026-2085) -->
-      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-        <h3 class="text-lg font-bold text-slate-800 mb-1 flex items-center gap-2">
-          <i class="fa-solid fa-calendar-days text-indigo-600"></i> Active Years (2026 - 2085)
-        </h3>
-        <p class="text-xs text-slate-400 mb-4">Click any year below to switch directly to its calendar view.</p>
-        <div id="years-grid" class="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-10 gap-2">
+      <!-- Years Grid -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+        <div class="mb-4">
+          <h3 class="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+            <i class="fa-solid fa-calendar-days text-indigo-600"></i> Active Years Directory (2026 – 2085)
+          </h3>
+          <p class="text-[11px] text-slate-400 mt-0.5">Select a year to jump directly into its full calendar overview.</p>
+        </div>
+        <div id="years-grid" class="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-12 gap-2">
           <!-- Populated by JS -->
         </div>
       </div>
     </section>
 
     <!-- BOOKING DETAILS TAB -->
-    <section id="tab-booking" class="tab-content hidden space-y-6">
-      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-2 border-b border-slate-100">
+    <section id="tab-booking" class="tab-content hidden space-y-4">
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+        <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-100">
           <div>
-            <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-              <i class="fa-solid fa-address-card text-indigo-600"></i> Customer & Booking Directory
+            <h2 class="text-base font-bold text-slate-800 flex items-center gap-1.5">
+              <i class="fa-solid fa-address-card text-indigo-600"></i> Customer & Reservation Directory
             </h2>
-            <p class="text-xs text-slate-400">Manage multiple room reservations in one place.</p>
+            <p class="text-[11px] text-slate-400 mt-0.5">Review check-ins, tariffs, and due balances.</p>
           </div>
-          <button onclick="openBookingModal()" class="bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow flex items-center gap-2 transition">
-            <i class="fa-solid fa-plus"></i> Add New Booking
+          <button onclick="openBookingModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold shadow-sm flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-plus"></i> Add Booking
           </button>
         </div>
 
-        <!-- Bookings Table View -->
+        <!-- Bookings Table View (Compact Padding) -->
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
-                <th class="p-3">Guest Name</th>
-                <th class="p-3">Contact / ID</th>
-                <th class="p-3">Room & Capacity</th>
-                <th class="p-3">Agent Details</th>
-                <th class="p-3">Stay Dates</th>
-                <th class="p-3">Billing (Days x Rate)</th>
-                <th class="p-3">Total / Advance</th>
-                <th class="p-3">Due Status</th>
-                <th class="p-3 text-center">Actions</th>
+              <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                <th class="py-2.5 px-3">Guest Name</th>
+                <th class="py-2.5 px-3">Contact / ID</th>
+                <th class="py-2.5 px-3">Room</th>
+                <th class="py-2.5 px-3">Agent</th>
+                <th class="py-2.5 px-3 min-w-[170px]">Stay Window</th>
+                <th class="py-2.5 px-3">Tariff</th>
+                <th class="py-2.5 px-3">Payment</th>
+                <th class="py-2.5 px-3">Balance</th>
+                <th class="py-2.5 px-3 text-center">Actions</th>
               </tr>
             </thead>
-            <tbody id="bookings-tbody" class="divide-y divide-slate-100 text-sm">
+            <tbody id="bookings-tbody" class="divide-y divide-slate-100 text-xs">
               <!-- Populated by JS -->
             </tbody>
           </table>
@@ -173,13 +202,16 @@
     </section>
 
     <!-- MASTER DATA TAB -->
-    <section id="tab-master" class="tab-content hidden space-y-6">
-      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-        <div class="flex justify-between items-center mb-6 pb-2 border-b border-slate-100">
-          <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-            <i class="fa-solid fa-users-gear text-indigo-600"></i> Master Agent & Room Directory
-          </h2>
-          <button onclick="addMasterRow()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1 transition">
+    <section id="tab-master" class="tab-content hidden space-y-4">
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+        <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-100">
+          <div>
+            <h2 class="text-base font-bold text-slate-800 flex items-center gap-1.5">
+              <i class="fa-solid fa-users-gear text-indigo-600"></i> Master Agent & Room Directory
+            </h2>
+            <p class="text-[11px] text-slate-400 mt-0.5">Configure room capacities and default agent details.</p>
+          </div>
+          <button onclick="addMasterRow()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition shadow-sm">
             <i class="fa-solid fa-plus"></i> Add Entry
           </button>
         </div>
@@ -187,15 +219,15 @@
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
-                <th class="p-3">Agent Name</th>
-                <th class="p-3">Agent Ph No</th>
-                <th class="p-3">Room No</th>
-                <th class="p-3">Capacity</th>
-                <th class="p-3 text-center">Action</th>
+              <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                <th class="py-2.5 px-3">Agent Name</th>
+                <th class="py-2.5 px-3">Agent Contact</th>
+                <th class="py-2.5 px-3">Room No</th>
+                <th class="py-2.5 px-3">Capacity</th>
+                <th class="py-2.5 px-3 text-center">Actions</th>
               </tr>
             </thead>
-            <tbody id="master-tbody" class="divide-y divide-slate-100 text-sm">
+            <tbody id="master-tbody" class="divide-y divide-slate-100 text-xs">
               <!-- Populated by JS -->
             </tbody>
           </table>
@@ -204,23 +236,26 @@
     </section>
 
     <!-- CALENDAR TAB -->
-    <section id="tab-calendar" class="tab-content hidden space-y-6">
-      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-            <i class="fa-regular fa-calendar-check text-indigo-600"></i> Interactive Calendar
-          </h2>
+    <section id="tab-calendar" class="tab-content hidden space-y-4">
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+        <div class="flex justify-between items-center mb-5">
+          <div>
+            <h2 class="text-base font-bold text-slate-800 flex items-center gap-1.5">
+              <i class="fa-regular fa-calendar-check text-indigo-600"></i> Year Overview Calendar
+            </h2>
+            <p class="text-[11px] text-slate-400 mt-0.5">Hover or click booked dates to view reservation details.</p>
+          </div>
           
-          <!-- Calendar Year Dropdown (2026-2085) -->
-          <div class="flex items-center space-x-3">
-            <label for="cal-year-select" class="text-xs font-bold text-slate-500 uppercase">Select Year:</label>
-            <select id="cal-year-select" onchange="renderCalendar(parseInt(this.value))" class="bg-white border border-indigo-200 text-indigo-700 font-bold px-4 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-sm">
-              <!-- Populated by JS from 2026 to 2085 -->
+          <!-- Calendar Year Dropdown -->
+          <div class="flex items-center space-x-2 bg-slate-50 p-1.5 rounded-lg border border-slate-200">
+            <label for="cal-year-select" class="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Year:</label>
+            <select id="cal-year-select" onchange="renderCalendar(parseInt(this.value))" class="bg-white border border-slate-300 text-indigo-700 font-bold px-2.5 py-1 rounded-md focus:outline-none cursor-pointer text-xs">
+              <!-- Populated by JS -->
             </select>
           </div>
         </div>
 
-        <div id="calendar-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div id="calendar-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           <!-- Calendar months rendered dynamically -->
         </div>
       </div>
@@ -228,139 +263,146 @@
 
   </main>
 
-  <!-- ADD / EDIT BOOKING MODAL -->
+  <!-- ADD / EDIT BOOKING MODAL (Compact Form) -->
   <div id="booking-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto no-print">
-    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-3xl w-full p-6 space-y-6 my-8">
+    <div class="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-2xl w-full p-6 space-y-4 my-6">
       <div class="flex justify-between items-center pb-3 border-b border-slate-100">
-        <h3 id="modal-title" class="text-lg font-bold text-slate-800 flex items-center gap-2">
-          <i class="fa-solid fa-calendar-plus text-indigo-600"></i> Add New Booking
-        </h3>
-        <button onclick="closeBookingModal()" class="text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
+        <div>
+          <h3 id="modal-title" class="text-base font-bold text-slate-800 flex items-center gap-1.5">
+            <i class="fa-solid fa-calendar-plus text-indigo-600"></i> Add New Booking
+          </h3>
+          <p class="text-[11px] text-slate-400">Fill out guest, room allocation, and stay details.</p>
+        </div>
+        <button onclick="closeBookingModal()" class="text-slate-400 hover:text-slate-600 p-1 text-lg"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
-      <form id="booking-form" onsubmit="handleSaveBooking(event)" class="space-y-6">
+      <form id="booking-form" onsubmit="handleSaveBooking(event)" class="space-y-4 text-xs">
         <input type="hidden" id="modal-booking-id">
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Customer Name</label>
-            <input type="text" id="cust-name" required class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Address</label>
-            <input type="text" id="cust-address" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">ID No</label>
-            <input type="text" id="cust-id" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Contact No</label>
-            <input type="text" id="cust-contact" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
-          </div>
-
-          <!-- Room No Dropdown (Editable Selection) -->
-          <div>
-            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Room No</label>
-            <select id="cust-room" onchange="autoCaptureRoomDetails()" class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-indigo-700 text-sm">
-              <!-- Populated from Master -->
-            </select>
-          </div>
-
-          <!-- Auto-Captured Non-Editable Fields (Grey) -->
-          <div>
-            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">
-              Agent Info <span class="text-xs text-indigo-500 font-normal">(Auto)</span>
-            </label>
-            <input type="text" id="cust-agent" readonly class="w-full bg-slate-200/80 border border-slate-300 text-slate-600 font-medium rounded-xl px-3.5 py-2 cursor-not-allowed text-sm">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">
-              Room Capacity <span class="text-xs text-indigo-500 font-normal">(Auto)</span>
-            </label>
-            <input type="text" id="cust-capacity" readonly class="w-full bg-slate-200/80 border border-slate-300 text-slate-600 font-medium rounded-xl px-3.5 py-2 cursor-not-allowed text-sm">
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Check In Date & Time</label>
-            <input type="datetime-local" id="cust-checkin" onchange="calculateModalBilling()" required class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Check Out Date & Time</label>
-            <input type="datetime-local" id="cust-checkout" onchange="calculateModalBilling()" required class="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
-          </div>
-        </div>
-
-        <!-- Billing Section -->
-        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500">Billing Calculation</h4>
-          <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <!-- Guest Details Box -->
+        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-3">
+          <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
+            <i class="fa-solid fa-user-tag text-indigo-500"></i> Guest Information
+          </h4>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div>
-              <label class="block text-xs font-semibold text-slate-500 mb-1">No. Days</label>
-              <!-- Non-editable (Grey) -->
-              <input type="number" id="cust-days" readonly class="w-full bg-slate-200/80 font-bold text-slate-700 border border-slate-300 rounded-lg px-3 py-1.5 cursor-not-allowed text-sm">
+              <label class="block font-semibold text-slate-600 mb-1">Customer Name</label>
+              <input type="text" id="cust-name" required class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-500 mb-1">Price/Day (₹)</label>
-              <!-- Editable (White) -->
-              <input type="number" id="cust-price" value="1200" oninput="calculateModalBilling()" class="w-full bg-white font-bold text-slate-700 border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <label class="block font-semibold text-slate-600 mb-1">Address</label>
+              <input type="text" id="cust-address" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-500 mb-1">Total (₹)</label>
-              <!-- Non-editable (Grey) -->
-              <input type="number" id="cust-total" readonly class="w-full bg-slate-200/80 text-indigo-700 font-bold border border-slate-300 rounded-lg px-3 py-1.5 cursor-not-allowed text-sm">
+              <label class="block font-semibold text-slate-600 mb-1">ID Number</label>
+              <input type="text" id="cust-id" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-500 mb-1">Advance (₹)</label>
-              <!-- Editable (White) -->
-              <input type="number" id="cust-advance" value="0" oninput="calculateModalBilling()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-500 mb-1">Due (₹)</label>
-              <!-- Non-editable (Grey) -->
-              <input type="number" id="cust-due" readonly class="w-full bg-slate-200/80 text-rose-700 font-bold border border-slate-300 rounded-lg px-3 py-1.5 cursor-not-allowed text-sm">
+              <label class="block font-semibold text-slate-600 mb-1">Contact No</label>
+              <input type="text" id="cust-contact" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500">
             </div>
           </div>
         </div>
 
-        <div class="flex justify-end space-x-3 pt-2">
-          <button type="button" onclick="closeBookingModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition">Cancel</button>
-          <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-xl text-sm font-semibold shadow transition">Save Booking</button>
+        <!-- Room & Stay Schedule Box -->
+        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-3">
+          <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
+            <i class="fa-solid fa-bed text-indigo-500"></i> Room Selection & Stay Dates
+          </h4>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block font-semibold text-slate-600 mb-1">Room No</label>
+              <select id="cust-room" onchange="autoCaptureRoomDetails()" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-bold text-indigo-700">
+                <!-- Populated from Master -->
+              </select>
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-600 mb-1">Agent Info <span class="text-[10px] text-indigo-500 font-normal">(Auto)</span></label>
+              <input type="text" id="cust-agent" readonly class="w-full bg-slate-200/70 border border-slate-300 text-slate-600 font-medium rounded-lg px-2.5 py-1.5 cursor-not-allowed">
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-600 mb-1">Capacity <span class="text-[10px] text-indigo-500 font-normal">(Auto)</span></label>
+              <input type="text" id="cust-capacity" readonly class="w-full bg-slate-200/70 border border-slate-300 text-slate-600 font-medium rounded-lg px-2.5 py-1.5 cursor-not-allowed">
+            </div>
+
+            <div class="sm:col-span-[1.5]">
+              <label class="block font-semibold text-slate-600 mb-1">Check In Date & Time</label>
+              <input type="datetime-local" id="cust-checkin" onchange="calculateModalBilling()" required class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+            </div>
+            <div class="sm:col-span-[1.5]">
+              <label class="block font-semibold text-slate-600 mb-1">Check Out Date & Time</label>
+              <input type="datetime-local" id="cust-checkout" onchange="calculateModalBilling()" required class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+            </div>
+          </div>
+        </div>
+
+        <!-- Billing Calculation Box -->
+        <div class="bg-indigo-50/50 p-3.5 rounded-xl border border-indigo-100 space-y-3">
+          <h4 class="text-[10px] font-bold uppercase tracking-wider text-indigo-700 flex items-center gap-1">
+            <i class="fa-solid fa-calculator text-indigo-600"></i> Billing Summary
+          </h4>
+          <div class="grid grid-cols-5 gap-2">
+            <div>
+              <label class="block font-semibold text-slate-600 mb-1">Days</label>
+              <input type="number" id="cust-days" readonly class="w-full bg-slate-200/80 font-bold text-slate-700 border border-slate-300 rounded-lg px-2 py-1.5 cursor-not-allowed">
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-600 mb-1">Price/Day (₹)</label>
+              <input type="number" id="cust-price" value="1200" oninput="calculateModalBilling()" class="w-full bg-white font-bold text-slate-700 border border-slate-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-600 mb-1">Total (₹)</label>
+              <input type="number" id="cust-total" readonly class="w-full bg-slate-200/80 text-indigo-700 font-bold border border-slate-300 rounded-lg px-2 py-1.5 cursor-not-allowed">
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-600 mb-1">Advance (₹)</label>
+              <input type="number" id="cust-advance" value="0" oninput="calculateModalBilling()" class="w-full bg-white border border-slate-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-semibold text-emerald-600">
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-600 mb-1">Due (₹)</label>
+              <input type="number" id="cust-due" readonly class="w-full bg-slate-200/80 text-rose-700 font-bold border border-slate-300 rounded-lg px-2 py-1.5 cursor-not-allowed">
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-2">
+          <button type="button" onclick="closeBookingModal()" class="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-semibold transition">Cancel</button>
+          <button type="submit" class="px-5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold shadow transition">Save Booking</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- PRINTABLE INVOICE MODAL / VIEW CONTAINER -->
-  <div id="invoice-modal" class="hidden fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-2xl w-full p-8 space-y-6 relative" id="printable-invoice">
+  <!-- PRINTABLE INVOICE MODAL -->
+  <div id="invoice-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-2xl w-full p-8 space-y-5 relative" id="printable-invoice">
       <!-- Invoice Header -->
-      <div class="flex justify-between items-start border-b border-slate-200 pb-6">
+      <div class="flex justify-between items-start border-b border-slate-200 pb-4">
         <div>
-          <h2 class="text-2xl font-black text-indigo-700 uppercase tracking-wide">Hotel & Business Portal</h2>
-          <p class="text-xs text-slate-500 mt-1">123 Business Street, Suite 400</p>
-          <p class="text-xs text-slate-500">Phone: +91 98765 43210 | Email: info@businessportal.com</p>
+          <h2 class="text-xl font-black text-indigo-700 uppercase tracking-wide">Business Portal Hotel</h2>
+          <p class="text-[11px] text-slate-500 mt-0.5">123 Business Street, Suite 400</p>
+          <p class="text-[11px] text-slate-500">Phone: +91 98765 43210 | Email: info@businessportal.com</p>
         </div>
         <div class="text-right">
-          <span class="inline-block bg-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1 rounded-full uppercase mb-2">Booking Invoice</span>
-          <p class="text-xs text-slate-500">Invoice ID: <strong id="inv-id" class="text-slate-800 font-mono">INV-A-0000001</strong></p>
-          <p class="text-xs text-slate-500">Date: <strong id="inv-date" class="text-slate-800"></strong></p>
+          <span class="inline-block bg-indigo-100 text-indigo-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase mb-1">Booking Receipt</span>
+          <p class="text-[11px] text-slate-500">Invoice ID: <strong id="inv-id" class="text-slate-800 font-mono">INV-A-0000001</strong></p>
+          <p class="text-[11px] text-slate-500">Issued On: <strong id="inv-date" class="text-slate-800"></strong></p>
         </div>
       </div>
 
       <!-- Guest & Stay Details -->
       <div class="grid grid-cols-2 gap-6 bg-slate-50 p-4 rounded-xl border border-slate-100 text-xs">
         <div>
-          <h4 class="font-bold text-slate-400 uppercase tracking-wider mb-2">Guest Information</h4>
-          <p class="text-slate-800 font-semibold text-sm" id="inv-guest-name">-</p>
-          <p class="text-slate-600" id="inv-guest-address">Address: -</p>
+          <h4 class="font-bold text-slate-400 uppercase text-[10px] tracking-wider mb-1">Guest Information</h4>
+          <p class="text-slate-800 font-semibold" id="inv-guest-name">-</p>
+          <p class="text-slate-600 mt-0.5" id="inv-guest-address">Address: -</p>
           <p class="text-slate-600" id="inv-guest-contact">Contact: -</p>
           <p class="text-slate-600" id="inv-guest-id">ID No: -</p>
         </div>
         <div>
-          <h4 class="font-bold text-slate-400 uppercase tracking-wider mb-2">Reservation Info</h4>
+          <h4 class="font-bold text-slate-400 uppercase text-[10px] tracking-wider mb-1">Reservation Info</h4>
           <p class="text-slate-800 font-semibold" id="inv-room">Room No: -</p>
-          <p class="text-slate-600" id="inv-agent">Agent: -</p>
+          <p class="text-slate-600 mt-0.5" id="inv-agent">Agent: -</p>
           <p class="text-slate-600" id="inv-checkin">Check-in: -</p>
           <p class="text-slate-600" id="inv-checkout">Check-out: -</p>
         </div>
@@ -371,35 +413,35 @@
         <table class="w-full text-left text-xs">
           <thead>
             <tr class="bg-indigo-50 text-indigo-900 border-b border-indigo-100">
-              <th class="p-3">Description</th>
-              <th class="p-3 text-center">Duration</th>
-              <th class="p-3 text-right">Rate / Day</th>
-              <th class="p-3 text-right">Amount</th>
+              <th class="p-2.5">Description</th>
+              <th class="p-2.5 text-center">Duration</th>
+              <th class="p-2.5 text-right">Rate / Day</th>
+              <th class="p-2.5 text-right">Total Amount</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
             <tr>
-              <td class="p-3 font-semibold text-slate-800" id="inv-item-desc">Room Accommodation</td>
-              <td class="p-3 text-center" id="inv-item-days">0 Days</td>
-              <td class="p-3 text-right" id="inv-item-rate">₹0</td>
-              <td class="p-3 text-right font-semibold text-slate-800" id="inv-item-total">₹0</td>
+              <td class="p-2.5 font-semibold text-slate-800" id="inv-item-desc">Room Accommodation</td>
+              <td class="p-2.5 text-center" id="inv-item-days">0 Days</td>
+              <td class="p-2.5 text-right" id="inv-item-rate">₹0</td>
+              <td class="p-2.5 text-right font-semibold text-slate-800" id="inv-item-total">₹0</td>
             </tr>
           </tbody>
         </table>
       </div>
 
       <!-- Payment Summary -->
-      <div class="flex justify-end pt-2 border-t border-slate-200">
-        <div class="w-1/2 space-y-2 text-xs">
+      <div class="flex justify-end pt-1 border-t border-slate-200">
+        <div class="w-1/2 space-y-1 text-xs">
           <div class="flex justify-between text-slate-600">
             <span>Total Amount:</span>
             <strong id="inv-sum-total" class="text-slate-800">₹0</strong>
           </div>
           <div class="flex justify-between text-emerald-600">
-            <span>Advance Received:</span>
+            <span>Advance Payment:</span>
             <strong id="inv-sum-advance">₹0</strong>
           </div>
-          <div class="flex justify-between text-rose-600 text-sm font-bold border-t border-slate-200 pt-2">
+          <div class="flex justify-between text-rose-600 text-xs font-bold border-t border-slate-200 pt-1">
             <span>Balance Due:</span>
             <span id="inv-sum-due">₹0</span>
           </div>
@@ -407,28 +449,28 @@
       </div>
 
       <!-- Footer & Signature -->
-      <div class="pt-8 border-t border-slate-200 flex justify-between items-end text-xs text-slate-400">
+      <div class="pt-6 border-t border-slate-200 flex justify-between items-end text-[11px] text-slate-400">
         <div>
-          <p class="font-bold text-slate-600">Thank you for your business!</p>
-          <p>For inquiries, contact management.</p>
+          <p class="font-bold text-slate-600">Thank you for stay with us!</p>
+          <p>For inquiries, please contact hotel management.</p>
         </div>
-        <div class="text-center border-t border-slate-300 pt-2 w-36">
-          <p class="font-semibold text-slate-600">Authorized Signatory</p>
+        <div class="text-center border-t border-slate-300 pt-1 w-32">
+          <p class="font-semibold text-slate-600">Authorized Signature</p>
         </div>
       </div>
 
       <!-- Modal Actions (Hidden when printing) -->
-      <div class="flex justify-end space-x-3 pt-4 no-print border-t border-slate-100">
-        <button type="button" onclick="closeInvoiceModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-semibold transition">Close</button>
-        <button type="button" onclick="window.print()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow flex items-center gap-2 transition">
-          <i class="fa-solid fa-print"></i> Print Now
+      <div class="flex justify-end space-x-2 pt-3 no-print border-t border-slate-100">
+        <button type="button" onclick="closeInvoiceModal()" class="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition">Close</button>
+        <button type="button" onclick="window.print()" class="px-5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-print"></i> Print Invoice
         </button>
       </div>
     </div>
   </div>
 
   <script>
-    // App Data State with Multiple Bookings
+    // App Data State
     let state = {
       bookings: [
         {
@@ -459,7 +501,6 @@
       selectedYear: 2026
     };
 
-    // Helper to generate padded linear invoice number starting from INV-A-0000001
     function generateInvoiceNumber(index) {
       const numStr = String(index + 1).padStart(7, '0');
       return `INV-A-${numStr}`;
@@ -547,10 +588,10 @@
       grid.innerHTML = '';
       for (let y = 2026; y <= 2085; y++) {
         const item = document.createElement('div');
-        item.className = `text-center p-2 rounded-lg text-sm font-semibold border cursor-pointer transition ${
+        item.className = `text-center py-1.5 px-1 rounded-lg text-[11px] font-bold border cursor-pointer transition ${
           y === state.selectedYear 
-            ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' 
-            : 'bg-white text-slate-600 border-slate-200 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-300'
+            ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' 
+            : 'bg-white text-slate-600 border-slate-200 hover:bg-indigo-50 hover:text-indigo-600'
         }`;
         item.innerText = y;
         item.onclick = () => selectDashboardYear(y);
@@ -571,7 +612,6 @@
       document.getElementById('dash-due').innerText = `₹${totalDue.toLocaleString('en-IN')}`;
     }
 
-    // Print Invoice Handler with Linear Series Numbering
     function printInvoice(bookingId) {
       const bIndex = state.bookings.findIndex(item => item.id === bookingId);
       if (bIndex === -1) return;
@@ -609,7 +649,6 @@
       document.getElementById('invoice-modal').classList.add('hidden');
     }
 
-    // Modal & Multiple Bookings Management
     function openBookingModal(bookingId = null) {
       populateRoomDropdown();
       const form = document.getElementById('booking-form');
@@ -684,20 +723,19 @@
         return;
       }
 
-      // Check for overlapping bookings for the same room
+      // Overlap Conflict Check
       const conflict = state.bookings.find(b => {
-        if (id && b.id === id) return false; // Skip the current booking being edited
-        if (parseInt(b.roomNo) !== roomNo) return false; // Different room, no conflict
+        if (id && b.id === id) return false;
+        if (parseInt(b.roomNo) !== roomNo) return false;
 
         const existingIn = new Date(b.checkIn);
         const existingOut = new Date(b.checkOut);
 
-        // Date overlap condition
         return (newIn < existingOut && newOut > existingIn);
       });
 
       if (conflict) {
-        alert(`❌ Booking Conflict Alert!\n\nRoom ${roomNo} is already booked from ${conflict.checkIn.replace('T', ' ')} to ${conflict.checkOut.replace('T', ' ')} by ${conflict.name}.\n\nPlease either:\n1. Change the Room Number, or\n2. Change the Check-In / Check-Out date & time.`);
+        alert(`❌ Booking Conflict Alert!\n\nRoom ${roomNo} is already reserved from ${conflict.checkIn.replace('T', ' ')} to ${conflict.checkOut.replace('T', ' ')} for ${conflict.name}.\n\nPlease adjust:\n1. Change the Room Number, or\n2. Update the Check-In / Check-Out schedule.`);
         return;
       }
       
@@ -748,7 +786,7 @@
       tbody.innerHTML = '';
 
       if (state.bookings.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-6 text-slate-400">No bookings available. Click "Add New Booking" to create one.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-8 text-slate-400">No bookings found. Click "Add Booking" to register guests.</td></tr>`;
         return;
       }
 
@@ -757,23 +795,39 @@
         const checkOutFmt = b.checkOut ? b.checkOut.replace('T', ' ') : '-';
         
         const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50 transition";
+        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
         tr.innerHTML = `
-          <td class="p-3 font-semibold text-slate-800">${b.name}</td>
-          <td class="p-3 text-xs text-slate-500"><div>${b.contactNo}</div><div class="text-slate-400">${b.idNo}</div></td>
-          <td class="p-3"><span class="bg-indigo-50 text-indigo-700 font-bold px-2.5 py-1 rounded-lg text-xs">Room ${b.roomNo}</span> <div class="text-xs text-slate-400 mt-0.5">${b.capacity}</div></td>
-          <td class="p-3 text-xs text-slate-600">${b.agentInfo}</td>
-          <td class="p-3 text-xs"><div><strong class="text-emerald-600">In:</strong> ${checkInFmt}</div><div><strong class="text-rose-600">Out:</strong> ${checkOutFmt}</div></td>
-          <td class="p-3 text-xs font-medium">${b.noOfDays} days × ₹${b.perDayPrice}</td>
-          <td class="p-3 text-xs"><div><strong>Total:</strong> ₹${b.totalAmount}</div><div class="text-emerald-600"><strong>Adv:</strong> ₹${b.advanced}</div></td>
-          <td class="p-3"><span class="px-2.5 py-1 rounded-full text-xs font-bold ${b.totalDue > 0 ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}">₹${b.totalDue} Due</span></td>
-          <td class="p-3 text-center">
+          <td class="py-2.5 px-3 font-bold text-slate-800">${b.name}</td>
+          <td class="py-2.5 px-3 text-[11px] text-slate-500">
+            <div class="font-medium text-slate-700">${b.contactNo}</div>
+            <div class="text-slate-400">${b.idNo}</div>
+          </td>
+          <td class="py-2.5 px-3">
+            <span class="bg-indigo-50 text-indigo-700 font-bold px-2 py-0.5 rounded text-[11px] inline-block">Room ${b.roomNo}</span>
+            <div class="text-[10px] text-slate-400 mt-0.5">${b.capacity}</div>
+          </td>
+          <td class="py-2.5 px-3 text-[11px] text-slate-600 font-medium">${b.agentInfo}</td>
+          <td class="py-2.5 px-3 text-[11px]">
+            <div class="text-emerald-700 font-medium"><i class="fa-solid fa-plane-arrival mr-1"></i> ${checkInFmt}</div>
+            <div class="text-rose-600 font-medium mt-0.5"><i class="fa-solid fa-plane-departure mr-1"></i> ${checkOutFmt}</div>
+          </td>
+          <td class="py-2.5 px-3 text-[11px] font-semibold text-slate-700">${b.noOfDays} d × ₹${b.perDayPrice}</td>
+          <td class="py-2.5 px-3 text-[11px]">
+            <div class="font-bold text-slate-800">Tot: ₹${b.totalAmount}</div>
+            <div class="text-emerald-600 font-medium">Adv: ₹${b.advanced}</div>
+          </td>
+          <td class="py-2.5 px-3">
+            <span class="px-2 py-0.5 rounded-full text-[11px] font-bold inline-block ${b.totalDue > 0 ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}">
+              ₹${b.totalDue} Due
+            </span>
+          </td>
+          <td class="py-2.5 px-3 text-center">
             <div class="flex items-center justify-center space-x-2">
-              <button onclick="printInvoice('${b.id}')" title="Print Invoice" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg text-xs font-medium transition flex items-center gap-1">
-                <i class="fa-solid fa-print text-indigo-600"></i> Print Invoice
+              <button onclick="printInvoice('${b.id}')" title="Print Invoice" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded text-[11px] font-semibold transition flex items-center gap-1 border border-slate-200">
+                <i class="fa-solid fa-print text-indigo-600"></i> Inv
               </button>
-              <button onclick="openBookingModal('${b.id}')" title="Edit Booking" class="text-indigo-600 hover:text-indigo-800 p-1.5"><i class="fa-solid fa-pen-to-square"></i></button>
-              <button onclick="deleteBooking('${b.id}')" title="Delete Booking" class="text-rose-500 hover:text-rose-700 p-1.5"><i class="fa-solid fa-trash-can"></i></button>
+              <button onclick="openBookingModal('${b.id}')" title="Edit Booking" class="text-indigo-600 hover:text-indigo-800 p-1"><i class="fa-solid fa-pen-to-square"></i></button>
+              <button onclick="deleteBooking('${b.id}')" title="Delete Booking" class="text-rose-500 hover:text-rose-700 p-1"><i class="fa-solid fa-trash-can"></i></button>
             </div>
           </td>
         `;
@@ -786,12 +840,13 @@
       tbody.innerHTML = '';
       state.master.forEach((row, index) => {
         const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition";
         tr.innerHTML = `
-          <td class="p-3"><input type="text" value="${row.agentName}" onchange="updateMasterRow(${index}, 'agentName', this.value)" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 focus:border-indigo-500 focus:outline-none"></td>
-          <td class="p-3"><input type="text" value="${row.phone}" onchange="updateMasterRow(${index}, 'phone', this.value)" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 focus:border-indigo-500 focus:outline-none"></td>
-          <td class="p-3"><input type="number" value="${row.roomNo}" onchange="updateMasterRow(${index}, 'roomNo', this.value)" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 focus:border-indigo-500 focus:outline-none"></td>
-          <td class="p-3"><input type="number" value="${row.capacity}" onchange="updateMasterRow(${index}, 'capacity', this.value)" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 focus:border-indigo-500 focus:outline-none"></td>
-          <td class="p-3 text-center">
+          <td class="py-2 px-3"><input type="text" value="${row.agentName}" onchange="updateMasterRow(${index}, 'agentName', this.value)" class="w-full bg-white border border-slate-300 rounded-md px-2.5 py-1 focus:border-indigo-500 focus:outline-none text-xs"></td>
+          <td class="py-2 px-3"><input type="text" value="${row.phone}" onchange="updateMasterRow(${index}, 'phone', this.value)" class="w-full bg-white border border-slate-300 rounded-md px-2.5 py-1 focus:border-indigo-500 focus:outline-none text-xs"></td>
+          <td class="py-2 px-3"><input type="number" value="${row.roomNo}" onchange="updateMasterRow(${index}, 'roomNo', this.value)" class="w-full bg-white border border-slate-300 rounded-md px-2.5 py-1 focus:border-indigo-500 focus:outline-none text-xs font-semibold text-indigo-700"></td>
+          <td class="py-2 px-3"><input type="number" value="${row.capacity}" onchange="updateMasterRow(${index}, 'capacity', this.value)" class="w-full bg-white border border-slate-300 rounded-md px-2.5 py-1 focus:border-indigo-500 focus:outline-none text-xs"></td>
+          <td class="py-2 px-3 text-center">
             <button onclick="removeMasterRow(${index})" class="text-rose-500 hover:text-rose-700 p-1"><i class="fa-solid fa-trash-can"></i></button>
           </td>
         `;
@@ -816,7 +871,6 @@
       populateRoomDropdown();
     }
 
-    // Calendar & Tooltip Logic for Multiple Bookings
     function renderCalendar(year) {
       state.selectedYear = year;
       const calSelect = document.getElementById('cal-year-select');
@@ -831,10 +885,10 @@
 
       months.forEach((month, monthIdx) => {
         const monthCard = document.createElement('div');
-        monthCard.className = "bg-slate-50 border border-slate-200 rounded-xl p-4";
+        monthCard.className = "bg-white border border-slate-200 rounded-xl p-3 shadow-sm";
         
-        let header = `<h4 class="font-bold text-slate-700 text-center mb-3">${month} ${year}</h4>`;
-        let daysHeader = `<div class="grid grid-cols-7 text-center text-xs font-semibold text-slate-400 mb-2"><div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div></div>`;
+        let header = `<h4 class="font-extrabold text-slate-800 text-center mb-2 text-xs border-b border-slate-100 pb-1.5">${month} ${year}</h4>`;
+        let daysHeader = `<div class="grid grid-cols-7 text-center text-[10px] font-bold text-slate-400 mb-1"><div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div></div>`;
         
         let firstDay = new Date(year, monthIdx, 1).getDay();
         let totalDays = new Date(year, monthIdx + 1, 0).getDate();
@@ -872,9 +926,9 @@
               onmousemove="showTooltip(event, '${matchedBooking.roomNo}', '${matchedBooking.name}', '${statusText}')" 
               onclick="showTooltip(event, '${matchedBooking.roomNo}', '${matchedBooking.name}', '${statusText}')" 
               onmouseleave="hideTooltip()"
-              class="py-1.5 bg-indigo-600 text-white font-bold rounded-full cursor-pointer shadow hover:scale-105 transition-transform">${d}</div>`;
+              class="py-1 bg-indigo-600 text-white font-bold rounded cursor-pointer shadow-sm hover:scale-105 transition-transform">${d}</div>`;
           } else {
-            daysGrid += `<div class="py-1.5 hover:bg-slate-200 text-slate-700 cursor-pointer rounded-md">${d}</div>`;
+            daysGrid += `<div class="py-1 hover:bg-slate-100 text-slate-700 cursor-pointer rounded font-medium">${d}</div>`;
           }
         }
         daysGrid += `</div>`;
@@ -913,10 +967,10 @@
       const wb = XLSX.utils.book_new();
 
       const dashData = [
-        ["Hi Aniruddha Welcome to your business Portal"],
+        ["Business Portal Operational Summary"],
         ["Total Active Bookings", state.bookings.length],
         [],
-        ["Years(2026-2085)"],
+        ["Active Years (2026-2085)"],
         [2026, 2027, 2028, 2029, 2030, 2031]
       ];
       const wsDash = XLSX.utils.aoa_to_sheet(dashData);
@@ -935,7 +989,7 @@
       const wsMaster = XLSX.utils.aoa_to_sheet([...masterHeader, ...masterRows]);
       XLSX.utils.book_append_sheet(wb, wsMaster, "Master");
 
-      XLSX.writeFile(wb, "Business_Portal_MultipleBookings.xlsx");
+      XLSX.writeFile(wb, "Business_Portal_Compact_Export.xlsx");
     }
   </script>
 </body>
