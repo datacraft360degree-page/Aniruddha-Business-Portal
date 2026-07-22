@@ -1,5 +1,3 @@
-
-<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -48,18 +46,35 @@
         display: none !important;
       }
     }
+
+    /* Excel-style Comment Box Arrow Pin */
+    .excel-comment-box::before {
+      content: '';
+      position: absolute;
+      top: -8px;
+      left: 16px;
+      border-width: 0 8px 8px 8px;
+      border-style: solid;
+      border-color: transparent transparent #0f172a transparent;
+    }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col relative antialiased" onclick="hideTooltip()">
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col relative antialiased" onclick="closeCommentBox()">
 
-  <!-- Floating Multi-Booking Tooltip for Calendar Hover/Click -->
-  <div id="cal-tooltip" class="hidden absolute z-50 bg-slate-900 text-white text-xs rounded-xl p-3 shadow-2xl border border-slate-700 pointer-events-none transition-all duration-150 space-y-2 max-w-sm min-w-[220px]">
-    <div class="font-bold text-indigo-300 border-b border-slate-700 pb-1.5 flex justify-between items-center text-[11px]">
-      <span id="tt-date-header">Bookings Overview</span>
-      <i class="fa-solid fa-users-viewfinder text-indigo-400"></i>
+  <!-- Excel-Style Comment Box Popout for Calendar Dates -->
+  <div id="excel-comment-box" onclick="event.stopPropagation()" class="excel-comment-box hidden absolute z-50 bg-slate-900 text-white text-xs rounded-xl p-3 shadow-2xl border-2 border-amber-400 space-y-2.5 w-72 transition-all duration-150">
+    <!-- Comment Box Header -->
+    <div class="font-bold text-amber-300 border-b border-slate-700 pb-1.5 flex justify-between items-center text-[11px]">
+      <span class="flex items-center gap-1.5">
+        <i class="fa-solid fa-comment-dots text-amber-400"></i>
+        <span id="comm-date-header">Date Overview</span>
+      </span>
+      <button onclick="closeCommentBox()" class="text-slate-400 hover:text-white px-1.5 py-0.5 rounded text-xs transition">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
     </div>
-    <!-- Customer Details Container -->
-    <div id="tt-booking-list" class="space-y-2 max-h-60 overflow-y-auto">
+    <!-- Customer Details List Container -->
+    <div id="comm-booking-list" class="space-y-2 max-h-64 overflow-y-auto pr-1">
       <!-- Populated dynamically via JavaScript -->
     </div>
   </div>
@@ -246,7 +261,7 @@
             <h2 class="text-base font-bold text-slate-800 flex items-center gap-1.5">
               <i class="fa-regular fa-calendar-check text-indigo-600"></i> Year Overview Calendar
             </h2>
-            <p class="text-[11px] text-slate-400 mt-0.5">Hover or click booked dates to view all customer details for that date.</p>
+            <p class="text-[11px] text-slate-400 mt-0.5">Click any highlighted date to open an Excel-style comment popout with booking details.</p>
           </div>
           
           <!-- Calendar Year Dropdown -->
@@ -594,6 +609,7 @@
       document.getElementById(`tab-${tabId}`).classList.remove('hidden');
       const activeBtn = document.getElementById(`btn-${tabId}`);
       activeBtn.classList.add('active-tab', 'bg-indigo-600', 'text-white');
+      closeCommentBox();
     }
 
     function selectDashboardYear(year) {
@@ -891,7 +907,7 @@
       populateRoomDropdown();
     }
 
-    // UPDATED CALENDAR RENDERER & MULTI-BOOKING TOOLTIP LOGIC
+    // CALENDAR RENDERER
     function renderCalendar(year) {
       state.selectedYear = year;
       const calSelect = document.getElementById('cal-year-select');
@@ -922,7 +938,6 @@
         for (let d = 1; d <= totalDays; d++) {
           const currDate = new Date(year, monthIdx, d);
           
-          // Collect ALL bookings active on this specific calendar date
           let dayBookings = [];
 
           for (let b of state.bookings) {
@@ -946,21 +961,19 @@
           }
 
           if (dayBookings.length > 0) {
-            // Encode booking details into data attribute for hovering/clicking
             const bookingsJson = encodeURIComponent(JSON.stringify(dayBookings));
             const formattedDateStr = `${month} ${d}, ${year}`;
             
-            // Highlight styling varies if 2 or more bookings exist on the same date
             const badgeBg = dayBookings.length > 1 
               ? 'bg-amber-600 text-white font-black hover:bg-amber-700' 
               : 'bg-indigo-600 text-white font-bold hover:bg-indigo-700';
 
             daysGrid += `<div 
-              onmousemove="showTooltip(event, '${formattedDateStr}', '${bookingsJson}')" 
-              onclick="showTooltip(event, '${formattedDateStr}', '${bookingsJson}')" 
-              onmouseleave="hideTooltip()"
+              onclick="toggleCommentBox(event, this, '${formattedDateStr}', '${bookingsJson}')" 
               class="relative py-1 ${badgeBg} rounded cursor-pointer shadow-sm hover:scale-105 transition-transform flex flex-col items-center justify-center">
                 <span>${d}</span>
+                <!-- Excel Comment Indicator Flag -->
+                <span class="absolute top-0 right-0 w-0 h-0 border-t-[5px] border-r-[5px] border-t-amber-300 border-r-transparent rounded-tr-sm"></span>
                 ${dayBookings.length > 1 ? `<span class="text-[9px] leading-none bg-amber-900/80 text-amber-200 px-1 py-0.5 rounded-full mt-0.5 font-bold">${dayBookings.length} Guests</span>` : ''}
               </div>`;
           } else {
@@ -974,44 +987,57 @@
       });
     }
 
-    // SHOW FLOATING TOOLTIP FOR ALL CUSTOMERS ON THAT DATE
-    function showTooltip(e, dateStr, encodedBookings) {
+    // EXCEL-STYLE PINNED COMMENT BOX LOGIC
+    function toggleCommentBox(e, targetElem, dateStr, encodedBookings) {
       e.stopPropagation();
-      const tt = document.getElementById('cal-tooltip');
-      const container = document.getElementById('tt-booking-list');
-      const dateHeader = document.getElementById('tt-date-header');
+      
+      const commBox = document.getElementById('excel-comment-box');
+      const container = document.getElementById('comm-booking-list');
+      const dateHeader = document.getElementById('comm-date-header');
       
       const dayBookings = JSON.parse(decodeURIComponent(encodedBookings));
 
       dateHeader.innerText = `${dateStr} (${dayBookings.length} ${dayBookings.length > 1 ? 'Bookings' : 'Booking'})`;
       container.innerHTML = '';
 
-      dayBookings.forEach((item, index) => {
+      dayBookings.forEach((item) => {
         const b = item.booking;
         const card = document.createElement('div');
-        card.className = "bg-slate-800/90 border border-slate-700 p-2 rounded-lg space-y-1 text-xs";
+        card.className = "bg-slate-800/95 border border-slate-700/80 p-2.5 rounded-lg space-y-1 text-xs shadow-inner";
         
         card.innerHTML = `
-          <div class="flex justify-between items-center text-indigo-300 font-bold border-b border-slate-700/60 pb-1">
-            <span><i class="fa-solid fa-user text-[10px] mr-1"></i> ${b.name || 'Guest'}</span>
-            <span class="bg-indigo-900/80 text-indigo-200 text-[10px] px-1.5 py-0.5 rounded font-mono">Room ${b.roomNo}</span>
+          <div class="flex justify-between items-center text-amber-300 font-bold border-b border-slate-700/60 pb-1">
+            <span class="truncate max-w-[130px]"><i class="fa-solid fa-user text-[10px] mr-1 text-amber-400"></i> ${b.name || 'Guest'}</span>
+            <span class="bg-indigo-900/90 text-indigo-200 text-[10px] px-1.5 py-0.5 rounded font-mono border border-indigo-700">Room ${b.roomNo}</span>
           </div>
           <p><span class="text-slate-400">Contact:</span> <strong class="text-slate-200 font-medium">${b.contactNo || 'N/A'}</strong></p>
           <p><span class="text-slate-400">Status:</span> <strong class="text-emerald-400 font-medium">${item.statusText}</strong></p>
-          <p><span class="text-slate-400">Check-In:</span> <span class="text-slate-300">${b.checkIn ? b.checkIn.replace('T', ' ') : '-'}</span></p>
+          <p><span class="text-slate-400">Check-In:</span> <span class="text-slate-300 font-mono text-[11px]">${b.checkIn ? b.checkIn.replace('T', ' ') : '-'}</span></p>
+          <p><span class="text-slate-400">Check-Out:</span> <span class="text-slate-300 font-mono text-[11px]">${b.checkOut ? b.checkOut.replace('T', ' ') : '-'}</span></p>
         `;
 
         container.appendChild(card);
       });
 
-      // Position Tooltip dynamically near mouse cursor
-      tt.style.left = `${e.pageX + 12}px`;
-      tt.style.top = `${e.pageY + 12}px`;
-      tt.classList.remove('hidden');
+      // Pin comment box relative to the clicked date element
+      const rect = targetElem.getBoundingClientRect();
+      const scrollY = window.scrollY || document.documentElement.scrollTop;
+      const scrollX = window.scrollX || document.documentElement.scrollLeft;
+
+      commBox.style.top = `${rect.bottom + scrollY + 6}px`;
+      
+      // Keep box inside screen viewport horizontally
+      let leftPos = rect.left + scrollX - 10;
+      if (leftPos + 300 > window.innerWidth) {
+        leftPos = window.innerWidth - 310;
+      }
+      commBox.style.left = `${Math.max(10, leftPos)}px`;
+
+      commBox.classList.remove('hidden');
     }
 
-    function hideTooltip() {
-      document.getElementById('cal-tooltip').classList.add('hidden');
+    function closeCommentBox() {
+      document.getElementById('excel-comment-box').classList.add('hidden');
     }
 
     function saveChanges(showToast = true) {
