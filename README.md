@@ -100,12 +100,18 @@
         <button onclick="switchTab('calendar')" id="btn-calendar" class="tab-btn px-3.5 py-1.5 rounded-md transition-all duration-200 text-indigo-100 hover:bg-indigo-600/50">Calendar</button>
       </nav>
 
-      <!-- Action Buttons -->
+      <!-- Action Buttons & Notification Alert Trigger -->
       <div class="flex items-center space-x-2">
-        <button onclick="saveChanges()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm flex items-center gap-1.5 transition">
-          <i class="fa-solid fa-floppy-disk"></i> Save Changes
+        <!-- Bell Trigger with Badge -->
+        <button onclick="openAlertModal()" title="View Outstanding Check-out Alerts" class="relative bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-bell"></i> Alerts
+          <span id="alert-badge" class="hidden absolute -top-2 -right-2 bg-rose-600 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full border-2 border-white animate-bounce">0</span>
         </button>
-        <button onclick="exportToExcel()" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm flex items-center gap-1.5 transition">
+
+        <button onclick="saveChanges()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-floppy-disk"></i> Save
+        </button>
+        <button onclick="exportToExcel()" class="bg-indigo-600 hover:bg-indigo-800 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm flex items-center gap-1.5 transition">
           <i class="fa-solid fa-file-excel"></i> Export
         </button>
       </div>
@@ -278,6 +284,40 @@
 
   </main>
 
+  <!-- POPUP MODAL: CHECK-OUT ALERT LIST -->
+  <div id="alert-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 no-print">
+    <div class="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-xl w-full flex flex-col max-h-[85vh] overflow-hidden">
+      <!-- Popup Header -->
+      <div class="bg-gradient-to-r from-amber-500 to-amber-600 p-4 text-white flex justify-between items-center">
+        <div class="flex items-center space-x-2.5">
+          <div class="bg-amber-700/40 p-2 rounded-lg border border-amber-400/30">
+            <i class="fa-solid fa-bell text-lg"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold tracking-wide">Upcoming Check-out Dues Alert</h3>
+            <p class="text-[11px] text-amber-100">Check-outs within 2 hours with unpaid balances</p>
+          </div>
+        </div>
+        <button onclick="closeAlertModal()" class="text-amber-100 hover:text-white px-2 py-1 rounded text-lg transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Alert Window Body List -->
+      <div id="alert-list-container" class="p-4 overflow-y-auto space-y-3 flex-1 text-xs">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Popup Footer Actions -->
+      <div class="bg-slate-50 border-t border-slate-200 p-3 flex justify-between items-center text-xs">
+        <span id="alert-list-count-text" class="text-slate-500 font-medium">0 active warnings found</span>
+        <button onclick="closeAlertModal()" class="px-4 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg font-semibold transition">
+          Dismiss List
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- ADD / EDIT BOOKING MODAL -->
   <div id="booking-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto no-print">
     <div class="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-2xl w-full p-6 space-y-4 my-6">
@@ -371,7 +411,7 @@
             </div>
             <div>
               <label class="block font-semibold text-slate-600 mb-1">Advance (₹)</label>
-              <input type="number" id="cust-advance" value="0" oninput="calculateModalBilling()" class="w-full bg-white border border-slate-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-semibold text-emerald-600">
+              <input type="number" id="cust-advance" value="0" oninput="calculateModalBilling()" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-semibold text-emerald-600">
             </div>
             <div>
               <label class="block font-semibold text-slate-600 mb-1">Due (₹)</label>
@@ -556,7 +596,118 @@
       renderBookingsTable();
       renderMasterTable();
       renderCalendar(state.selectedYear);
+
+      // Check upcoming alerts
+      checkUpcomingCheckoutsWithDue();
+      setInterval(checkUpcomingCheckoutsWithDue, 60000); // Periodic check every 1 min
     });
+
+    // 2-HOUR CHECKOUT DUE ALERT LIST POPUP SYSTEM
+    function checkUpcomingCheckoutsWithDue() {
+      const now = new Date().getTime();
+      const twoHoursMs = 2 * 60 * 60 * 1000;
+
+      const upcomingDues = state.bookings.filter(b => {
+        if (!b.checkOut || (b.totalDue || 0) <= 0) return false;
+        const checkOutTime = new Date(b.checkOut).getTime();
+        const diff = checkOutTime - now;
+        return diff > -3600000 && diff <= twoHoursMs;
+      });
+
+      const badge = document.getElementById('alert-badge');
+      if (upcomingDues.length > 0) {
+        badge.innerText = upcomingDues.length;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+
+      renderAlertModalList(upcomingDues);
+    }
+
+    function renderAlertModalList(duesList) {
+      const container = document.getElementById('alert-list-container');
+      const textCount = document.getElementById('alert-list-count-text');
+      container.innerHTML = '';
+
+      textCount.innerText = `${duesList.length} active warnings found`;
+
+      if (duesList.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-10 space-y-2">
+            <div class="bg-emerald-50 text-emerald-600 w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <p class="font-bold text-slate-700">No Pending Checkout Dues</p>
+            <p class="text-slate-400 text-[11px]">All upcoming check-outs within 2 hours are clear or fully paid.</p>
+          </div>
+        `;
+        return;
+      }
+
+      duesList.forEach((b, i) => {
+        const checkOutTime = new Date(b.checkOut);
+        const timeFormatted = checkOutTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        const card = document.createElement('div');
+        card.className = "bg-amber-50/60 border border-amber-200 rounded-xl overflow-hidden transition shadow-sm";
+        
+        card.innerHTML = `
+          <!-- List Item Summary Bar -->
+          <div class="p-3 flex justify-between items-center cursor-pointer hover:bg-amber-100/50 transition" onclick="toggleAlertDetails('alert-details-${i}')">
+            <div class="flex items-center space-x-3">
+              <span class="bg-amber-500 text-white p-2 rounded-lg text-xs font-bold"><i class="fa-solid fa-clock"></i></span>
+              <div>
+                <h4 class="font-bold text-slate-800 text-xs flex items-center gap-2">
+                  ${b.name} <span class="bg-indigo-100 text-indigo-800 text-[10px] px-2 py-0.5 rounded font-mono">Room ${b.roomNo}</span>
+                </h4>
+                <p class="text-[11px] text-slate-500 mt-0.5">Checkout Time: <strong class="text-amber-700">${timeFormatted}</strong></p>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-black text-rose-600 bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-md">
+                ₹${b.totalDue.toLocaleString('en-IN')} Due
+              </span>
+              <button class="text-slate-400 hover:text-slate-600 text-xs p-1">
+                <i class="fa-solid fa-chevron-down"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Expandable Details Window ("Open to View") -->
+          <div id="alert-details-${i}" class="hidden bg-white border-t border-amber-200/60 p-3.5 space-y-2.5 text-[11px]">
+            <div class="grid grid-cols-2 gap-2 text-slate-600">
+              <div><span class="text-slate-400">Contact:</span> <strong>${b.contactNo || 'N/A'}</strong></div>
+              <div><span class="text-slate-400">ID Number:</span> <strong>${b.idNo || 'N/A'}</strong></div>
+              <div><span class="text-slate-400">Total Charges:</span> <strong>₹${b.totalAmount}</strong></div>
+              <div><span class="text-slate-400">Advance Paid:</span> <strong class="text-emerald-600">₹${b.advanced}</strong></div>
+            </div>
+            <div class="flex justify-end space-x-2 pt-1 border-t border-slate-100">
+              <button onclick="closeAlertModal(); openBookingModal('${b.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-wallet"></i> Collect Payment / Edit
+              </button>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function toggleAlertDetails(elemId) {
+      const detailsBox = document.getElementById(elemId);
+      if (detailsBox) {
+        detailsBox.classList.toggle('hidden');
+      }
+    }
+
+    function openAlertModal() {
+      checkUpcomingCheckoutsWithDue();
+      document.getElementById('alert-modal').classList.remove('hidden');
+    }
+
+    function closeAlertModal() {
+      document.getElementById('alert-modal').classList.add('hidden');
+    }
 
     function populateCalendarYearDropdown() {
       const yearSelect = document.getElementById('cal-year-select');
@@ -565,9 +716,7 @@
         const opt = document.createElement('option');
         opt.value = y;
         opt.text = `Year ${y}`;
-        if (y === state.selectedYear) {
-          opt.selected = true;
-        }
+        if (y === state.selectedYear) opt.selected = true;
         yearSelect.appendChild(opt);
       }
     }
@@ -575,14 +724,12 @@
     function populateRoomDropdown() {
       const roomSelect = document.getElementById('cust-room');
       roomSelect.innerHTML = '';
-      
       state.master.forEach(m => {
         const opt = document.createElement('option');
         opt.value = m.roomNo;
         opt.text = `Room ${m.roomNo}`;
         roomSelect.appendChild(opt);
       });
-
       autoCaptureRoomDetails();
     }
 
@@ -801,6 +948,7 @@
       renderBookingsTable();
       updateDashboardCards();
       renderCalendar(state.selectedYear);
+      checkUpcomingCheckoutsWithDue();
       saveChanges(false);
     }
 
@@ -810,6 +958,7 @@
         renderBookingsTable();
         updateDashboardCards();
         renderCalendar(state.selectedYear);
+        checkUpcomingCheckoutsWithDue();
         saveChanges(false);
       }
     }
@@ -908,9 +1057,7 @@
     function renderCalendar(year) {
       state.selectedYear = year;
       const calSelect = document.getElementById('cal-year-select');
-      if (calSelect) {
-        calSelect.value = year;
-      }
+      if (calSelect) calSelect.value = year;
 
       const container = document.getElementById('calendar-container');
       container.innerHTML = '';
@@ -934,7 +1081,6 @@
 
         for (let d = 1; d <= totalDays; d++) {
           const currDate = new Date(year, monthIdx, d);
-          
           let dayBookings = [];
 
           for (let b of state.bookings) {
@@ -969,7 +1115,6 @@
               onclick="toggleCommentBox(event, this, '${formattedDateStr}', '${bookingsJson}')" 
               class="relative py-1 ${badgeBg} rounded cursor-pointer shadow-sm hover:scale-105 transition-transform flex flex-col items-center justify-center">
                 <span>${d}</span>
-                <!-- Excel Comment Indicator Flag -->
                 <span class="absolute top-0 right-0 w-0 h-0 border-t-[5px] border-r-[5px] border-t-amber-300 border-r-transparent rounded-tr-sm"></span>
                 ${dayBookings.length > 1 ? `<span class="text-[9px] leading-none bg-amber-900/80 text-amber-200 px-1 py-0.5 rounded-full mt-0.5 font-bold">${dayBookings.length} Guests</span>` : ''}
               </div>`;
@@ -1016,14 +1161,12 @@
         container.appendChild(card);
       });
 
-      // Pin comment box relative to the clicked date element
       const rect = targetElem.getBoundingClientRect();
       const scrollY = window.scrollY || document.documentElement.scrollTop;
       const scrollX = window.scrollX || document.documentElement.scrollLeft;
 
       commBox.style.top = `${rect.bottom + scrollY + 6}px`;
       
-      // Keep box inside screen viewport horizontally
       let leftPos = rect.left + scrollX - 10;
       if (leftPos + 300 > window.innerWidth) {
         leftPos = window.innerWidth - 310;
@@ -1050,7 +1193,7 @@
       const wb = XLSX.utils.book_new();
 
       const dashData = [
-        ["Business Portal Operational Summary"],
+        ["Business Portal Summary"],
         ["Total Active Bookings", state.bookings.length],
         [],
         ["Active Years (2026-2085)"],
