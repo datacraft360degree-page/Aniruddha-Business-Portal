@@ -1,3 +1,5 @@
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -50,15 +52,16 @@
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col relative antialiased" onclick="hideTooltip()">
 
-  <!-- Floating Tooltip for Calendar Hover/Click -->
-  <div id="cal-tooltip" class="hidden absolute z-50 bg-slate-900 text-white text-xs rounded-lg p-2.5 shadow-xl border border-slate-700 pointer-events-none transition-opacity duration-150 space-y-1 min-w-[160px]">
-    <div class="font-bold text-indigo-300 border-b border-slate-700 pb-1 flex justify-between items-center">
-      <span>Room Details</span>
-      <i class="fa-solid fa-bed text-indigo-400"></i>
+  <!-- Floating Multi-Booking Tooltip for Calendar Hover/Click -->
+  <div id="cal-tooltip" class="hidden absolute z-50 bg-slate-900 text-white text-xs rounded-xl p-3 shadow-2xl border border-slate-700 pointer-events-none transition-all duration-150 space-y-2 max-w-sm min-w-[220px]">
+    <div class="font-bold text-indigo-300 border-b border-slate-700 pb-1.5 flex justify-between items-center text-[11px]">
+      <span id="tt-date-header">Bookings Overview</span>
+      <i class="fa-solid fa-users-viewfinder text-indigo-400"></i>
     </div>
-    <p><span class="text-slate-400">Room No:</span> <strong id="tt-room" class="text-white font-semibold"></strong></p>
-    <p><span class="text-slate-400">Guest:</span> <strong id="tt-name" class="text-white font-semibold"></strong></p>
-    <p><span class="text-slate-400">Status:</span> <strong id="tt-status" class="text-emerald-400 font-semibold"></strong></p>
+    <!-- Customer Details Container -->
+    <div id="tt-booking-list" class="space-y-2 max-h-60 overflow-y-auto">
+      <!-- Populated dynamically via JavaScript -->
+    </div>
   </div>
 
   <!-- Header & Navigation -->
@@ -100,7 +103,7 @@
     <span id="toast-message" class="font-medium">Changes saved successfully!</span>
   </div>
 
-  <!-- Main Content Area (Compact Layout) -->
+  <!-- Main Content Area -->
   <main class="max-w-7xl mx-auto px-4 py-5 flex-1 w-full no-print space-y-5">
 
     <!-- DASHBOARD TAB -->
@@ -121,28 +124,28 @@
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
           <div>
             <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Total Bookings</p>
-            <p id="dash-total-bookings" class="text-2xl font-black text-slate-800 mt-0.5">1</p>
+            <p id="dash-total-bookings" class="text-2xl font-black text-slate-800 mt-0.5">0</p>
           </div>
           <div class="p-3 bg-blue-50 text-blue-600 rounded-xl"><i class="fa-solid fa-bookmark text-lg"></i></div>
         </div>
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
           <div>
             <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Booking Amount</p>
-            <p id="dash-total-amount" class="text-2xl font-black text-slate-800 mt-0.5">₹3,600</p>
+            <p id="dash-total-amount" class="text-2xl font-black text-slate-800 mt-0.5">₹0</p>
           </div>
           <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl"><i class="fa-solid fa-receipt text-lg"></i></div>
         </div>
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
           <div>
             <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Advance Received</p>
-            <p id="dash-advanced" class="text-2xl font-black text-emerald-600 mt-0.5">₹2,000</p>
+            <p id="dash-advanced" class="text-2xl font-black text-emerald-600 mt-0.5">₹0</p>
           </div>
           <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><i class="fa-solid fa-wallet text-lg"></i></div>
         </div>
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
           <div>
             <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Total Due Amount</p>
-            <p id="dash-due" class="text-2xl font-black text-rose-600 mt-0.5">₹1,600</p>
+            <p id="dash-due" class="text-2xl font-black text-rose-600 mt-0.5">₹0</p>
           </div>
           <div class="p-3 bg-rose-50 text-rose-600 rounded-xl"><i class="fa-solid fa-hand-holding-dollar text-lg"></i></div>
         </div>
@@ -177,7 +180,7 @@
           </button>
         </div>
 
-        <!-- Bookings Table View (Compact Padding) -->
+        <!-- Bookings Table View -->
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
@@ -243,7 +246,7 @@
             <h2 class="text-base font-bold text-slate-800 flex items-center gap-1.5">
               <i class="fa-regular fa-calendar-check text-indigo-600"></i> Year Overview Calendar
             </h2>
-            <p class="text-[11px] text-slate-400 mt-0.5">Hover or click booked dates to view reservation details.</p>
+            <p class="text-[11px] text-slate-400 mt-0.5">Hover or click booked dates to view all customer details for that date.</p>
           </div>
           
           <!-- Calendar Year Dropdown -->
@@ -263,7 +266,7 @@
 
   </main>
 
-  <!-- ADD / EDIT BOOKING MODAL (Compact Form) -->
+  <!-- ADD / EDIT BOOKING MODAL -->
   <div id="booking-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto no-print">
     <div class="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-2xl w-full p-6 space-y-4 my-6">
       <div class="flex justify-between items-center pb-3 border-b border-slate-100">
@@ -459,7 +462,7 @@
         </div>
       </div>
 
-      <!-- Modal Actions (Hidden when printing) -->
+      <!-- Modal Actions -->
       <div class="flex justify-end space-x-2 pt-3 no-print border-t border-slate-100">
         <button type="button" onclick="closeInvoiceModal()" class="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition">Close</button>
         <button type="button" onclick="window.print()" class="px-5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow flex items-center gap-1.5 transition">
@@ -489,6 +492,23 @@
           totalAmount: 2400,
           advanced: 1000,
           totalDue: 1400
+        },
+        {
+          id: "bk_2",
+          name: "Aniruddha",
+          address: "Mumbai",
+          idNo: "9988 7766 5544",
+          contactNo: "9876543210",
+          roomNo: 4,
+          agentInfo: "A1 1234567890",
+          capacity: "4 Person",
+          checkIn: "2026-07-22T14:00",
+          checkOut: "2026-07-25T10:00",
+          noOfDays: 3,
+          perDayPrice: 1500,
+          totalAmount: 4500,
+          advanced: 2000,
+          totalDue: 2500
         }
       ],
       master: [
@@ -723,8 +743,6 @@
         return;
       }
 
-      // Precise Hour/Minute Turnaround Overlap Check:
-      // Overlap occurs ONLY if: (New Check-In < Existing Check-Out) AND (New Check-Out > Existing Check-In)
       const conflict = state.bookings.find(b => {
         if (id && b.id === id) return false;
         if (parseInt(b.roomNo) !== roomNo) return false;
@@ -736,9 +754,8 @@
       });
 
       if (conflict) {
-        const confInFormatted = conflict.checkIn.replace('T', ' ');
         const confOutFormatted = conflict.checkOut.replace('T', ' ');
-        alert(`❌ Booking Conflict Alert!\n\nRoom ${roomNo} is already occupied by ${conflict.name} until ${confOutFormatted}.\n\nA new guest cannot check in before the previous check-out time is over (${confOutFormatted}).\n\nPlease select a check-in time after ${confOutFormatted} or assign a different room.`);
+        alert(`❌ Booking Conflict Alert!\n\nRoom ${roomNo} is already occupied by ${conflict.name} until ${confOutFormatted}.\n\nPlease select a check-in time after ${confOutFormatted} or assign a different room.`);
         return;
       }
       
@@ -874,6 +891,7 @@
       populateRoomDropdown();
     }
 
+    // UPDATED CALENDAR RENDERER & MULTI-BOOKING TOOLTIP LOGIC
     function renderCalendar(year) {
       state.selectedYear = year;
       const calSelect = document.getElementById('cal-year-select');
@@ -904,8 +922,8 @@
         for (let d = 1; d <= totalDays; d++) {
           const currDate = new Date(year, monthIdx, d);
           
-          let matchedBooking = null;
-          let statusText = "Booked";
+          // Collect ALL bookings active on this specific calendar date
+          let dayBookings = [];
 
           for (let b of state.bookings) {
             if (!b.checkIn || !b.checkOut) continue;
@@ -916,20 +934,35 @@
             const checkOutEnd = new Date(cOut.getFullYear(), cOut.getMonth(), cOut.getDate());
 
             if (currDate >= checkInStart && currDate <= checkOutEnd) {
-              matchedBooking = b;
+              let statusText = "Reserved Stay";
               if (currDate.getTime() === checkInStart.getTime()) statusText = "Check-in Date";
               else if (currDate.getTime() === checkOutEnd.getTime()) statusText = "Check-out Date";
-              else statusText = "Reserved Stay";
-              break;
+
+              dayBookings.push({
+                booking: b,
+                statusText: statusText
+              });
             }
           }
 
-          if (matchedBooking) {
+          if (dayBookings.length > 0) {
+            // Encode booking details into data attribute for hovering/clicking
+            const bookingsJson = encodeURIComponent(JSON.stringify(dayBookings));
+            const formattedDateStr = `${month} ${d}, ${year}`;
+            
+            // Highlight styling varies if 2 or more bookings exist on the same date
+            const badgeBg = dayBookings.length > 1 
+              ? 'bg-amber-600 text-white font-black hover:bg-amber-700' 
+              : 'bg-indigo-600 text-white font-bold hover:bg-indigo-700';
+
             daysGrid += `<div 
-              onmousemove="showTooltip(event, '${matchedBooking.roomNo}', '${matchedBooking.name}', '${statusText}')" 
-              onclick="showTooltip(event, '${matchedBooking.roomNo}', '${matchedBooking.name}', '${statusText}')" 
+              onmousemove="showTooltip(event, '${formattedDateStr}', '${bookingsJson}')" 
+              onclick="showTooltip(event, '${formattedDateStr}', '${bookingsJson}')" 
               onmouseleave="hideTooltip()"
-              class="py-1 bg-indigo-600 text-white font-bold rounded cursor-pointer shadow-sm hover:scale-105 transition-transform">${d}</div>`;
+              class="relative py-1 ${badgeBg} rounded cursor-pointer shadow-sm hover:scale-105 transition-transform flex flex-col items-center justify-center">
+                <span>${d}</span>
+                ${dayBookings.length > 1 ? `<span class="text-[9px] leading-none bg-amber-900/80 text-amber-200 px-1 py-0.5 rounded-full mt-0.5 font-bold">${dayBookings.length} Guests</span>` : ''}
+              </div>`;
           } else {
             daysGrid += `<div class="py-1 hover:bg-slate-100 text-slate-700 cursor-pointer rounded font-medium">${d}</div>`;
           }
@@ -941,15 +974,39 @@
       });
     }
 
-    function showTooltip(e, roomNo, guestName, status) {
+    // SHOW FLOATING TOOLTIP FOR ALL CUSTOMERS ON THAT DATE
+    function showTooltip(e, dateStr, encodedBookings) {
       e.stopPropagation();
       const tt = document.getElementById('cal-tooltip');
-      document.getElementById('tt-room').innerText = `Room ${roomNo}`;
-      document.getElementById('tt-name').innerText = guestName || 'Guest';
-      document.getElementById('tt-status').innerText = status;
+      const container = document.getElementById('tt-booking-list');
+      const dateHeader = document.getElementById('tt-date-header');
+      
+      const dayBookings = JSON.parse(decodeURIComponent(encodedBookings));
 
-      tt.style.left = `${e.pageX + 10}px`;
-      tt.style.top = `${e.pageY + 10}px`;
+      dateHeader.innerText = `${dateStr} (${dayBookings.length} ${dayBookings.length > 1 ? 'Bookings' : 'Booking'})`;
+      container.innerHTML = '';
+
+      dayBookings.forEach((item, index) => {
+        const b = item.booking;
+        const card = document.createElement('div');
+        card.className = "bg-slate-800/90 border border-slate-700 p-2 rounded-lg space-y-1 text-xs";
+        
+        card.innerHTML = `
+          <div class="flex justify-between items-center text-indigo-300 font-bold border-b border-slate-700/60 pb-1">
+            <span><i class="fa-solid fa-user text-[10px] mr-1"></i> ${b.name || 'Guest'}</span>
+            <span class="bg-indigo-900/80 text-indigo-200 text-[10px] px-1.5 py-0.5 rounded font-mono">Room ${b.roomNo}</span>
+          </div>
+          <p><span class="text-slate-400">Contact:</span> <strong class="text-slate-200 font-medium">${b.contactNo || 'N/A'}</strong></p>
+          <p><span class="text-slate-400">Status:</span> <strong class="text-emerald-400 font-medium">${item.statusText}</strong></p>
+          <p><span class="text-slate-400">Check-In:</span> <span class="text-slate-300">${b.checkIn ? b.checkIn.replace('T', ' ') : '-'}</span></p>
+        `;
+
+        container.appendChild(card);
+      });
+
+      // Position Tooltip dynamically near mouse cursor
+      tt.style.left = `${e.pageX + 12}px`;
+      tt.style.top = `${e.pageY + 12}px`;
       tt.classList.remove('hidden');
     }
 
