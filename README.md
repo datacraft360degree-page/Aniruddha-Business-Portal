@@ -380,13 +380,24 @@
               <input type="text" id="cust-capacity" readonly class="w-full bg-slate-200/70 border border-slate-300 text-slate-600 font-medium rounded-lg px-2.5 py-1.5 cursor-not-allowed">
             </div>
 
-            <div class="sm:col-span-[1.5]">
-              <label class="block font-semibold text-slate-600 mb-1">Check In Date & Time</label>
-              <input type="datetime-local" id="cust-checkin" onchange="calculateModalBilling()" required class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-            </div>
-            <div class="sm:col-span-[1.5]">
-              <label class="block font-semibold text-slate-600 mb-1">Check Out Date & Time</label>
-              <input type="datetime-local" id="cust-checkout" onchange="calculateModalBilling()" required class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+            <!-- SIMPLIFIED CHECK-IN INPUTS -->
+            <div class="sm:col-span-3 grid grid-cols-2 gap-3 pt-1 border-t border-slate-200/60">
+              <div>
+                <label class="block font-semibold text-slate-600 mb-1"><i class="fa-solid fa-plane-arrival text-emerald-600 mr-1"></i> Check In</label>
+                <div class="flex gap-1.5">
+                  <input type="date" id="cust-checkin-date" onchange="calculateModalBilling()" required class="w-2/3 bg-white border border-slate-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium">
+                  <input type="time" id="cust-checkin-time" value="12:00" onchange="calculateModalBilling()" required class="w-1/3 bg-white border border-slate-300 rounded-lg px-1.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium">
+                </div>
+              </div>
+
+              <!-- SIMPLIFIED CHECK-OUT INPUTS -->
+              <div>
+                <label class="block font-semibold text-slate-600 mb-1"><i class="fa-solid fa-plane-departure text-rose-500 mr-1"></i> Check Out</label>
+                <div class="flex gap-1.5">
+                  <input type="date" id="cust-checkout-date" onchange="calculateModalBilling()" required class="w-2/3 bg-white border border-slate-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium">
+                  <input type="time" id="cust-checkout-time" value="11:00" onchange="calculateModalBilling()" required class="w-1/3 bg-white border border-slate-300 rounded-lg px-1.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium">
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -721,13 +732,16 @@
       }
     }
 
-    function populateRoomDropdown() {
+    function populateRoomDropdown(selectedRoomNo = 1) {
       const roomSelect = document.getElementById('cust-room');
       roomSelect.innerHTML = '';
       state.master.forEach(m => {
         const opt = document.createElement('option');
         opt.value = m.roomNo;
         opt.text = `Room ${m.roomNo}`;
+        if (parseInt(m.roomNo) === parseInt(selectedRoomNo)) {
+          opt.selected = true;
+        }
         roomSelect.appendChild(opt);
       });
       autoCaptureRoomDetails();
@@ -830,7 +844,6 @@
     }
 
     function openBookingModal(bookingId = null) {
-      populateRoomDropdown();
       const form = document.getElementById('booking-form');
       form.reset();
 
@@ -843,10 +856,21 @@
           document.getElementById('cust-address').value = b.address;
           document.getElementById('cust-id').value = b.idNo;
           document.getElementById('cust-contact').value = b.contactNo;
-          document.getElementById('cust-room').value = b.roomNo;
-          autoCaptureRoomDetails();
-          document.getElementById('cust-checkin').value = b.checkIn;
-          document.getElementById('cust-checkout').value = b.checkOut;
+          
+          populateRoomDropdown(b.roomNo);
+
+          // Split stored string ISO standard into date and time parts
+          if (b.checkIn) {
+            const [inDate, inTime] = b.checkIn.split('T');
+            document.getElementById('cust-checkin-date').value = inDate || '';
+            document.getElementById('cust-checkin-time').value = inTime || '12:00';
+          }
+          if (b.checkOut) {
+            const [outDate, outTime] = b.checkOut.split('T');
+            document.getElementById('cust-checkout-date').value = outDate || '';
+            document.getElementById('cust-checkout-time').value = outTime || '11:00';
+          }
+
           document.getElementById('cust-price').value = b.perDayPrice;
           document.getElementById('cust-advance').value = b.advanced;
           calculateModalBilling();
@@ -854,6 +878,12 @@
       } else {
         document.getElementById('modal-title').innerText = 'Add New Booking';
         document.getElementById('modal-booking-id').value = '';
+        
+        // Defaults to Room 1
+        populateRoomDropdown(1);
+
+        document.getElementById('cust-checkin-time').value = "12:00";
+        document.getElementById('cust-checkout-time').value = "11:00";
         document.getElementById('cust-price').value = 1200;
         document.getElementById('cust-advance').value = 0;
         calculateModalBilling();
@@ -867,13 +897,15 @@
     }
 
     function calculateModalBilling() {
-      const checkInVal = document.getElementById('cust-checkin').value;
-      const checkOutVal = document.getElementById('cust-checkout').value;
+      const inDate = document.getElementById('cust-checkin-date').value;
+      const inTime = document.getElementById('cust-checkin-time').value || '00:00';
+      const outDate = document.getElementById('cust-checkout-date').value;
+      const outTime = document.getElementById('cust-checkout-time').value || '00:00';
       
       let days = 0;
-      if (checkInVal && checkOutVal) {
-        const d1 = new Date(checkInVal);
-        const d2 = new Date(checkOutVal);
+      if (inDate && outDate) {
+        const d1 = new Date(`${inDate}T${inTime}`);
+        const d2 = new Date(`${outDate}T${outTime}`);
         const diff = d2 - d1;
         days = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
       }
@@ -892,8 +924,14 @@
       e.preventDefault();
       const id = document.getElementById('modal-booking-id').value;
       const roomNo = parseInt(document.getElementById('cust-room').value);
-      const checkIn = document.getElementById('cust-checkin').value;
-      const checkOut = document.getElementById('cust-checkout').value;
+      
+      const inDate = document.getElementById('cust-checkin-date').value;
+      const inTime = document.getElementById('cust-checkin-time').value || '00:00';
+      const outDate = document.getElementById('cust-checkout-date').value;
+      const outTime = document.getElementById('cust-checkout-time').value || '00:00';
+
+      const checkIn = `${inDate}T${inTime}`;
+      const checkOut = `${outDate}T${outTime}`;
 
       const newIn = new Date(checkIn).getTime();
       const newOut = new Date(checkOut).getTime();
