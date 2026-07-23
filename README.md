@@ -246,8 +246,10 @@
           </div>
           
           <div class="flex items-center space-x-2 w-full md:w-auto">
+            <!-- Updated Input with Datalist for typing hints & dropdown selection -->
             <div class="flex items-center bg-slate-50 border border-slate-300 rounded p-0.5 space-x-1">
-              <select id="booking-search-select" class="bg-transparent text-[11px] px-1.5 py-0.5 focus:outline-none w-36 sm:w-44 text-slate-700 font-semibold cursor-pointer"></select>
+              <input list="booking-search-list" id="booking-search-input" oninput="searchBookingById()" placeholder="Type or select Booking ID..." class="bg-transparent text-[11px] px-1.5 py-0.5 focus:outline-none w-36 sm:w-48 text-slate-700 font-semibold">
+              <datalist id="booking-search-list"></datalist>
               <button onclick="searchBookingById()" class="bg-slate-700 hover:bg-slate-800 text-white px-2 py-0.5 rounded text-[10px] font-semibold flex items-center gap-1 transition">
                 <i class="fa-solid fa-magnifying-glass"></i> Search
               </button>
@@ -622,7 +624,7 @@
         isLoggedIn = true;
         sessionStorage.setItem('app_authenticated', 'true');
         document.getElementById('login-overlay').classList.add('hidden');
-        document.getElementById('login-error').classList.add('hidden');
+        document.getElementById('login-error').classList.remove('hidden');
         startInactivityMonitoring();
       } else {
         document.getElementById('login-error').classList.remove('hidden');
@@ -784,31 +786,27 @@
     };
 
     function populateBookingSearchDropdown() {
-      const select = document.getElementById('booking-search-select');
-      if (!select) return;
+      const datalist = document.getElementById('booking-search-list');
+      if (!datalist) return;
 
-      const selectedVal = select.value;
-      select.innerHTML = '<option value="">-- All Booking IDs --</option>';
+      datalist.innerHTML = '';
       
       state.bookings.forEach(b => {
         if (b.bookingCode) {
           const opt = document.createElement('option');
           opt.value = b.bookingCode;
-          opt.text = b.bookingCode;
-          select.appendChild(opt);
+          datalist.appendChild(opt);
         }
       });
-
-      select.value = selectedVal;
     }
 
     function searchBookingById() {
-      const searchTerm = document.getElementById('booking-search-select').value.trim().toLowerCase();
+      const searchTerm = document.getElementById('booking-search-input').value.trim().toLowerCase();
       renderBookingsTable(searchTerm);
     }
 
     function clearSearchBooking() {
-      document.getElementById('booking-search-select').value = '';
+      document.getElementById('booking-search-input').value = '';
       renderBookingsTable();
     }
 
