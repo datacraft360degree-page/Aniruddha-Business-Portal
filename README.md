@@ -104,6 +104,44 @@
     </div>
   </div>
 
+  <!-- MASTER DATA ACCESS PASSWORD MODAL -->
+  <div id="master-auth-modal" class="hidden fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 no-print">
+    <div class="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-xs w-full p-5 space-y-3 text-left">
+      <div class="text-center space-y-1">
+        <div class="bg-rose-100 text-rose-600 w-10 h-10 rounded-full flex items-center justify-center mx-auto text-lg shadow-inner">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <h3 class="text-xs font-bold text-slate-800">Master Data Protected</h3>
+        <p class="text-[10px] text-slate-500">Enter master password to access configuration and deletion tools.</p>
+      </div>
+
+      <form onsubmit="handleMasterAuth(event)" class="space-y-2.5">
+        <div>
+          <label class="block text-[10px] font-semibold text-slate-700 mb-1">Master Password</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center text-slate-400 text-xs">
+              <i class="fa-solid fa-key"></i>
+            </span>
+            <input type="password" id="master-password-input" required placeholder="Enter Master Password" class="w-full bg-slate-50 border border-slate-300 rounded-md pl-8 pr-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-rose-500 text-xs">
+          </div>
+        </div>
+
+        <div id="master-auth-error" class="hidden bg-rose-50 border border-rose-200 text-rose-600 text-[10px] p-1.5 rounded text-center font-medium">
+          Incorrect Master Password!
+        </div>
+
+        <div class="flex space-x-2 pt-1">
+          <button type="button" onclick="closeMasterAuthModal()" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-1.5 rounded text-[11px] transition">
+            Cancel
+          </button>
+          <button type="submit" class="w-1/2 bg-rose-600 hover:bg-rose-700 text-white font-bold py-1.5 rounded shadow transition text-[11px] flex items-center justify-center gap-1">
+            <i class="fa-solid fa-unlock text-[10px]"></i> Unlock
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- SESSION AUTO LOGOUT WARNING MODAL -->
   <div id="logout-warning-modal" class="hidden fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white rounded-lg shadow-xl border border-slate-200 max-w-xs w-full p-4 space-y-3 text-center">
@@ -151,7 +189,9 @@
       <nav class="flex space-x-1 bg-indigo-800/80 p-0.5 rounded-md text-[11px] font-medium border border-indigo-600/50">
         <button onclick="switchTab('dashboard')" id="btn-dashboard" class="tab-btn px-2.5 py-1 rounded transition-all active-tab">Dashboard</button>
         <button onclick="switchTab('booking')" id="btn-booking" class="tab-btn px-2.5 py-1 rounded transition-all text-indigo-100 hover:bg-indigo-600/50">Booking Details</button>
-        <button onclick="switchTab('master')" id="btn-master" class="tab-btn px-2.5 py-1 rounded transition-all text-indigo-100 hover:bg-indigo-600/50">Master Data</button>
+        <button onclick="switchTab('master')" id="btn-master" class="tab-btn px-2.5 py-1 rounded transition-all text-indigo-100 hover:bg-indigo-600/50 flex items-center gap-1">
+          <i class="fa-solid fa-lock text-[9px] text-amber-300"></i> Master Data
+        </button>
         <button onclick="switchTab('calendar')" id="btn-calendar" class="tab-btn px-2.5 py-1 rounded transition-all text-indigo-100 hover:bg-indigo-600/50">Calendar</button>
       </nav>
 
@@ -246,7 +286,7 @@
           </div>
           
           <div class="flex items-center space-x-2 w-full md:w-auto">
-            <!-- ENHANCED: Advanced Select Dropdown for Room Search -->
+            <!-- Advanced Select Dropdown for Room Search -->
             <div class="flex items-center bg-slate-50 border border-slate-300 rounded p-1 space-x-1.5">
               <label for="booking-search-select" class="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-1 pl-1">
                 <i class="fa-solid fa-filter text-indigo-600"></i> Search by:
@@ -291,6 +331,7 @@
 
     <!-- MASTER DATA TAB -->
     <section id="tab-master" class="tab-content hidden space-y-3">
+      <!-- Master Agent & Room Directory -->
       <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-3">
         <div class="flex justify-between items-center mb-3 pb-2 border-b border-slate-100">
           <div>
@@ -315,6 +356,49 @@
               </tr>
             </thead>
             <tbody id="master-tbody" class="divide-y divide-slate-100 text-[11px]"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SEPARATE TABLE: BOOKING ID SEARCH & DELETION CONTROL -->
+      <div class="bg-white rounded-lg shadow-sm border border-rose-200/80 p-3 space-y-2.5">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-100 pb-2">
+          <div>
+            <h2 class="text-xs font-bold text-slate-800 flex items-center gap-1">
+              <i class="fa-solid fa-trash-can text-rose-600"></i>Booking Deletion Manager
+            </h2>
+            <p class="text-[10px] text-slate-500">Search for a booking by its Booking ID to safely remove it from the system.</p>
+          </div>
+          
+          <div class="flex items-center space-x-2 bg-slate-50 border border-slate-300 rounded p-1">
+            <label for="master-booking-search-select" class="text-[10px] font-bold text-slate-600 uppercase flex items-center gap-1 pl-1">
+              <i class="fa-solid fa-magnifying-glass text-indigo-600"></i> Select Booking ID:
+            </label>
+            <select id="master-booking-search-select" onchange="searchMasterBookingById()" class="bg-white text-[11px] border border-slate-300 rounded px-2 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono font-bold text-indigo-700 cursor-pointer">
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-rose-50/60 border-b border-rose-100 text-[10px] font-bold text-rose-800 uppercase tracking-wider">
+                <th class="py-2 px-2">Booking ID</th>
+                <th class="py-2 px-2">Guest Name</th>
+                <th class="py-2 px-2">Contact No</th>
+                <th class="py-2 px-2">Room No</th>
+                <th class="py-2 px-2">Stay Window</th>
+                <th class="py-2 px-2">Total Amount</th>
+                <th class="py-2 px-2">Due Amount</th>
+                <th class="py-2 px-2 text-center">Delete Linked Booking</th>
+              </tr>
+            </thead>
+            <tbody id="master-delete-tbody" class="divide-y divide-slate-100 text-[11px]">
+              <tr>
+                <td colspan="8" class="text-center py-4 text-slate-400">Please select a Booking ID from the dropdown above to view and delete details.</td>
+              </tr>
+            </tbody>
           </table>
         </div>
       </div>
@@ -499,7 +583,7 @@
     </div>
   </div>
 
-  <!-- PRINTABLE INVOICE MODAL -->
+  <!-- PRINTABLE INVOICE / BOOKING RECEIPT MODAL -->
   <div id="invoice-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
     <div class="bg-white rounded-lg shadow-xl border border-slate-200 max-w-xl w-full p-6 space-y-4 relative" id="printable-invoice">
       <div class="flex justify-between items-start border-b border-slate-200 pb-3">
@@ -509,8 +593,8 @@
           <p class="text-[10px] text-slate-500">Phone: +91 9804396541 | Email: info@businessportal.com</p>
         </div>
         <div class="text-right">
-          <span class="inline-block bg-indigo-100 text-indigo-800 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase mb-0.5">e-Invoice</span>
-          <p class="text-[10px] text-slate-500">Invoice ID: <strong id="inv-id" class="text-slate-800 font-mono">INV-2026-0000001</strong></p>
+          <span id="inv-badge" class="inline-block bg-indigo-100 text-indigo-800 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase mb-0.5">e-Invoice</span>
+          <p id="inv-id-container" class="text-[10px] text-slate-500">Invoice ID: <strong id="inv-id" class="text-slate-800 font-mono">INV-2026-0000001</strong></p>
           <p class="text-[10px] text-slate-500">Booking ID: <strong id="inv-booking-id" class="text-indigo-700 font-mono">BKG-2026-0000001</strong></p>
           <p class="text-[10px] text-slate-500">Issued On: <strong id="inv-date" class="text-slate-800"></strong></p>
         </div>
@@ -576,7 +660,7 @@
 
       <div class="flex justify-end space-x-2 pt-2 no-print border-t border-slate-100">
         <button type="button" onclick="closeInvoiceModal()" class="px-3 py-1 bg-slate-100 text-slate-700 rounded font-semibold transition">Close</button>
-        <button type="button" onclick="window.print()" class="px-4 py-1 bg-indigo-600 text-white rounded font-semibold shadow flex items-center gap-1 transition">
+        <button type="button" onclick="window.print()" id="inv-print-btn" class="px-4 py-1 bg-indigo-600 text-white rounded font-semibold shadow flex items-center gap-1 transition">
           <i class="fa-solid fa-print"></i> Print Invoice
         </button>
       </div>
@@ -595,6 +679,7 @@
 
     // --- LOGIN AND INACTIVITY LOGOUT MANAGEMENT ---
     let isLoggedIn = false;
+    let isMasterUnlocked = false; // Master Data access flag
     let inactivityTimer = null;
     let warningTimer = null;
     let countdownInterval = null;
@@ -625,7 +710,7 @@
         isLoggedIn = true;
         sessionStorage.setItem('app_authenticated', 'true');
         document.getElementById('login-overlay').classList.add('hidden');
-        document.getElementById('login-error').classList.remove('hidden');
+        document.getElementById('login-error').classList.add('hidden');
         startInactivityMonitoring();
       } else {
         document.getElementById('login-error').classList.remove('hidden');
@@ -634,11 +719,36 @@
 
     function logoutUser() {
       isLoggedIn = false;
+      isMasterUnlocked = false;
       sessionStorage.removeItem('app_authenticated');
       stopInactivityMonitoring();
       document.getElementById('logout-warning-modal').classList.add('hidden');
       document.getElementById('login-password').value = '';
       document.getElementById('login-overlay').classList.remove('hidden');
+    }
+
+    // --- MASTER DATA EXTRA PASSWORD PROTECTION ---
+    function openMasterAuthModal() {
+      document.getElementById('master-password-input').value = '';
+      document.getElementById('master-auth-error').classList.add('hidden');
+      document.getElementById('master-auth-modal').classList.remove('hidden');
+    }
+
+    function closeMasterAuthModal() {
+      document.getElementById('master-auth-modal').classList.add('hidden');
+    }
+
+    function handleMasterAuth(e) {
+      e.preventDefault();
+      const enteredPass = document.getElementById('master-password-input').value.trim();
+
+      if (enteredPass === DEFAULT_PASSWORD) {
+        isMasterUnlocked = true;
+        closeMasterAuthModal();
+        performSwitchTab('master');
+      } else {
+        document.getElementById('master-auth-error').classList.remove('hidden');
+      }
     }
 
     function startInactivityMonitoring() {
@@ -786,7 +896,7 @@
       selectedYear: 2026
     };
 
-    // ENHANCED: Populates the Room Filter Dropdown cleanly with all registered rooms
+    // Populates the Room Filter Dropdown cleanly with all registered rooms
     function populateBookingSearchDropdown() {
       const select = document.getElementById('booking-search-select');
       if (!select) return;
@@ -810,7 +920,69 @@
       }
     }
 
-    // ENHANCED: Filters table dynamically based on selected Room Dropdown option
+    // Populates the Master Data Booking ID Search Dropdown
+    function populateMasterBookingSearchDropdown() {
+      const select = document.getElementById('master-booking-search-select');
+      if (!select) return;
+
+      const currentValue = select.value;
+      select.innerHTML = '<option value="">-- Select Booking ID --</option>';
+
+      state.bookings.forEach(b => {
+        const opt = document.createElement('option');
+        opt.value = b.bookingCode;
+        opt.text = b.bookingCode;
+        select.appendChild(opt);
+      });
+
+      if (currentValue && state.bookings.some(b => b.bookingCode === currentValue)) {
+        select.value = currentValue;
+      } else {
+        select.value = "";
+      }
+
+      searchMasterBookingById();
+    }
+
+    // Filters and renders the Master Data Deletion table based on chosen Booking ID
+    function searchMasterBookingById() {
+      const selectedCode = document.getElementById('master-booking-search-select').value;
+      const tbody = document.getElementById('master-delete-tbody');
+      if (!tbody) return;
+
+      tbody.innerHTML = '';
+
+      if (!selectedCode) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-slate-400">Please select a Booking ID from the dropdown above to view and delete details.</td></tr>`;
+        return;
+      }
+
+      const b = state.bookings.find(item => item.bookingCode === selectedCode);
+      if (!b) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-rose-500 font-semibold">Booking ID not found or already deleted.</td></tr>`;
+        return;
+      }
+
+      const tr = document.createElement('tr');
+      tr.className = "bg-white hover:bg-slate-50 transition border-b border-slate-100";
+      tr.innerHTML = `
+        <td class="py-2 px-2 font-mono font-bold text-indigo-700">${b.bookingCode}</td>
+        <td class="py-2 px-2 font-bold text-slate-800">${b.name}</td>
+        <td class="py-2 px-2 font-medium text-slate-600">${b.contactNo || '-'}</td>
+        <td class="py-2 px-2"><span class="bg-indigo-50 text-indigo-700 font-bold px-1.5 py-0.2 rounded text-[10px]">Room ${b.roomNo}</span></td>
+        <td class="py-2 px-2 text-[10px] text-slate-600">${formatDateTime(b.checkIn)} to ${formatDateTime(b.checkOut)}</td>
+        <td class="py-2 px-2 font-semibold text-slate-800">₹${b.totalAmount}</td>
+        <td class="py-2 px-2 font-bold text-rose-600">₹${b.totalDue}</td>
+        <td class="py-2 px-2 text-center">
+          <button onclick="deleteBooking('${b.id}')" class="bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1 rounded text-[10px] font-semibold flex items-center gap-1 mx-auto transition shadow-xs">
+            <i class="fa-solid fa-trash-can text-[9px]"></i> Delete Linked Booking
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    // Filters table dynamically based on selected Room Dropdown option
     function searchBookingByRoomNo() {
       const roomVal = document.getElementById('booking-search-select').value;
       renderBookingsTable(roomVal);
@@ -881,6 +1053,7 @@
       populateRoomDropdown();
       populateCalendarYearDropdown();
       populateBookingSearchDropdown();
+      populateMasterBookingSearchDropdown();
       renderBookingsTable();
       renderMasterTable();
       renderCalendar(state.selectedYear);
@@ -1030,6 +1203,15 @@
     }
 
     function switchTab(tabId) {
+      // Check password protection when attempting to access 'master' tab
+      if (tabId === 'master' && !isMasterUnlocked) {
+        openMasterAuthModal();
+        return;
+      }
+      performSwitchTab(tabId);
+    }
+
+    function performSwitchTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
       document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('active-tab', 'bg-indigo-600', 'text-white');
@@ -1078,14 +1260,35 @@
       document.getElementById('dash-due').innerText = `₹${totalDue.toLocaleString('en-IN')}`;
     }
 
-    function printInvoice(bookingId) {
+    function printInvoice(bookingId, isReceipt = false) {
       const bIndex = state.bookings.findIndex(item => item.id === bookingId);
       if (bIndex === -1) return;
 
       const b = state.bookings[bIndex];
 
+      // Block print ONLY when generating Invoice (isReceipt === false) and there is a balance due
+      if (!isReceipt && b.totalDue > 0) {
+        alert("Pay due amount");
+        return;
+      }
+
       const today = formatDate(new Date());
-      document.getElementById('inv-id').innerText = b.invoiceNo;
+
+      const invBadge = document.getElementById('inv-badge');
+      const invIdContainer = document.getElementById('inv-id-container');
+      const invPrintBtn = document.getElementById('inv-print-btn');
+
+      if (isReceipt) {
+        invBadge.classList.add('hidden');
+        invIdContainer.classList.add('hidden');
+        if (invPrintBtn) invPrintBtn.innerHTML = `<i class="fa-solid fa-print"></i> Print Receipt`;
+      } else {
+        invBadge.classList.remove('hidden');
+        invIdContainer.classList.remove('hidden');
+        document.getElementById('inv-id').innerText = b.invoiceNo;
+        if (invPrintBtn) invPrintBtn.innerHTML = `<i class="fa-solid fa-print"></i> Print Invoice`;
+      }
+
       document.getElementById('inv-booking-id').innerText = b.bookingCode;
       document.getElementById('inv-date').innerText = today;
 
@@ -1349,7 +1552,6 @@
     function handleSaveBooking(e) {
       e.preventDefault();
 
-      // Additional strict check for mandatory guest information fields
       const guestName = document.getElementById('cust-name').value.trim();
       const guestAddress = document.getElementById('cust-address').value.trim();
       const guestId = document.getElementById('cust-id').value.trim();
@@ -1464,6 +1666,7 @@
 
       closeBookingModal();
       populateBookingSearchDropdown();
+      populateMasterBookingSearchDropdown();
       renderBookingsTable();
       updateDashboardCards();
       renderCalendar(state.selectedYear);
@@ -1475,6 +1678,7 @@
       if (confirm('Are you sure you want to delete this booking entry?')) {
         state.bookings = state.bookings.filter(b => b.id !== id);
         populateBookingSearchDropdown();
+        populateMasterBookingSearchDropdown();
         renderBookingsTable();
         updateDashboardCards();
         renderCalendar(state.selectedYear);
@@ -1483,7 +1687,6 @@
       }
     }
 
-    // ENHANCED: Table renderer filtered specifically by Room No selection
     function renderBookingsTable(roomFilter = "") {
       const tbody = document.getElementById('bookings-tbody');
       tbody.innerHTML = '';
@@ -1510,6 +1713,20 @@
             foodSummaryHtml = `<div class="text-[9px] text-amber-700 font-semibold"><i class="fa-solid fa-utensils text-[8px] mr-0.5"></i>Food (${b.foodOrders.length}): +₹${totalFoodCharge}</div>`;
           }
         }
+
+        const isDue = b.totalDue > 0;
+        
+        // Only Inv button logic blocks when totalDue > 0
+        const printOnClickInv = isDue ? "alert('Pay due amount')" : `printInvoice('${b.id}', false)`;
+        
+        // Rec button is ALWAYS enabled regardless of due amount
+        const printOnClickRec = `printInvoice('${b.id}', true)`;
+
+        const invBtnClass = isDue 
+          ? "bg-slate-100 text-slate-400 cursor-not-allowed opacity-60 px-1.5 py-0.5 rounded text-[10px] font-semibold border border-slate-200" 
+          : "bg-slate-100 hover:bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded text-[10px] font-semibold transition border border-slate-200";
+
+        const recBtnClass = "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded text-[10px] font-semibold transition border border-emerald-200";
 
         const tr = document.createElement('tr');
         tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
@@ -1543,12 +1760,14 @@
             </span>
           </td>
           <td class="py-2 px-2 text-center">
-            <div class="flex items-center justify-center space-x-1.5">
-              <button onclick="printInvoice('${b.id}')" title="Print Invoice" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded text-[10px] font-semibold transition border border-slate-200">
-                <i class="fa-solid fa-print text-indigo-600"></i> Inv
+            <div class="flex items-center justify-center space-x-1">
+              <button onclick="${printOnClickInv}" title="${isDue ? 'Pay due amount to enable print' : 'Print Invoice'}" class="${invBtnClass}">
+                <i class="fa-solid fa-file-invoice ${isDue ? 'text-slate-400' : 'text-indigo-600'}"></i> Inv
+              </button>
+              <button onclick="${printOnClickRec}" title="Print Booking Receipt" class="${recBtnClass}">
+                <i class="fa-solid fa-receipt text-emerald-600"></i> Rec
               </button>
               <button onclick="openBookingModal('${b.id}')" title="Edit Booking" class="text-indigo-600 hover:text-indigo-800 p-0.5"><i class="fa-solid fa-pen-to-square"></i></button>
-              <button onclick="deleteBooking('${b.id}')" title="Delete Booking" class="text-rose-500 hover:text-rose-700 p-0.5"><i class="fa-solid fa-trash-can"></i></button>
             </div>
           </td>
         `;
