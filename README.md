@@ -599,8 +599,8 @@
     const INACTIVITY_LIMIT_MS = 5 * 60 * 1000; // 5 Minutes
     const WARNING_BUFFER_MS = 1 * 60 * 1000;   // Show warning at 4 minutes (1 min remaining)
 
-    const DEFAULT_USER_ID = "admin";
-    const DEFAULT_PASSWORD = "admin123";
+    const DEFAULT_USER_ID = "Admin";
+    const DEFAULT_PASSWORD = "Aadmin123";
 
     function checkAuthStatus() {
       const sessionAuth = sessionStorage.getItem('app_authenticated');
