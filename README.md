@@ -519,11 +519,9 @@
   </div>
 
   <script>
-    // Tab Close / Reload Prompt[cite: 1]
+    // Tab Close / Reload Prompt
     window.addEventListener('beforeunload', function (e) {
-      // Prevents tab closure without confirmation[cite: 1]
       e.preventDefault();
-      // Required for browser compatibility to display the prompt dialog[cite: 1]
       e.returnValue = 'Please click "Save Changes" button to save the history.'; 
       return e.returnValue;
     });
@@ -712,11 +710,8 @@
       checkUpcomingCheckoutsWithDue();
       setInterval(checkUpcomingCheckoutsWithDue, 60000);
 
-      // Auto-save data every 15 minutes (900,000 milliseconds)
-      setInterval(saveChanges, 900000);
-
-      // Notify the user immediately on opening/loading the web page
-      showNotificationToast("Changes Auto save successfully!");
+      // Auto-save data every 5 minutes (300,000 milliseconds)
+      setInterval(saveChanges, 300000);
     });
 
     function checkUpcomingCheckoutsWithDue() {
