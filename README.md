@@ -10,23 +10,23 @@
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* Custom Scrollbar for Clean UI */
+    /* Compact Scrollbar */
     ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+      width: 5px;
+      height: 5px;
     }
     ::-webkit-scrollbar-track {
       background: #f1f5f9;
     }
     ::-webkit-scrollbar-thumb {
       background: #cbd5e1;
-      border-radius: 4px;
+      border-radius: 3px;
     }
     ::-webkit-scrollbar-thumb:hover {
       background: #94a3b8;
     }
 
-    /* Print-specific Styles to hide UI elements during printing */
+    /* Print-specific Styles */
     @media print {
       body * {
         visibility: hidden;
@@ -40,14 +40,14 @@
         top: 0;
         width: 100%;
         margin: 0;
-        padding: 20px;
+        padding: 15px;
       }
       .no-print {
         display: none !important;
       }
     }
 
-    /* Excel-style Comment Box Arrow Pin */
+    /* Excel Comment Box Arrow */
     .excel-comment-box::before {
       content: '';
       position: absolute;
@@ -59,446 +59,427 @@
     }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col relative antialiased" onclick="closeCommentBox()">
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col relative antialiased text-xs" onclick="closeCommentBox()">
 
-  <!-- Excel-Style Comment Box Popout for Calendar Dates -->
-  <div id="excel-comment-box" onclick="event.stopPropagation()" class="excel-comment-box hidden absolute z-50 bg-slate-900 text-white text-xs rounded-xl p-3 shadow-2xl border-2 border-amber-400 space-y-2.5 w-72 transition-all duration-150">
-    <!-- Comment Box Header -->
-    <div class="font-bold text-amber-300 border-b border-slate-700 pb-1.5 flex justify-between items-center text-[11px]">
-      <span class="flex items-center gap-1.5">
+  <!-- Excel Comment Box Popout -->
+  <div id="excel-comment-box" onclick="event.stopPropagation()" class="excel-comment-box hidden absolute z-50 bg-slate-900 text-white text-[11px] rounded-lg p-2.5 shadow-2xl border border-amber-400 space-y-2 w-64 transition-all duration-150">
+    <div class="font-bold text-amber-300 border-b border-slate-700 pb-1 flex justify-between items-center text-[10px]">
+      <span class="flex items-center gap-1">
         <i class="fa-solid fa-comment-dots text-amber-400"></i>
         <span id="comm-date-header">Date Overview</span>
       </span>
-      <button onclick="closeCommentBox()" class="text-slate-400 hover:text-white px-1.5 py-0.5 rounded text-xs transition">
+      <button onclick="closeCommentBox()" class="text-slate-400 hover:text-white px-1 py-0.5 rounded text-[10px]">
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
-    <!-- Customer Details List Container -->
-    <div id="comm-booking-list" class="space-y-2 max-h-64 overflow-y-auto pr-1">
-      <!-- Populated dynamically via JavaScript -->
-    </div>
+    <div id="comm-booking-list" class="space-y-1.5 max-h-56 overflow-y-auto pr-0.5"></div>
   </div>
 
-  <!-- Header & Navigation -->
-  <header class="bg-indigo-700 text-white shadow-md sticky top-0 z-40 no-print">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-3">
-      <div class="flex items-center space-x-3">
-        <div class="bg-indigo-600 p-2 rounded-lg border border-indigo-500 shadow-inner">
-          <i class="fa-solid fa-hotel text-xl text-indigo-100"></i>
+  <!-- Compact Header Navigation -->
+  <header class="bg-indigo-700 text-white shadow sticky top-0 z-40 no-print">
+    <div class="max-w-7xl mx-auto px-3 py-2 flex flex-col md:flex-row justify-between items-center gap-2">
+      <div class="flex items-center space-x-2">
+        <div class="bg-indigo-600 p-1.5 rounded-md border border-indigo-500 shadow-inner">
+          <i class="fa-solid fa-hotel text-base text-indigo-100"></i>
         </div>
         <div>
-          <h1 class="text-lg font-bold tracking-wide leading-tight">Business Portal</h1>
-          <p class="text-[11px] text-indigo-200">Management & Booking Control System</p>
+          <h1 class="text-sm font-bold tracking-wide leading-none">Homestay Business Portal 🏠</h1>
+          <p class="text-[10px] text-indigo-200">Management & Booking Control System</p>
         </div>
       </div>
       
-      <!-- Tab Navigation -->
-      <nav class="flex space-x-1 bg-indigo-800/80 p-1 rounded-lg text-xs font-medium border border-indigo-600/50">
-        <button onclick="switchTab('dashboard')" id="btn-dashboard" class="tab-btn px-3.5 py-1.5 rounded-md transition-all duration-200 active-tab">Dashboard</button>
-        <button onclick="switchTab('booking')" id="btn-booking" class="tab-btn px-3.5 py-1.5 rounded-md transition-all duration-200 text-indigo-100 hover:bg-indigo-600/50">Booking Details</button>
-        <button onclick="switchTab('master')" id="btn-master" class="tab-btn px-3.5 py-1.5 rounded-md transition-all duration-200 text-indigo-100 hover:bg-indigo-600/50">Master Data</button>
-        <button onclick="switchTab('calendar')" id="btn-calendar" class="tab-btn px-3.5 py-1.5 rounded-md transition-all duration-200 text-indigo-100 hover:bg-indigo-600/50">Calendar</button>
+      <!-- Compact Tab Navigation -->
+      <nav class="flex space-x-1 bg-indigo-800/80 p-0.5 rounded-md text-[11px] font-medium border border-indigo-600/50">
+        <button onclick="switchTab('dashboard')" id="btn-dashboard" class="tab-btn px-2.5 py-1 rounded transition-all active-tab">Dashboard</button>
+        <button onclick="switchTab('booking')" id="btn-booking" class="tab-btn px-2.5 py-1 rounded transition-all text-indigo-100 hover:bg-indigo-600/50">Booking Details</button>
+        <button onclick="switchTab('master')" id="btn-master" class="tab-btn px-2.5 py-1 rounded transition-all text-indigo-100 hover:bg-indigo-600/50">Master Data</button>
+        <button onclick="switchTab('calendar')" id="btn-calendar" class="tab-btn px-2.5 py-1 rounded transition-all text-indigo-100 hover:bg-indigo-600/50">Calendar</button>
       </nav>
 
-      <!-- Action Buttons & Notification Alert Trigger -->
-      <div class="flex items-center space-x-2">
-        <!-- Bell Trigger with Badge -->
-        <button onclick="openAlertModal()" title="View Outstanding Check-out Alerts" class="relative bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm flex items-center gap-1.5 transition">
-          <i class="fa-solid fa-bell"></i> Alerts
-          <span id="alert-badge" class="hidden absolute -top-2 -right-2 bg-rose-600 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full border-2 border-white animate-bounce">0</span>
+      <!-- Action Buttons -->
+      <div class="flex items-center space-x-1.5">
+        <button onclick="openAlertModal()" title="View Alerts" class="relative bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1 rounded text-[11px] font-semibold flex items-center gap-1 transition">
+          <i class="fa-solid fa-bell text-[10px]"></i> Alerts
+          <span id="alert-badge" class="hidden absolute -top-1.5 -right-1.5 bg-rose-600 text-white text-[9px] font-black px-1.5 py-0.2 rounded-full border border-white animate-bounce">0</span>
         </button>
-
-        <button onclick="saveChanges()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm flex items-center gap-1.5 transition">
-          <i class="fa-solid fa-floppy-disk"></i> Save
+        <button onclick="saveChanges()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-2.5 py-1 rounded text-[11px] font-semibold flex items-center gap-1 transition">
+          <i class="fa-solid fa-floppy-disk text-[10px]"></i> Save
         </button>
-        <button onclick="exportToExcel()" class="bg-indigo-600 hover:bg-indigo-800 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm flex items-center gap-1.5 transition">
-          <i class="fa-solid fa-file-excel"></i> Export
+        <button onclick="exportToExcel()" class="bg-indigo-600 hover:bg-indigo-800 text-white px-2.5 py-1 rounded text-[11px] font-semibold flex items-center gap-1 transition">
+          <i class="fa-solid fa-file-excel text-[10px]"></i> Export
         </button>
       </div>
     </div>
   </header>
 
   <!-- Notification Toast -->
-  <div id="toast" class="hidden fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-2.5 rounded-lg shadow-xl z-50 flex items-center gap-2.5 transition-all duration-300 no-print border border-slate-700 text-xs">
-    <i class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
+  <div id="toast" class="hidden fixed bottom-4 right-4 bg-slate-900 text-white px-3 py-2 rounded-md shadow-lg z-50 flex items-center gap-2 no-print border border-slate-700 text-[11px]">
+    <i class="fa-solid fa-circle-check text-emerald-400 text-sm"></i>
     <span id="toast-message" class="font-medium">Changes saved successfully!</span>
   </div>
 
   <!-- Main Content Area -->
-  <main class="max-w-7xl mx-auto px-4 py-5 flex-1 w-full no-print space-y-5">
+  <main class="max-w-7xl mx-auto px-3 py-3 flex-1 w-full no-print space-y-3">
 
     <!-- DASHBOARD TAB -->
-    <section id="tab-dashboard" class="tab-content space-y-5">
-      <!-- Welcome Banner -->
-      <div class="bg-gradient-to-r from-indigo-700 via-indigo-600 to-blue-600 rounded-xl p-5 text-white shadow-md flex justify-between items-center">
+    <section id="tab-dashboard" class="tab-content space-y-3">
+      <div class="bg-gradient-to-r from-indigo-700 via-indigo-600 to-blue-600 rounded-lg p-3 text-white shadow-sm flex justify-between items-center">
         <div>
-          <h2 class="text-xl font-bold tracking-tight">Hi Aniruddha, Welcome to your Business Portal 🤝</h2>
-          <p class="text-indigo-100 text-xs mt-1">View, schedule, and organize room allocations and customer records.</p>
+          <h2 class="text-base font-bold tracking-tight">Hi Aniruddha, Welcome back! 🏠</h2>
+          <p class="text-indigo-100 text-[10px] mt-0.5">Quickly view, schedule, and manage room allocations and orders.</p>
         </div>
       </div>
 
-      <!-- Quick Summary Cards -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+      <!-- Compact Summary Cards -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+        <div class="bg-white p-2.5 rounded-lg shadow-sm border border-slate-200 flex items-center justify-between">
           <div>
-            <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Total Bookings</p>
-            <p id="dash-total-bookings" class="text-2xl font-black text-slate-800 mt-0.5">0</p>
+            <p class="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Total Bookings</p>
+            <p id="dash-total-bookings" class="text-lg font-black text-slate-800">0</p>
           </div>
-          <div class="p-3 bg-blue-50 text-blue-600 rounded-xl"><i class="fa-solid fa-bookmark text-lg"></i></div>
+          <div class="p-2 bg-blue-50 text-blue-600 rounded-md"><i class="fa-solid fa-bookmark text-sm"></i></div>
         </div>
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+        <div class="bg-white p-2.5 rounded-lg shadow-sm border border-slate-200 flex items-center justify-between">
           <div>
-            <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Booking Amount</p>
-            <p id="dash-total-amount" class="text-2xl font-black text-slate-800 mt-0.5">₹0</p>
+            <p class="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Booking Amount</p>
+            <p id="dash-total-amount" class="text-lg font-black text-slate-800">₹0</p>
           </div>
-          <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl"><i class="fa-solid fa-receipt text-lg"></i></div>
+          <div class="p-2 bg-indigo-50 text-indigo-600 rounded-md"><i class="fa-solid fa-receipt text-sm"></i></div>
         </div>
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+        <div class="bg-white p-2.5 rounded-lg shadow-sm border border-slate-200 flex items-center justify-between">
           <div>
-            <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Advance Received</p>
-            <p id="dash-advanced" class="text-2xl font-black text-emerald-600 mt-0.5">₹0</p>
+            <p class="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Advance Received</p>
+            <p id="dash-advanced" class="text-lg font-black text-emerald-600">₹0</p>
           </div>
-          <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><i class="fa-solid fa-wallet text-lg"></i></div>
+          <div class="p-2 bg-emerald-50 text-emerald-600 rounded-md"><i class="fa-solid fa-wallet text-sm"></i></div>
         </div>
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+        <div class="bg-white p-2.5 rounded-lg shadow-sm border border-slate-200 flex items-center justify-between">
           <div>
-            <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Total Due Amount</p>
-            <p id="dash-due" class="text-2xl font-black text-rose-600 mt-0.5">₹0</p>
+            <p class="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Total Due Amount</p>
+            <p id="dash-due" class="text-lg font-black text-rose-600">₹0</p>
           </div>
-          <div class="p-3 bg-rose-50 text-rose-600 rounded-xl"><i class="fa-solid fa-hand-holding-dollar text-lg"></i></div>
+          <div class="p-2 bg-rose-50 text-rose-600 rounded-md"><i class="fa-solid fa-hand-holding-dollar text-sm"></i></div>
         </div>
       </div>
 
-      <!-- Years Grid -->
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-        <div class="mb-4">
-          <h3 class="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+      <!-- Compact Years Grid -->
+      <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-3">
+        <div class="mb-2">
+          <h3 class="text-xs font-bold text-slate-800 flex items-center gap-1">
             <i class="fa-solid fa-calendar-days text-indigo-600"></i> Active Years Directory (2026 – 2085)
           </h3>
-          <p class="text-[11px] text-slate-400 mt-0.5">Select a year to jump directly into its full calendar overview.</p>
         </div>
-        <div id="years-grid" class="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-12 gap-2">
-          <!-- Populated by JS -->
-        </div>
+        <div id="years-grid" class="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-12 gap-1.5"></div>
       </div>
     </section>
 
     <!-- BOOKING DETAILS TAB -->
-    <section id="tab-booking" class="tab-content hidden space-y-4">
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-        <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-100">
+    <section id="tab-booking" class="tab-content hidden space-y-3">
+      <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-3">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-3 pb-2 border-b border-slate-100">
           <div>
-            <h2 class="text-base font-bold text-slate-800 flex items-center gap-1.5">
+            <h2 class="text-xs font-bold text-slate-800 flex items-center gap-1">
               <i class="fa-solid fa-address-card text-indigo-600"></i> Customer & Reservation Directory
             </h2>
-            <p class="text-[11px] text-slate-400 mt-0.5">Review check-ins, tariffs, and due balances.</p>
           </div>
-          <button onclick="openBookingModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold shadow-sm flex items-center gap-1.5 transition">
-            <i class="fa-solid fa-plus"></i> Add Booking
-          </button>
+          
+          <div class="flex items-center space-x-2 w-full md:w-auto">
+            <div class="flex items-center bg-slate-50 border border-slate-300 rounded p-0.5 space-x-1">
+              <select id="booking-search-select" class="bg-transparent text-[11px] px-1.5 py-0.5 focus:outline-none w-36 sm:w-44 text-slate-700 font-semibold cursor-pointer"></select>
+              <button onclick="searchBookingById()" class="bg-slate-700 hover:bg-slate-800 text-white px-2 py-0.5 rounded text-[10px] font-semibold flex items-center gap-1 transition">
+                <i class="fa-solid fa-magnifying-glass"></i> Search
+              </button>
+              <button onclick="clearSearchBooking()" class="text-slate-400 hover:text-slate-600 px-1 text-[10px]" title="Clear">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <button onclick="openBookingModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 rounded text-[11px] font-semibold flex items-center gap-1 transition whitespace-nowrap">
+              <i class="fa-solid fa-plus text-[10px]"></i> Add Booking
+            </button>
+          </div>
         </div>
 
         <!-- Bookings Table View -->
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                <th class="py-2.5 px-3">Guest Name</th>
-                <th class="py-2.5 px-3">Contact / ID</th>
-                <th class="py-2.5 px-3">Room</th>
-                <th class="py-2.5 px-3">Agent</th>
-                <th class="py-2.5 px-3 min-w-[170px]">Stay Window</th>
-                <th class="py-2.5 px-3">Tariff</th>
-                <th class="py-2.5 px-3">Payment</th>
-                <th class="py-2.5 px-3">Balance</th>
-                <th class="py-2.5 px-3 text-center">Actions</th>
+              <tr class="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                <th class="py-2 px-2">Booking ID</th>
+                <th class="py-2 px-2">Guest Name</th>
+                <th class="py-2 px-2">Contact / ID</th>
+                <th class="py-2 px-2">Room</th>
+                <th class="py-2 px-2">Agent</th>
+                <th class="py-2 px-2 min-w-[150px]">Stay Window</th>
+                <th class="py-2 px-2">Tariff & Extras</th>
+                <th class="py-2 px-2">Payment</th>
+                <th class="py-2 px-2">Balance</th>
+                <th class="py-2 px-2 text-center">Actions</th>
               </tr>
             </thead>
-            <tbody id="bookings-tbody" class="divide-y divide-slate-100 text-xs">
-              <!-- Populated by JS -->
-            </tbody>
+            <tbody id="bookings-tbody" class="divide-y divide-slate-100 text-[11px]"></tbody>
           </table>
         </div>
       </div>
     </section>
 
     <!-- MASTER DATA TAB -->
-    <section id="tab-master" class="tab-content hidden space-y-4">
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-        <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-100">
+    <section id="tab-master" class="tab-content hidden space-y-3">
+      <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-3">
+        <div class="flex justify-between items-center mb-3 pb-2 border-b border-slate-100">
           <div>
-            <h2 class="text-base font-bold text-slate-800 flex items-center gap-1.5">
+            <h2 class="text-xs font-bold text-slate-800 flex items-center gap-1">
               <i class="fa-solid fa-users-gear text-indigo-600"></i> Master Agent & Room Directory
             </h2>
-            <p class="text-[11px] text-slate-400 mt-0.5">Configure room capacities and default agent details.</p>
           </div>
-          <button onclick="addMasterRow()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition shadow-sm">
-            <i class="fa-solid fa-plus"></i> Add Entry
+          <button onclick="addMasterRow()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 rounded text-[11px] font-medium flex items-center gap-1 transition shadow-sm">
+            <i class="fa-solid fa-plus text-[10px]"></i> Add Entry
           </button>
         </div>
 
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                <th class="py-2.5 px-3">Agent Name</th>
-                <th class="py-2.5 px-3">Agent Contact</th>
-                <th class="py-2.5 px-3">Room No</th>
-                <th class="py-2.5 px-3">Capacity</th>
-                <th class="py-2.5 px-3 text-center">Actions</th>
+              <tr class="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                <th class="py-2 px-2">Agent Name</th>
+                <th class="py-2 px-2">Agent Contact</th>
+                <th class="py-2 px-2">Room No</th>
+                <th class="py-2 px-2">Capacity</th>
+                <th class="py-2 px-2 text-center">Actions</th>
               </tr>
             </thead>
-            <tbody id="master-tbody" class="divide-y divide-slate-100 text-xs">
-              <!-- Populated by JS -->
-            </tbody>
+            <tbody id="master-tbody" class="divide-y divide-slate-100 text-[11px]"></tbody>
           </table>
         </div>
       </div>
     </section>
 
     <!-- CALENDAR TAB -->
-    <section id="tab-calendar" class="tab-content hidden space-y-4">
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-        <div class="flex justify-between items-center mb-5">
+    <section id="tab-calendar" class="tab-content hidden space-y-3">
+      <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-3">
+        <div class="flex justify-between items-center mb-3">
           <div>
-            <h2 class="text-base font-bold text-slate-800 flex items-center gap-1.5">
+            <h2 class="text-xs font-bold text-slate-800 flex items-center gap-1">
               <i class="fa-regular fa-calendar-check text-indigo-600"></i> Year Overview Calendar
             </h2>
-            <p class="text-[11px] text-slate-400 mt-0.5">Click any highlighted date to open an Excel-style comment popout with booking details.</p>
           </div>
           
-          <!-- Calendar Year Dropdown -->
-          <div class="flex items-center space-x-2 bg-slate-50 p-1.5 rounded-lg border border-slate-200">
-            <label for="cal-year-select" class="text-[10px] font-bold text-slate-500 uppercase tracking-wider pl-1">Year:</label>
-            <select id="cal-year-select" onchange="renderCalendar(parseInt(this.value))" class="bg-white border border-slate-300 text-indigo-700 font-bold px-2.5 py-1 rounded-md focus:outline-none cursor-pointer text-xs">
-              <!-- Populated by JS -->
-            </select>
+          <div class="flex items-center space-x-1.5 bg-slate-50 p-1 rounded border border-slate-200">
+            <label for="cal-year-select" class="text-[9px] font-bold text-slate-500 uppercase">Year:</label>
+            <select id="cal-year-select" onchange="renderCalendar(parseInt(this.value))" class="bg-white border border-slate-300 text-indigo-700 font-bold px-2 py-0.5 rounded focus:outline-none cursor-pointer text-[11px]"></select>
           </div>
         </div>
 
-        <div id="calendar-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          <!-- Calendar months rendered dynamically -->
-        </div>
+        <div id="calendar-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5"></div>
       </div>
     </section>
 
   </main>
 
   <!-- POPUP MODAL: CHECK-OUT ALERT LIST -->
-  <div id="alert-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 no-print">
-    <div class="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-xl w-full flex flex-col max-h-[85vh] overflow-hidden">
-      <!-- Popup Header -->
-      <div class="bg-gradient-to-r from-amber-500 to-amber-600 p-4 text-white flex justify-between items-center">
-        <div class="flex items-center space-x-2.5">
-          <div class="bg-amber-700/40 p-2 rounded-lg border border-amber-400/30">
-            <i class="fa-solid fa-bell text-lg"></i>
-          </div>
-          <div>
-            <h3 class="text-base font-bold tracking-wide">Upcoming Check-out Dues Alert</h3>
-            <p class="text-[11px] text-amber-100">Check-outs within 2 hours with unpaid balances</p>
-          </div>
+  <div id="alert-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 no-print">
+    <div class="bg-white rounded-lg shadow-xl border border-slate-200 max-w-lg w-full flex flex-col max-h-[85vh] overflow-hidden">
+      <div class="bg-amber-500 p-3 text-white flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+          <i class="fa-solid fa-bell text-base"></i>
+          <h3 class="text-xs font-bold">Upcoming Check-out Dues Alert (2 hrs)</h3>
         </div>
-        <button onclick="closeAlertModal()" class="text-amber-100 hover:text-white px-2 py-1 rounded text-lg transition">
+        <button onclick="closeAlertModal()" class="text-amber-100 hover:text-white px-1 text-base">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
-      <!-- Alert Window Body List -->
-      <div id="alert-list-container" class="p-4 overflow-y-auto space-y-3 flex-1 text-xs">
-        <!-- Rendered dynamically -->
-      </div>
+      <div id="alert-list-container" class="p-3 overflow-y-auto space-y-2 flex-1 text-[11px]"></div>
 
-      <!-- Popup Footer Actions -->
-      <div class="bg-slate-50 border-t border-slate-200 p-3 flex justify-between items-center text-xs">
+      <div class="bg-slate-50 border-t border-slate-200 p-2.5 flex justify-between items-center text-[11px]">
         <span id="alert-list-count-text" class="text-slate-500 font-medium">0 active warnings found</span>
-        <button onclick="closeAlertModal()" class="px-4 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg font-semibold transition">
-          Dismiss List
-        </button>
+        <button onclick="closeAlertModal()" class="px-3 py-1 bg-slate-800 text-white rounded font-semibold text-[10px]">Dismiss</button>
       </div>
     </div>
   </div>
 
-  <!-- ADD / EDIT BOOKING MODAL -->
-  <div id="booking-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto no-print">
-    <div class="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-2xl w-full p-6 space-y-4 my-6">
-      <div class="flex justify-between items-center pb-3 border-b border-slate-100">
+  <!-- COMPACT ADD / EDIT BOOKING MODAL -->
+  <div id="booking-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-2 overflow-y-auto no-print">
+    <div class="bg-white rounded-lg shadow-xl border border-slate-200 max-w-xl w-full p-4 space-y-2.5 my-4">
+      <div class="flex justify-between items-center pb-2 border-b border-slate-100">
         <div>
-          <h3 id="modal-title" class="text-base font-bold text-slate-800 flex items-center gap-1.5">
+          <h3 id="modal-title" class="text-xs font-bold text-slate-800 flex items-center gap-1">
             <i class="fa-solid fa-calendar-plus text-indigo-600"></i> Add New Booking
           </h3>
-          <p class="text-[11px] text-slate-400">Fill out guest, room allocation, and stay details.</p>
         </div>
-        <button onclick="closeBookingModal()" class="text-slate-400 hover:text-slate-600 p-1 text-lg"><i class="fa-solid fa-xmark"></i></button>
+        <button onclick="closeBookingModal()" class="text-slate-400 hover:text-slate-600 p-0.5 text-base"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
-      <form id="booking-form" onsubmit="handleSaveBooking(event)" class="space-y-4 text-xs">
+      <form id="booking-form" onsubmit="handleSaveBooking(event)" class="space-y-2.5 text-[11px]">
         <input type="hidden" id="modal-booking-id">
 
         <!-- Guest Details Box -->
-        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-3">
-          <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
+        <div class="bg-slate-50 p-2.5 rounded-md border border-slate-200 space-y-2">
+          <h4 class="text-[9px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
             <i class="fa-solid fa-user-tag text-indigo-500"></i> Guest Information
           </h4>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <div>
-              <label class="block font-semibold text-slate-600 mb-1">Customer Name</label>
-              <input type="text" id="cust-name" required class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+              <label class="block font-semibold text-slate-600 mb-0.5">Customer Name</label>
+              <input type="text" id="cust-name" required class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
             </div>
             <div>
-              <label class="block font-semibold text-slate-600 mb-1">Address</label>
-              <input type="text" id="cust-address" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+              <label class="block font-semibold text-slate-600 mb-0.5">Address</label>
+              <input type="text" id="cust-address" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
             </div>
             <div>
-              <label class="block font-semibold text-slate-600 mb-1">ID Number</label>
-              <input type="text" id="cust-id" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+              <label class="block font-semibold text-slate-600 mb-0.5">ID Number</label>
+              <input type="text" id="cust-id" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
             </div>
             <div>
-              <label class="block font-semibold text-slate-600 mb-1">Contact No</label>
-              <input type="text" id="cust-contact" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+              <label class="block font-semibold text-slate-600 mb-0.5">Contact No</label>
+              <input type="text" id="cust-contact" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
             </div>
           </div>
         </div>
 
         <!-- Room & Stay Schedule Box -->
-        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-3">
-          <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
+        <div class="bg-slate-50 p-2.5 rounded-md border border-slate-200 space-y-2">
+          <h4 class="text-[9px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
             <i class="fa-solid fa-bed text-indigo-500"></i> Room Selection & Stay Dates
           </h4>
-          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
             <div>
-              <label class="block font-semibold text-slate-600 mb-1">Room No</label>
-              <select id="cust-room" onchange="autoCaptureRoomDetails()" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-bold text-indigo-700">
-                <!-- Populated from Master -->
-              </select>
+              <label class="block font-semibold text-slate-600 mb-0.5">Room No</label>
+              <select id="cust-room" onchange="autoCaptureRoomDetails()" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-bold text-indigo-700"></select>
             </div>
             <div>
-              <label class="block font-semibold text-slate-600 mb-1">Agent Info <span class="text-[10px] text-indigo-500 font-normal">(Auto)</span></label>
-              <input type="text" id="cust-agent" readonly class="w-full bg-slate-200/70 border border-slate-300 text-slate-600 font-medium rounded-lg px-2.5 py-1.5 cursor-not-allowed">
+              <label class="block font-semibold text-slate-600 mb-0.5">Agent Info <span class="text-[9px] text-indigo-500">(Auto)</span></label>
+              <input type="text" id="cust-agent" readonly class="w-full bg-slate-200/70 border border-slate-300 text-slate-600 rounded px-2 py-1 cursor-not-allowed">
             </div>
             <div>
-              <label class="block font-semibold text-slate-600 mb-1">Capacity <span class="text-[10px] text-indigo-500 font-normal">(Auto)</span></label>
-              <input type="text" id="cust-capacity" readonly class="w-full bg-slate-200/70 border border-slate-300 text-slate-600 font-medium rounded-lg px-2.5 py-1.5 cursor-not-allowed">
+              <label class="block font-semibold text-slate-600 mb-0.5">Capacity <span class="text-[9px] text-indigo-500">(Auto)</span></label>
+              <input type="text" id="cust-capacity" readonly class="w-full bg-slate-200/70 border border-slate-300 text-slate-600 rounded px-2 py-1 cursor-not-allowed">
             </div>
 
-            <!-- SIMPLIFIED CHECK-IN INPUTS -->
-            <div class="sm:col-span-3 grid grid-cols-2 gap-3 pt-1 border-t border-slate-200/60">
+            <!-- CHECK-IN / CHECK-OUT INPUTS -->
+            <div class="sm:col-span-3 grid grid-cols-2 gap-2 pt-1 border-t border-slate-200/60">
               <div>
-                <label class="block font-semibold text-slate-600 mb-1"><i class="fa-solid fa-plane-arrival text-emerald-600 mr-1"></i> Check In</label>
-                <div class="flex gap-1.5">
-                  <input type="date" id="cust-checkin-date" onchange="calculateModalBilling()" required class="w-2/3 bg-white border border-slate-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium">
-                  <input type="time" id="cust-checkin-time" value="12:00" onchange="calculateModalBilling()" required class="w-1/3 bg-white border border-slate-300 rounded-lg px-1.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium">
+                <label class="block font-semibold text-slate-600 mb-0.5"><i class="fa-solid fa-plane-arrival text-emerald-600 mr-1"></i> Check In</label>
+                <div class="flex gap-1">
+                  <input type="date" id="cust-checkin-date" onchange="handleStayDatesChange()" required class="w-2/3 bg-white border border-slate-300 rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium">
+                  <input type="time" id="cust-checkin-time" value="12:00" onchange="handleStayDatesChange()" required class="w-1/3 bg-white border border-slate-300 rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium">
                 </div>
               </div>
 
-              <!-- SIMPLIFIED CHECK-OUT INPUTS -->
               <div>
-                <label class="block font-semibold text-slate-600 mb-1"><i class="fa-solid fa-plane-departure text-rose-500 mr-1"></i> Check Out</label>
-                <div class="flex gap-1.5">
-                  <input type="date" id="cust-checkout-date" onchange="calculateModalBilling()" required class="w-2/3 bg-white border border-slate-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium">
-                  <input type="time" id="cust-checkout-time" value="11:00" onchange="calculateModalBilling()" required class="w-1/3 bg-white border border-slate-300 rounded-lg px-1.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium">
+                <label class="block font-semibold text-slate-600 mb-0.5"><i class="fa-solid fa-plane-departure text-rose-500 mr-1"></i> Check Out</label>
+                <div class="flex gap-1">
+                  <input type="date" id="cust-checkout-date" onchange="handleStayDatesChange()" required class="w-2/3 bg-white border border-slate-300 rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium">
+                  <input type="time" id="cust-checkout-time" value="11:00" onchange="handleStayDatesChange()" required class="w-1/3 bg-white border border-slate-300 rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium">
                 </div>
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- EXTRA FOOD & BEVERAGES ORDERS BOX (DYNAMIC LIST) -->
+        <div class="bg-amber-50/70 p-2.5 rounded-md border border-amber-200 space-y-2">
+          <div class="flex justify-between items-center">
+            <h4 class="text-[9px] font-bold uppercase tracking-wider text-amber-800 flex items-center gap-1">
+              <i class="fa-solid fa-utensils text-amber-600"></i> Extra Food / Drink Orders List
+            </h4>
+            <button type="button" onclick="addFoodOrderItem()" class="bg-amber-600 hover:bg-amber-700 text-white px-2 py-0.5 rounded text-[10px] font-semibold flex items-center gap-1 transition">
+              <i class="fa-solid fa-plus text-[9px]"></i> Add Food Order
+            </button>
+          </div>
+          <p class="text-[9px] text-amber-700 italic font-semibold">(Allowed only from 30 mins after Check-In to 45 mins before Check-Out)</p>
+          
+          <div id="food-orders-container" class="space-y-2 max-h-40 overflow-y-auto pr-1"></div>
         </div>
 
         <!-- Billing Calculation Box -->
-        <div class="bg-indigo-50/50 p-3.5 rounded-xl border border-indigo-100 space-y-3">
-          <h4 class="text-[10px] font-bold uppercase tracking-wider text-indigo-700 flex items-center gap-1">
+        <div class="bg-indigo-50/50 p-2.5 rounded-md border border-indigo-100 space-y-2">
+          <h4 class="text-[9px] font-bold uppercase tracking-wider text-indigo-700 flex items-center gap-1">
             <i class="fa-solid fa-calculator text-indigo-600"></i> Billing Summary
           </h4>
-          <div class="grid grid-cols-5 gap-2">
+          <div class="grid grid-cols-5 gap-1.5">
             <div>
-              <label class="block font-semibold text-slate-600 mb-1">Days</label>
-              <input type="number" id="cust-days" readonly class="w-full bg-slate-200/80 font-bold text-slate-700 border border-slate-300 rounded-lg px-2 py-1.5 cursor-not-allowed">
+              <label class="block font-semibold text-slate-600 mb-0.5">Days</label>
+              <input type="number" id="cust-days" readonly class="w-full bg-slate-200/80 font-bold text-slate-700 border border-slate-300 rounded px-1.5 py-1 cursor-not-allowed">
             </div>
             <div>
-              <label class="block font-semibold text-slate-600 mb-1">Price/Day (₹)</label>
-              <input type="number" id="cust-price" value="1200" oninput="calculateModalBilling()" class="w-full bg-white font-bold text-slate-700 border border-slate-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+              <label class="block font-semibold text-slate-600 mb-0.5">Price/Day</label>
+              <input type="number" id="cust-price" value="1200" oninput="calculateModalBilling()" class="w-full bg-white font-bold text-slate-700 border border-slate-300 rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
             </div>
             <div>
-              <label class="block font-semibold text-slate-600 mb-1">Total (₹)</label>
-              <input type="number" id="cust-total" readonly class="w-full bg-slate-200/80 text-indigo-700 font-bold border border-slate-300 rounded-lg px-2 py-1.5 cursor-not-allowed">
+              <label class="block font-semibold text-slate-600 mb-0.5">Total (₹)</label>
+              <input type="number" id="cust-total" readonly class="w-full bg-slate-200/80 text-indigo-700 font-bold border border-slate-300 rounded px-1.5 py-1 cursor-not-allowed">
             </div>
             <div>
-              <label class="block font-semibold text-slate-600 mb-1">Advance (₹)</label>
-              <input type="number" id="cust-advance" value="0" oninput="calculateModalBilling()" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-semibold text-emerald-600">
+              <label class="block font-semibold text-slate-600 mb-0.5">Advance (₹)</label>
+              <input type="number" id="cust-advance" value="0" oninput="calculateModalBilling()" class="w-full bg-white border border-slate-300 rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-semibold text-emerald-600">
             </div>
             <div>
-              <label class="block font-semibold text-slate-600 mb-1">Due (₹)</label>
-              <input type="number" id="cust-due" readonly class="w-full bg-slate-200/80 text-rose-700 font-bold border border-slate-300 rounded-lg px-2 py-1.5 cursor-not-allowed">
+              <label class="block font-semibold text-slate-600 mb-0.5">Due (₹)</label>
+              <input type="number" id="cust-due" readonly class="w-full bg-slate-200/80 text-rose-700 font-bold border border-slate-300 rounded px-1.5 py-1 cursor-not-allowed">
             </div>
           </div>
         </div>
 
-        <div class="flex justify-end space-x-2 pt-2">
-          <button type="button" onclick="closeBookingModal()" class="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-semibold transition">Cancel</button>
-          <button type="submit" class="px-5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold shadow transition">Save Booking</button>
+        <div class="flex justify-end space-x-2 pt-1">
+          <button type="button" onclick="closeBookingModal()" class="px-3 py-1 bg-slate-100 text-slate-700 rounded font-semibold transition">Cancel</button>
+          <button type="submit" class="px-4 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded font-semibold shadow transition">Save Booking</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- PRINTABLE INVOICE MODAL -->
-  <div id="invoice-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-2xl w-full p-8 space-y-5 relative" id="printable-invoice">
-      <!-- Invoice Header -->
-      <div class="flex justify-between items-start border-b border-slate-200 pb-4">
+  <div id="invoice-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
+    <div class="bg-white rounded-lg shadow-xl border border-slate-200 max-w-xl w-full p-6 space-y-4 relative" id="printable-invoice">
+      <div class="flex justify-between items-start border-b border-slate-200 pb-3">
         <div>
-          <h2 class="text-xl font-black text-indigo-700 uppercase tracking-wide">Business Portal Hotel</h2>
-          <p class="text-[11px] text-slate-500 mt-0.5">123 Business Street, Suite 400</p>
-          <p class="text-[11px] text-slate-500">Phone: +91 98765 43210 | Email: info@businessportal.com</p>
+          <h2 class="text-lg font-black text-indigo-700 uppercase tracking-wide">Aniruddha Homestay</h2>
+          <p class="text-[10px] text-slate-500 mt-0.5">Sittong, Village in West Bengal</p>
+          <p class="text-[10px] text-slate-500">Phone: +91 9804396541 | Email: info@businessportal.com</p>
         </div>
         <div class="text-right">
-          <span class="inline-block bg-indigo-100 text-indigo-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase mb-1">Booking Receipt</span>
-          <p class="text-[11px] text-slate-500">Invoice ID: <strong id="inv-id" class="text-slate-800 font-mono">INV-A-0000001</strong></p>
-          <p class="text-[11px] text-slate-500">Issued On: <strong id="inv-date" class="text-slate-800"></strong></p>
+          <span class="inline-block bg-indigo-100 text-indigo-800 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase mb-0.5">e-Invoice</span>
+          <p class="text-[10px] text-slate-500">Invoice ID: <strong id="inv-id" class="text-slate-800 font-mono">INV-2026-0000001</strong></p>
+          <p class="text-[10px] text-slate-500">Booking ID: <strong id="inv-booking-id" class="text-indigo-700 font-mono">BKG-2026-0000001</strong></p>
+          <p class="text-[10px] text-slate-500">Issued On: <strong id="inv-date" class="text-slate-800"></strong></p>
         </div>
       </div>
 
-      <!-- Guest & Stay Details -->
-      <div class="grid grid-cols-2 gap-6 bg-slate-50 p-4 rounded-xl border border-slate-100 text-xs">
+      <div class="grid grid-cols-2 gap-4 bg-slate-50 p-3 rounded-lg border border-slate-100 text-[11px]">
         <div>
-          <h4 class="font-bold text-slate-400 uppercase text-[10px] tracking-wider mb-1">Guest Information</h4>
+          <h4 class="font-bold text-slate-400 uppercase text-[9px] tracking-wider mb-0.5">Guest Information</h4>
           <p class="text-slate-800 font-semibold" id="inv-guest-name">-</p>
-          <p class="text-slate-600 mt-0.5" id="inv-guest-address">Address: -</p>
+          <p class="text-slate-600" id="inv-guest-address">Address: -</p>
           <p class="text-slate-600" id="inv-guest-contact">Contact: -</p>
           <p class="text-slate-600" id="inv-guest-id">ID No: -</p>
         </div>
         <div>
-          <h4 class="font-bold text-slate-400 uppercase text-[10px] tracking-wider mb-1">Reservation Info</h4>
+          <h4 class="font-bold text-slate-400 uppercase text-[9px] tracking-wider mb-0.5">Reservation Info</h4>
           <p class="text-slate-800 font-semibold" id="inv-room">Room No: -</p>
-          <p class="text-slate-600 mt-0.5" id="inv-agent">Agent: -</p>
+          <p class="text-slate-600" id="inv-agent">Agent: -</p>
           <p class="text-slate-600" id="inv-checkin">Check-in: -</p>
           <p class="text-slate-600" id="inv-checkout">Check-out: -</p>
         </div>
       </div>
 
-      <!-- Invoice Items Table -->
       <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs">
+        <table class="w-full text-left text-[11px]">
           <thead>
             <tr class="bg-indigo-50 text-indigo-900 border-b border-indigo-100">
-              <th class="p-2.5">Description</th>
-              <th class="p-2.5 text-center">Duration</th>
-              <th class="p-2.5 text-right">Rate / Day</th>
-              <th class="p-2.5 text-right">Total Amount</th>
+              <th class="p-2">Description</th>
+              <th class="p-2 text-center">Qty / Duration</th>
+              <th class="p-2 text-right">Rate / Day</th>
+              <th class="p-2 text-right">Total Amount</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100">
-            <tr>
-              <td class="p-2.5 font-semibold text-slate-800" id="inv-item-desc">Room Accommodation</td>
-              <td class="p-2.5 text-center" id="inv-item-days">0 Days</td>
-              <td class="p-2.5 text-right" id="inv-item-rate">₹0</td>
-              <td class="p-2.5 text-right font-semibold text-slate-800" id="inv-item-total">₹0</td>
-            </tr>
-          </tbody>
+          <tbody id="inv-items-tbody" class="divide-y divide-slate-100"></tbody>
         </table>
       </div>
 
-      <!-- Payment Summary -->
       <div class="flex justify-end pt-1 border-t border-slate-200">
-        <div class="w-1/2 space-y-1 text-xs">
+        <div class="w-1/2 space-y-1 text-[11px]">
           <div class="flex justify-between text-slate-600">
             <span>Total Amount:</span>
             <strong id="inv-sum-total" class="text-slate-800">₹0</strong>
@@ -507,28 +488,26 @@
             <span>Advance Payment:</span>
             <strong id="inv-sum-advance">₹0</strong>
           </div>
-          <div class="flex justify-between text-rose-600 text-xs font-bold border-t border-slate-200 pt-1">
+          <div class="flex justify-between text-rose-600 font-bold border-t border-slate-200 pt-1">
             <span>Balance Due:</span>
             <span id="inv-sum-due">₹0</span>
           </div>
         </div>
       </div>
 
-      <!-- Footer & Signature -->
-      <div class="pt-6 border-t border-slate-200 flex justify-between items-end text-[11px] text-slate-400">
+      <div class="pt-4 border-t border-slate-200 flex justify-between items-end text-[10px] text-slate-400">
         <div>
-          <p class="font-bold text-slate-600">Thank you for stay with us!</p>
+          <p class="font-bold text-slate-600">Thank you for staying with us!</p>
           <p>For inquiries, please contact hotel management.</p>
         </div>
-        <div class="text-center border-t border-slate-300 pt-1 w-32">
+        <div class="text-center border-t border-slate-300 pt-1 w-28">
           <p class="font-semibold text-slate-600">Authorized Signature</p>
         </div>
       </div>
 
-      <!-- Modal Actions -->
-      <div class="flex justify-end space-x-2 pt-3 no-print border-t border-slate-100">
-        <button type="button" onclick="closeInvoiceModal()" class="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition">Close</button>
-        <button type="button" onclick="window.print()" class="px-5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow flex items-center gap-1.5 transition">
+      <div class="flex justify-end space-x-2 pt-2 no-print border-t border-slate-100">
+        <button type="button" onclick="closeInvoiceModal()" class="px-3 py-1 bg-slate-100 text-slate-700 rounded font-semibold transition">Close</button>
+        <button type="button" onclick="window.print()" class="px-4 py-1 bg-indigo-600 text-white rounded font-semibold shadow flex items-center gap-1 transition">
           <i class="fa-solid fa-print"></i> Print Invoice
         </button>
       </div>
@@ -536,11 +515,48 @@
   </div>
 
   <script>
-    // App Data State
+    // Helper function to format ISO/DateTime strings to dd-mm-yyyy hh:mm (24-hour)
+    function formatDateTime(dtStr) {
+      if (!dtStr) return '-';
+      const d = new Date(dtStr);
+      if (isNaN(d.getTime())) {
+        // Fallback for manual replacement if Date parsing fails
+        const parts = dtStr.split('T');
+        if (parts.length === 2) {
+          const dateParts = parts[0].split('-');
+          if (dateParts.length === 3) {
+            return `${dateParts[2]}-${dateParts[1]}-${dateParts[0]} ${parts[1]}`;
+          }
+        }
+        return dtStr.replace('T', ' ');
+      }
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      return `${day}-${month}-${year} ${hours}:${minutes}`;
+    }
+
+    // Helper function to format Date object to dd-mm-yyyy
+    function formatDate(d) {
+      if (!d) return '-';
+      const dateObj = typeof d === 'string' ? new Date(d) : d;
+      if (isNaN(dateObj.getTime())) return d;
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const year = dateObj.getFullYear();
+      return `${day}-${month}-${year}`;
+    }
+
+    // State Directory
     let state = {
+      yearlyCounters: { "2026": 2 },
       bookings: [
         {
           id: "bk_1",
+          bookingCode: "BKG-2026-0000001",
+          invoiceNo: "INV-2026-0000001",
           name: "Kapil",
           address: "Kolkata",
           idNo: "2578 0001 6658",
@@ -552,12 +568,17 @@
           checkOut: "2026-07-24T11:00",
           noOfDays: 2,
           perDayPrice: 1200,
-          totalAmount: 2400,
+          foodOrders: [
+            { foodDesc: "2x Breakfast, Tea", foodDateTime: "2026-07-22T16:30", foodCharge: 300 }
+          ],
+          totalAmount: 2700,
           advanced: 1000,
-          totalDue: 1400
+          totalDue: 1700
         },
         {
           id: "bk_2",
+          bookingCode: "BKG-2026-0000002",
+          invoiceNo: "INV-2026-0000002",
           name: "Aniruddha",
           address: "Mumbai",
           idNo: "9988 7766 5544",
@@ -569,6 +590,7 @@
           checkOut: "2026-07-25T10:00",
           noOfDays: 3,
           perDayPrice: 1500,
+          foodOrders: [],
           totalAmount: 4500,
           advanced: 2000,
           totalDue: 2500
@@ -584,9 +606,58 @@
       selectedYear: 2026
     };
 
-    function generateInvoiceNumber(index) {
-      const numStr = String(index + 1).padStart(7, '0');
-      return `INV-A-${numStr}`;
+    function populateBookingSearchDropdown() {
+      const select = document.getElementById('booking-search-select');
+      if (!select) return;
+
+      const selectedVal = select.value;
+      select.innerHTML = '<option value="">-- All Booking IDs --</option>';
+      
+      state.bookings.forEach(b => {
+        if (b.bookingCode) {
+          const opt = document.createElement('option');
+          opt.value = b.bookingCode;
+          opt.text = b.bookingCode;
+          select.appendChild(opt);
+        }
+      });
+
+      select.value = selectedVal;
+    }
+
+    function searchBookingById() {
+      const searchTerm = document.getElementById('booking-search-select').value.trim().toLowerCase();
+      renderBookingsTable(searchTerm);
+    }
+
+    function clearSearchBooking() {
+      document.getElementById('booking-search-select').value = '';
+      renderBookingsTable();
+    }
+
+    function generateIDsForYear(checkInDateStr) {
+      let targetYear = 2026;
+      if (checkInDateStr) {
+        targetYear = new Date(checkInDateStr).getFullYear() || 2026;
+      }
+
+      if (!state.yearlyCounters) state.yearlyCounters = {};
+
+      if (!state.yearlyCounters[targetYear]) {
+        const countForYear = state.bookings.filter(b => {
+          return b.checkIn && new Date(b.checkIn).getFullYear() === targetYear;
+        }).length;
+        state.yearlyCounters[targetYear] = countForYear;
+      }
+
+      state.yearlyCounters[targetYear] += 1;
+      const seq = state.yearlyCounters[targetYear];
+      const paddedSeq = String(seq).padStart(7, '0');
+
+      return {
+        bookingCode: `BKG-${targetYear}-${paddedSeq}`,
+        invoiceNo: `INV-${targetYear}-${paddedSeq}`
+      };
     }
 
     function loadSavedData() {
@@ -594,7 +665,25 @@
       if (saved) {
         try { 
           const parsed = JSON.parse(saved);
-          if (parsed.bookings) state = parsed;
+          if (parsed.bookings) {
+            // Migrate legacy single food order structure to array if necessary
+            parsed.bookings.forEach(b => {
+              if (!b.foodOrders) {
+                b.foodOrders = [];
+                if (b.foodDesc || b.foodCharge) {
+                  b.foodOrders.push({
+                    foodDesc: b.foodDesc || '',
+                    foodDateTime: b.foodDateTime || '',
+                    foodCharge: b.foodCharge || 0
+                  });
+                }
+              }
+            });
+            state = parsed;
+            if (!state.yearlyCounters) {
+              state.yearlyCounters = { "2026": state.bookings.length || 0 };
+            }
+          }
         } catch(e){}
       }
     }
@@ -604,16 +693,15 @@
       initDashboard();
       populateRoomDropdown();
       populateCalendarYearDropdown();
+      populateBookingSearchDropdown();
       renderBookingsTable();
       renderMasterTable();
       renderCalendar(state.selectedYear);
 
-      // Check upcoming alerts
       checkUpcomingCheckoutsWithDue();
-      setInterval(checkUpcomingCheckoutsWithDue, 60000); // Periodic check every 1 min
+      setInterval(checkUpcomingCheckoutsWithDue, 60000);
     });
 
-    // 2-HOUR CHECKOUT DUE ALERT LIST POPUP SYSTEM
     function checkUpcomingCheckoutsWithDue() {
       const now = new Date().getTime();
       const twoHoursMs = 2 * 60 * 60 * 1000;
@@ -645,56 +733,52 @@
 
       if (duesList.length === 0) {
         container.innerHTML = `
-          <div class="text-center py-10 space-y-2">
-            <div class="bg-emerald-50 text-emerald-600 w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl">
+          <div class="text-center py-8 space-y-1">
+            <div class="bg-emerald-50 text-emerald-600 w-10 h-10 rounded-full flex items-center justify-center mx-auto text-base">
               <i class="fa-solid fa-circle-check"></i>
             </div>
             <p class="font-bold text-slate-700">No Pending Checkout Dues</p>
-            <p class="text-slate-400 text-[11px]">All upcoming check-outs within 2 hours are clear or fully paid.</p>
+            <p class="text-slate-400 text-[10px]">All upcoming check-outs within 2 hours are clear or fully paid.</p>
           </div>
         `;
         return;
       }
 
       duesList.forEach((b, i) => {
-        const checkOutTime = new Date(b.checkOut);
-        const timeFormatted = checkOutTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const timeFormatted = formatDateTime(b.checkOut);
 
         const card = document.createElement('div');
-        card.className = "bg-amber-50/60 border border-amber-200 rounded-xl overflow-hidden transition shadow-sm";
+        card.className = "bg-amber-50/60 border border-amber-200 rounded-md overflow-hidden shadow-sm";
         
         card.innerHTML = `
-          <!-- List Item Summary Bar -->
-          <div class="p-3 flex justify-between items-center cursor-pointer hover:bg-amber-100/50 transition" onclick="toggleAlertDetails('alert-details-${i}')">
-            <div class="flex items-center space-x-3">
-              <span class="bg-amber-500 text-white p-2 rounded-lg text-xs font-bold"><i class="fa-solid fa-clock"></i></span>
+          <div class="p-2.5 flex justify-between items-center cursor-pointer hover:bg-amber-100/50 transition" onclick="toggleAlertDetails('alert-details-${i}')">
+            <div class="flex items-center space-x-2">
+              <span class="bg-amber-500 text-white p-1.5 rounded text-[10px] font-bold"><i class="fa-solid fa-clock"></i></span>
               <div>
-                <h4 class="font-bold text-slate-800 text-xs flex items-center gap-2">
-                  ${b.name} <span class="bg-indigo-100 text-indigo-800 text-[10px] px-2 py-0.5 rounded font-mono">Room ${b.roomNo}</span>
+                <h4 class="font-bold text-slate-800 text-[11px] flex items-center gap-1.5">
+                  ${b.name} <span class="bg-indigo-100 text-indigo-800 text-[9px] px-1.5 py-0.2 rounded font-mono">${b.bookingCode || 'N/A'}</span>
+                  <span class="bg-slate-100 text-slate-700 text-[9px] px-1.5 py-0.2 rounded font-medium">Room ${b.roomNo}</span>
                 </h4>
-                <p class="text-[11px] text-slate-500 mt-0.5">Checkout Time: <strong class="text-amber-700">${timeFormatted}</strong></p>
+                <p class="text-[10px] text-slate-500">Checkout: <strong class="text-amber-700">${timeFormatted}</strong></p>
               </div>
             </div>
-            <div class="flex items-center space-x-2">
-              <span class="text-xs font-black text-rose-600 bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-md">
+            <div class="flex items-center space-x-1.5">
+              <span class="text-[11px] font-black text-rose-600 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded">
                 ₹${b.totalDue.toLocaleString('en-IN')} Due
               </span>
-              <button class="text-slate-400 hover:text-slate-600 text-xs p-1">
-                <i class="fa-solid fa-chevron-down"></i>
-              </button>
+              <i class="fa-solid fa-chevron-down text-slate-400 text-[10px]"></i>
             </div>
           </div>
 
-          <!-- Expandable Details Window ("Open to View") -->
-          <div id="alert-details-${i}" class="hidden bg-white border-t border-amber-200/60 p-3.5 space-y-2.5 text-[11px]">
-            <div class="grid grid-cols-2 gap-2 text-slate-600">
-              <div><span class="text-slate-400">Contact:</span> <strong>${b.contactNo || 'N/A'}</strong></div>
-              <div><span class="text-slate-400">ID Number:</span> <strong>${b.idNo || 'N/A'}</strong></div>
-              <div><span class="text-slate-400">Total Charges:</span> <strong>₹${b.totalAmount}</strong></div>
-              <div><span class="text-slate-400">Advance Paid:</span> <strong class="text-emerald-600">₹${b.advanced}</strong></div>
+          <div id="alert-details-${i}" class="hidden bg-white border-t border-amber-200/60 p-2.5 space-y-2 text-[10px]">
+            <div class="grid grid-cols-2 gap-1 text-slate-600">
+              <div>Contact: <strong>${b.contactNo || 'N/A'}</strong></div>
+              <div>ID Number: <strong>${b.idNo || 'N/A'}</strong></div>
+              <div>Total Charges: <strong>₹${b.totalAmount}</strong></div>
+              <div>Advance Paid: <strong class="text-emerald-600">₹${b.advanced}</strong></div>
             </div>
-            <div class="flex justify-end space-x-2 pt-1 border-t border-slate-100">
-              <button onclick="closeAlertModal(); openBookingModal('${b.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1.5 transition">
+            <div class="flex justify-end pt-1 border-t border-slate-100">
+              <button onclick="closeAlertModal(); openBookingModal('${b.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 rounded font-bold text-[10px] flex items-center gap-1 transition">
                 <i class="fa-solid fa-wallet"></i> Collect Payment / Edit
               </button>
             </div>
@@ -706,9 +790,7 @@
 
     function toggleAlertDetails(elemId) {
       const detailsBox = document.getElementById(elemId);
-      if (detailsBox) {
-        detailsBox.classList.toggle('hidden');
-      }
+      if (detailsBox) detailsBox.classList.toggle('hidden');
     }
 
     function openAlertModal() {
@@ -782,7 +864,7 @@
       grid.innerHTML = '';
       for (let y = 2026; y <= 2085; y++) {
         const item = document.createElement('div');
-        item.className = `text-center py-1.5 px-1 rounded-lg text-[11px] font-bold border cursor-pointer transition ${
+        item.className = `text-center py-1 px-1 rounded text-[10px] font-bold border cursor-pointer transition ${
           y === state.selectedYear 
             ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' 
             : 'bg-white text-slate-600 border-slate-200 hover:bg-indigo-50 hover:text-indigo-600'
@@ -811,10 +893,10 @@
       if (bIndex === -1) return;
 
       const b = state.bookings[bIndex];
-      const invoiceNo = generateInvoiceNumber(bIndex);
 
-      const today = new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
-      document.getElementById('inv-id').innerText = invoiceNo;
+      const today = formatDate(new Date());
+      document.getElementById('inv-id').innerText = b.invoiceNo;
+      document.getElementById('inv-booking-id').innerText = b.bookingCode;
       document.getElementById('inv-date').innerText = today;
 
       document.getElementById('inv-guest-name').innerText = b.name || 'N/A';
@@ -824,13 +906,37 @@
 
       document.getElementById('inv-room').innerText = `Room No: ${b.roomNo} (${b.capacity || 'Standard'})`;
       document.getElementById('inv-agent').innerText = `Agent: ${b.agentInfo || 'Direct'}`;
-      document.getElementById('inv-checkin').innerText = `Check-in: ${b.checkIn ? b.checkIn.replace('T', ' ') : '-'}`;
-      document.getElementById('inv-checkout').innerText = `Check-out: ${b.checkOut ? b.checkOut.replace('T', ' ') : '-'}`;
+      document.getElementById('inv-checkin').innerText = `Check-in: ${formatDateTime(b.checkIn)}`;
+      document.getElementById('inv-checkout').innerText = `Check-out: ${formatDateTime(b.checkOut)}`;
 
-      document.getElementById('inv-item-desc').innerText = `Room ${b.roomNo} Reservation Charges`;
-      document.getElementById('inv-item-days').innerText = `${b.noOfDays} Days`;
-      document.getElementById('inv-item-rate').innerText = `₹${(b.perDayPrice || 0).toLocaleString('en-IN')}`;
-      document.getElementById('inv-item-total').innerText = `₹${(b.totalAmount || 0).toLocaleString('en-IN')}`;
+      const tbody = document.getElementById('inv-items-tbody');
+      tbody.innerHTML = '';
+
+      const roomTotal = (b.noOfDays || 0) * (b.perDayPrice || 0);
+      const roomTr = document.createElement('tr');
+      roomTr.innerHTML = `
+        <td class="p-2 font-semibold text-slate-800">Room ${b.roomNo} Accommodation</td>
+        <td class="p-2 text-center">${b.noOfDays} Days</td>
+        <td class="p-2 text-right">₹${(b.perDayPrice || 0).toLocaleString('en-IN')}</td>
+        <td class="p-2 text-right font-semibold text-slate-800">₹${roomTotal.toLocaleString('en-IN')}</td>
+      `;
+      tbody.appendChild(roomTr);
+
+      if (b.foodOrders && b.foodOrders.length > 0) {
+        b.foodOrders.forEach(fo => {
+          if (fo.foodCharge > 0) {
+            const foodTr = document.createElement('tr');
+            const foodDateTimeFmt = fo.foodDateTime ? ` (${formatDateTime(fo.foodDateTime)})` : '';
+            foodTr.innerHTML = `
+              <td class="p-2 font-semibold text-slate-800">Extra Food & Drinks <span class="text-[9px] text-slate-500 font-normal block">${fo.foodDesc || 'Food Order'}${foodDateTimeFmt}</span></td>
+              <td class="p-2 text-center">1 Order</td>
+              <td class="p-2 text-right">₹${(fo.foodCharge || 0).toLocaleString('en-IN')}</td>
+              <td class="p-2 text-right font-semibold text-slate-800">₹${(fo.foodCharge || 0).toLocaleString('en-IN')}</td>
+            `;
+            tbody.appendChild(foodTr);
+          }
+        });
+      }
 
       document.getElementById('inv-sum-total').innerText = `₹${(b.totalAmount || 0).toLocaleString('en-IN')}`;
       document.getElementById('inv-sum-advance').innerText = `₹${(b.advanced || 0).toLocaleString('en-IN')}`;
@@ -843,9 +949,54 @@
       document.getElementById('invoice-modal').classList.add('hidden');
     }
 
+    // MULTIPLE FOOD ORDERS LIST DYNAMIC HANDLERS
+    function addFoodOrderItem(desc = '', dateStr = '', timeStr = '', charge = 0) {
+      const container = document.getElementById('food-orders-container');
+      const itemRow = document.createElement('div');
+      itemRow.className = "food-order-row grid grid-cols-1 sm:grid-cols-12 gap-1.5 items-end bg-white p-2 rounded border border-amber-200/80 shadow-xs";
+      
+      itemRow.innerHTML = `
+        <div class="sm:col-span-5">
+          <label class="block font-semibold text-slate-600 mb-0.5">Item Details</label>
+          <input type="text" value="${desc}" placeholder="e.g. 2x Tea, Snacks" class="cust-food-desc w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500">
+        </div>
+        
+        <div class="sm:col-span-4">
+          <label class="block font-semibold text-slate-600 mb-0.5"><i class="fa-regular fa-clock text-amber-600 mr-1"></i> Date & Time</label>
+          <div class="flex gap-1">
+            <input type="date" value="${dateStr}" onchange="validateAndCalculateFoodTimeRow(this)" class="cust-food-date w-3/5 bg-white border border-slate-300 rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium text-[10px]">
+            <input type="time" value="${timeStr}" onchange="validateAndCalculateFoodTimeRow(this)" class="cust-food-time w-2/5 bg-white border border-slate-300 rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium text-[10px]">
+          </div>
+        </div>
+
+        <div class="sm:col-span-2">
+          <label class="block font-semibold text-slate-600 mb-0.5">Charge (₹)</label>
+          <input type="number" value="${charge}" min="0" oninput="calculateModalBilling()" class="cust-food-charge w-full bg-white font-bold text-amber-700 border border-slate-300 rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500">
+        </div>
+
+        <div class="sm:col-span-1 flex justify-end">
+          <button type="button" onclick="removeFoodOrderItem(this)" class="text-rose-500 hover:text-rose-700 p-1.5" title="Remove Order">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+      `;
+
+      container.appendChild(itemRow);
+      calculateModalBilling();
+    }
+
+    function removeFoodOrderItem(btn) {
+      const row = btn.closest('.food-order-row');
+      if (row) {
+        row.remove();
+        calculateModalBilling();
+      }
+    }
+
     function openBookingModal(bookingId = null) {
       const form = document.getElementById('booking-form');
       form.reset();
+      document.getElementById('food-orders-container').innerHTML = '';
 
       if (bookingId) {
         const b = state.bookings.find(item => item.id === bookingId);
@@ -859,7 +1010,6 @@
           
           populateRoomDropdown(b.roomNo);
 
-          // Split stored string ISO standard into date and time parts
           if (b.checkIn) {
             const [inDate, inTime] = b.checkIn.split('T');
             document.getElementById('cust-checkin-date').value = inDate || '';
@@ -871,6 +1021,18 @@
             document.getElementById('cust-checkout-time').value = outTime || '11:00';
           }
 
+          if (b.foodOrders && b.foodOrders.length > 0) {
+            b.foodOrders.forEach(fo => {
+              let fDate = '', fTime = '';
+              if (fo.foodDateTime) {
+                const parts = fo.foodDateTime.split('T');
+                fDate = parts[0] || '';
+                fTime = parts[1] || '';
+              }
+              addFoodOrderItem(fo.foodDesc || '', fDate, fTime, fo.foodCharge || 0);
+            });
+          }
+
           document.getElementById('cust-price').value = b.perDayPrice;
           document.getElementById('cust-advance').value = b.advanced;
           calculateModalBilling();
@@ -879,7 +1041,6 @@
         document.getElementById('modal-title').innerText = 'Add New Booking';
         document.getElementById('modal-booking-id').value = '';
         
-        // Defaults to Room 1
         populateRoomDropdown(1);
 
         document.getElementById('cust-checkin-time').value = "12:00";
@@ -894,6 +1055,74 @@
 
     function closeBookingModal() {
       document.getElementById('booking-modal').classList.add('hidden');
+    }
+
+    function handleStayDatesChange() {
+      calculateModalBilling();
+      validateAllFoodTimes();
+    }
+
+    function validateAndCalculateFoodTimeRow(inputElem) {
+      const row = inputElem.closest('.food-order-row');
+      if (!row) return;
+
+      const dateElem = row.querySelector('.cust-food-date');
+      const timeElem = row.querySelector('.cust-food-time');
+
+      const foodDate = dateElem.value;
+      const foodTime = timeElem.value;
+
+      // Allow users to clear inputs without triggering warning loop
+      if (!foodDate && !foodTime) return true;
+
+      const inDate = document.getElementById('cust-checkin-date').value;
+      const inTime = document.getElementById('cust-checkin-time').value || '00:00';
+      const outDate = document.getElementById('cust-checkout-date').value;
+      const outTime = document.getElementById('cust-checkout-time').value || '00:00';
+
+      if (!inDate || !outDate || !foodDate) return true;
+
+      const checkInMs = new Date(`${inDate}T${inTime}`).getTime();
+      const checkOutMs = new Date(`${outDate}T${outTime}`).getTime();
+      
+      const thirtyMinsMs = 30 * 60 * 1000;
+      const fortyFiveMinsMs = 45 * 60 * 1000;
+
+      const minFoodTimeMs = checkInMs + thirtyMinsMs;
+      const maxFoodTimeMs = checkOutMs - fortyFiveMinsMs;
+
+      if (maxFoodTimeMs <= minFoodTimeMs) {
+        alert("⚠️ Stay duration is too short to allow extra food/drink orders with the required 30-minute post Check-In and 45-minute pre Check-Out buffers.");
+        dateElem.value = '';
+        timeElem.value = '';
+        return false;
+      }
+
+      const foodMs = new Date(`${foodDate}T${foodTime || '00:00'}`).getTime();
+
+      if (foodMs < minFoodTimeMs || foodMs > maxFoodTimeMs) {
+        const formattedMin = formatDateTime(minFoodTimeMs);
+        const formattedMax = formatDateTime(maxFoodTimeMs);
+
+        alert(`⚠️ Invalid Food/Drink Order Time!\n\nExtra orders are ONLY permitted within:\n• Earliest: ${formattedMin} (30 mins after Check-In)\n• Latest: ${formattedMax} (45 mins before Check-Out)`);
+        
+        dateElem.value = '';
+        timeElem.value = '';
+        return false;
+      }
+
+      return true;
+    }
+
+    function validateAllFoodTimes() {
+      const rows = document.querySelectorAll('.food-order-row');
+      for (let r of rows) {
+        const dateInput = r.querySelector('.cust-food-date');
+        if (dateInput && dateInput.value) {
+          if (!validateAndCalculateFoodTimeRow(dateInput)) return false;
+        }
+      }
+      return true;
     }
 
     function calculateModalBilling() {
@@ -911,8 +1140,16 @@
       }
 
       const price = parseFloat(document.getElementById('cust-price').value) || 0;
+      
+      let foodTotalCharge = 0;
+      document.querySelectorAll('.cust-food-charge').forEach(input => {
+        foodTotalCharge += parseFloat(input.value) || 0;
+      });
+
       const advance = parseFloat(document.getElementById('cust-advance').value) || 0;
-      const total = days * price;
+      
+      const roomTotal = days * price;
+      const total = roomTotal + foodTotalCharge;
       const due = total - advance;
 
       document.getElementById('cust-days').value = days;
@@ -922,6 +1159,11 @@
 
     function handleSaveBooking(e) {
       e.preventDefault();
+
+      if (!validateAllFoodTimes()) {
+        return;
+      }
+
       const id = document.getElementById('modal-booking-id').value;
       const roomNo = parseInt(document.getElementById('cust-room').value);
       
@@ -932,6 +1174,25 @@
 
       const checkIn = `${inDate}T${inTime}`;
       const checkOut = `${outDate}T${outTime}`;
+
+      // Extract multiple food orders
+      const foodOrdersList = [];
+      document.querySelectorAll('.food-order-row').forEach(row => {
+        const desc = row.querySelector('.cust-food-desc').value || '';
+        const fDate = row.querySelector('.cust-food-date').value || '';
+        const fTime = row.querySelector('.cust-food-time').value || '';
+        const charge = parseFloat(row.querySelector('.cust-food-charge').value) || 0;
+
+        const foodDateTime = (fDate && fTime) ? `${fDate}T${fTime}` : (fDate ? `${fDate}T00:00` : '');
+
+        if (desc || charge > 0 || foodDateTime) {
+          foodOrdersList.push({
+            foodDesc: desc,
+            foodDateTime: foodDateTime,
+            foodCharge: charge
+          });
+        }
+      });
 
       const newIn = new Date(checkIn).getTime();
       const newOut = new Date(checkOut).getTime();
@@ -952,13 +1213,32 @@
       });
 
       if (conflict) {
-        const confOutFormatted = conflict.checkOut.replace('T', ' ');
+        const confOutFormatted = formatDateTime(conflict.checkOut);
         alert(`❌ Booking Conflict Alert!\n\nRoom ${roomNo} is already occupied by ${conflict.name} until ${confOutFormatted}.\n\nPlease select a check-in time after ${confOutFormatted} or assign a different room.`);
         return;
+      }
+
+      let existingCode = null;
+      let existingInv = null;
+
+      if (id) {
+        const existing = state.bookings.find(b => b.id === id);
+        if (existing) {
+          existingCode = existing.bookingCode;
+          existingInv = existing.invoiceNo;
+        }
+      }
+
+      if (!existingCode) {
+        const generated = generateIDsForYear(checkIn);
+        existingCode = generated.bookingCode;
+        existingInv = generated.invoiceNo;
       }
       
       const newBooking = {
         id: id || `bk_${Date.now()}`,
+        bookingCode: existingCode,
+        invoiceNo: existingInv,
         name: document.getElementById('cust-name').value,
         address: document.getElementById('cust-address').value,
         idNo: document.getElementById('cust-id').value,
@@ -970,6 +1250,7 @@
         checkOut: checkOut,
         noOfDays: parseInt(document.getElementById('cust-days').value) || 0,
         perDayPrice: parseFloat(document.getElementById('cust-price').value) || 0,
+        foodOrders: foodOrdersList,
         totalAmount: parseFloat(document.getElementById('cust-total').value) || 0,
         advanced: parseFloat(document.getElementById('cust-advance').value) || 0,
         totalDue: parseFloat(document.getElementById('cust-due').value) || 0
@@ -983,6 +1264,7 @@
       }
 
       closeBookingModal();
+      populateBookingSearchDropdown();
       renderBookingsTable();
       updateDashboardCards();
       renderCalendar(state.selectedYear);
@@ -993,6 +1275,7 @@
     function deleteBooking(id) {
       if (confirm('Are you sure you want to delete this booking entry?')) {
         state.bookings = state.bookings.filter(b => b.id !== id);
+        populateBookingSearchDropdown();
         renderBookingsTable();
         updateDashboardCards();
         renderCalendar(state.selectedYear);
@@ -1001,53 +1284,75 @@
       }
     }
 
-    function renderBookingsTable() {
+    function renderBookingsTable(filterQuery = "") {
       const tbody = document.getElementById('bookings-tbody');
       tbody.innerHTML = '';
 
-      if (state.bookings.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-8 text-slate-400">No bookings found. Click "Add Booking" to register guests.</td></tr>`;
+      let listToRender = state.bookings;
+
+      if (filterQuery) {
+        listToRender = state.bookings.filter(b => 
+          (b.bookingCode && b.bookingCode.toLowerCase().includes(filterQuery))
+        );
+      }
+
+      if (listToRender.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" class="text-center py-6 text-slate-400">No bookings found matching your search.</td></tr>`;
         return;
       }
 
-      state.bookings.forEach((b) => {
-        const checkInFmt = b.checkIn ? b.checkIn.replace('T', ' ') : '-';
-        const checkOutFmt = b.checkOut ? b.checkOut.replace('T', ' ') : '-';
-        
+      listToRender.forEach((b) => {
+        const checkInFmt = formatDateTime(b.checkIn);
+        const checkOutFmt = formatDateTime(b.checkOut);
+
+        let foodSummaryHtml = '';
+        if (b.foodOrders && b.foodOrders.length > 0) {
+          const totalFoodCharge = b.foodOrders.reduce((acc, fo) => acc + (fo.foodCharge || 0), 0);
+          if (totalFoodCharge > 0) {
+            foodSummaryHtml = `<div class="text-[9px] text-amber-700 font-semibold"><i class="fa-solid fa-utensils text-[8px] mr-0.5"></i>Food (${b.foodOrders.length}): +₹${totalFoodCharge}</div>`;
+          }
+        }
+
         const tr = document.createElement('tr');
         tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
         tr.innerHTML = `
-          <td class="py-2.5 px-3 font-bold text-slate-800">${b.name}</td>
-          <td class="py-2.5 px-3 text-[11px] text-slate-500">
+          <td class="py-2 px-2">
+            <span class="bg-indigo-50 border border-indigo-200 text-indigo-700 font-mono font-bold px-1.5 py-0.2 rounded text-[9px] block w-max">${b.bookingCode}</span>
+          </td>
+          <td class="py-2 px-2 font-bold text-slate-800">${b.name}</td>
+          <td class="py-2 px-2 text-[10px] text-slate-500">
             <div class="font-medium text-slate-700">${b.contactNo}</div>
             <div class="text-slate-400">${b.idNo}</div>
           </td>
-          <td class="py-2.5 px-3">
-            <span class="bg-indigo-50 text-indigo-700 font-bold px-2 py-0.5 rounded text-[11px] inline-block">Room ${b.roomNo}</span>
-            <div class="text-[10px] text-slate-400 mt-0.5">${b.capacity}</div>
+          <td class="py-2 px-2">
+            <span class="bg-indigo-50 text-indigo-700 font-bold px-1.5 py-0.2 rounded text-[10px] inline-block">Room ${b.roomNo}</span>
+            <div class="text-[9px] text-slate-400">${b.capacity}</div>
           </td>
-          <td class="py-2.5 px-3 text-[11px] text-slate-600 font-medium">${b.agentInfo}</td>
-          <td class="py-2.5 px-3 text-[11px]">
+          <td class="py-2 px-2 text-[10px] text-slate-600 font-medium">${b.agentInfo}</td>
+          <td class="py-2 px-2 text-[10px]">
             <div class="text-emerald-700 font-medium"><i class="fa-solid fa-plane-arrival mr-1"></i> ${checkInFmt}</div>
-            <div class="text-rose-600 font-medium mt-0.5"><i class="fa-solid fa-plane-departure mr-1"></i> ${checkOutFmt}</div>
+            <div class="text-rose-600 font-medium"><i class="fa-solid fa-plane-departure mr-1"></i> ${checkOutFmt}</div>
           </td>
-          <td class="py-2.5 px-3 text-[11px] font-semibold text-slate-700">${b.noOfDays} d × ₹${b.perDayPrice}</td>
-          <td class="py-2.5 px-3 text-[11px]">
+          <td class="py-2 px-2 text-[10px]">
+            <div class="font-semibold text-slate-700">${b.noOfDays} d × ₹${b.perDayPrice}</div>
+            ${foodSummaryHtml}
+          </td>
+          <td class="py-2 px-2 text-[10px]">
             <div class="font-bold text-slate-800">Tot: ₹${b.totalAmount}</div>
             <div class="text-emerald-600 font-medium">Adv: ₹${b.advanced}</div>
           </td>
-          <td class="py-2.5 px-3">
-            <span class="px-2 py-0.5 rounded-full text-[11px] font-bold inline-block ${b.totalDue > 0 ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}">
+          <td class="py-2 px-2">
+            <span class="px-1.5 py-0.2 rounded text-[10px] font-bold inline-block ${b.totalDue > 0 ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}">
               ₹${b.totalDue} Due
             </span>
           </td>
-          <td class="py-2.5 px-3 text-center">
-            <div class="flex items-center justify-center space-x-2">
-              <button onclick="printInvoice('${b.id}')" title="Print Invoice" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded text-[11px] font-semibold transition flex items-center gap-1 border border-slate-200">
+          <td class="py-2 px-2 text-center">
+            <div class="flex items-center justify-center space-x-1.5">
+              <button onclick="printInvoice('${b.id}')" title="Print Invoice" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded text-[10px] font-semibold transition border border-slate-200">
                 <i class="fa-solid fa-print text-indigo-600"></i> Inv
               </button>
-              <button onclick="openBookingModal('${b.id}')" title="Edit Booking" class="text-indigo-600 hover:text-indigo-800 p-1"><i class="fa-solid fa-pen-to-square"></i></button>
-              <button onclick="deleteBooking('${b.id}')" title="Delete Booking" class="text-rose-500 hover:text-rose-700 p-1"><i class="fa-solid fa-trash-can"></i></button>
+              <button onclick="openBookingModal('${b.id}')" title="Edit Booking" class="text-indigo-600 hover:text-indigo-800 p-0.5"><i class="fa-solid fa-pen-to-square"></i></button>
+              <button onclick="deleteBooking('${b.id}')" title="Delete Booking" class="text-rose-500 hover:text-rose-700 p-0.5"><i class="fa-solid fa-trash-can"></i></button>
             </div>
           </td>
         `;
@@ -1062,12 +1367,12 @@
         const tr = document.createElement('tr');
         tr.className = "hover:bg-slate-50 transition";
         tr.innerHTML = `
-          <td class="py-2 px-3"><input type="text" value="${row.agentName}" onchange="updateMasterRow(${index}, 'agentName', this.value)" class="w-full bg-white border border-slate-300 rounded-md px-2.5 py-1 focus:border-indigo-500 focus:outline-none text-xs"></td>
-          <td class="py-2 px-3"><input type="text" value="${row.phone}" onchange="updateMasterRow(${index}, 'phone', this.value)" class="w-full bg-white border border-slate-300 rounded-md px-2.5 py-1 focus:border-indigo-500 focus:outline-none text-xs"></td>
-          <td class="py-2 px-3"><input type="number" value="${row.roomNo}" onchange="updateMasterRow(${index}, 'roomNo', this.value)" class="w-full bg-white border border-slate-300 rounded-md px-2.5 py-1 focus:border-indigo-500 focus:outline-none text-xs font-semibold text-indigo-700"></td>
-          <td class="py-2 px-3"><input type="number" value="${row.capacity}" onchange="updateMasterRow(${index}, 'capacity', this.value)" class="w-full bg-white border border-slate-300 rounded-md px-2.5 py-1 focus:border-indigo-500 focus:outline-none text-xs"></td>
-          <td class="py-2 px-3 text-center">
-            <button onclick="removeMasterRow(${index})" class="text-rose-500 hover:text-rose-700 p-1"><i class="fa-solid fa-trash-can"></i></button>
+          <td class="py-1.5 px-2"><input type="text" value="${row.agentName}" onchange="updateMasterRow(${index}, 'agentName', this.value)" class="w-full bg-white border border-slate-300 rounded px-2 py-0.5 focus:border-indigo-500 text-[11px]"></td>
+          <td class="py-1.5 px-2"><input type="text" value="${row.phone}" onchange="updateMasterRow(${index}, 'phone', this.value)" class="w-full bg-white border border-slate-300 rounded px-2 py-0.5 focus:border-indigo-500 text-[11px]"></td>
+          <td class="py-1.5 px-2"><input type="number" value="${row.roomNo}" onchange="updateMasterRow(${index}, 'roomNo', this.value)" class="w-full bg-white border border-slate-300 rounded px-2 py-0.5 focus:border-indigo-500 font-semibold text-indigo-700 text-[11px]"></td>
+          <td class="py-1.5 px-2"><input type="number" value="${row.capacity}" onchange="updateMasterRow(${index}, 'capacity', this.value)" class="w-full bg-white border border-slate-300 rounded px-2 py-0.5 focus:border-indigo-500 text-[11px]"></td>
+          <td class="py-1.5 px-2 text-center">
+            <button onclick="removeMasterRow(${index})" class="text-rose-500 hover:text-rose-700 p-0.5"><i class="fa-solid fa-trash-can"></i></button>
           </td>
         `;
         tbody.appendChild(tr);
@@ -1091,7 +1396,6 @@
       populateRoomDropdown();
     }
 
-    // CALENDAR RENDERER
     function renderCalendar(year) {
       state.selectedYear = year;
       const calSelect = document.getElementById('cal-year-select');
@@ -1104,15 +1408,15 @@
 
       months.forEach((month, monthIdx) => {
         const monthCard = document.createElement('div');
-        monthCard.className = "bg-white border border-slate-200 rounded-xl p-3 shadow-sm";
+        monthCard.className = "bg-white border border-slate-200 rounded-lg p-2 shadow-sm";
         
-        let header = `<h4 class="font-extrabold text-slate-800 text-center mb-2 text-xs border-b border-slate-100 pb-1.5">${month} ${year}</h4>`;
-        let daysHeader = `<div class="grid grid-cols-7 text-center text-[10px] font-bold text-slate-400 mb-1"><div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div></div>`;
+        let header = `<h4 class="font-bold text-slate-800 text-center mb-1 text-[11px] border-b border-slate-100 pb-1">${month} ${year}</h4>`;
+        let daysHeader = `<div class="grid grid-cols-7 text-center text-[9px] font-bold text-slate-400 mb-0.5"><div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div></div>`;
         
         let firstDay = new Date(year, monthIdx, 1).getDay();
         let totalDays = new Date(year, monthIdx + 1, 0).getDate();
         
-        let daysGrid = `<div class="grid grid-cols-7 text-center text-xs gap-1">`;
+        let daysGrid = `<div class="grid grid-cols-7 text-center text-[10px] gap-0.5">`;
         for (let i = 0; i < firstDay; i++) {
           daysGrid += `<div></div>`;
         }
@@ -1143,7 +1447,7 @@
 
           if (dayBookings.length > 0) {
             const bookingsJson = encodeURIComponent(JSON.stringify(dayBookings));
-            const formattedDateStr = `${month} ${d}, ${year}`;
+            const formattedDateStr = formatDate(currDate);
             
             const badgeBg = dayBookings.length > 1 
               ? 'bg-amber-600 text-white font-black hover:bg-amber-700' 
@@ -1151,13 +1455,12 @@
 
             daysGrid += `<div 
               onclick="toggleCommentBox(event, this, '${formattedDateStr}', '${bookingsJson}')" 
-              class="relative py-1 ${badgeBg} rounded cursor-pointer shadow-sm hover:scale-105 transition-transform flex flex-col items-center justify-center">
+              class="relative py-0.5 ${badgeBg} rounded cursor-pointer shadow-sm flex flex-col items-center justify-center">
                 <span>${d}</span>
-                <span class="absolute top-0 right-0 w-0 h-0 border-t-[5px] border-r-[5px] border-t-amber-300 border-r-transparent rounded-tr-sm"></span>
-                ${dayBookings.length > 1 ? `<span class="text-[9px] leading-none bg-amber-900/80 text-amber-200 px-1 py-0.5 rounded-full mt-0.5 font-bold">${dayBookings.length} Guests</span>` : ''}
+                <span class="absolute top-0 right-0 w-0 h-0 border-t-[4px] border-r-[4px] border-t-amber-300 border-r-transparent rounded-tr-sm"></span>
               </div>`;
           } else {
-            daysGrid += `<div class="py-1 hover:bg-slate-100 text-slate-700 cursor-pointer rounded font-medium">${d}</div>`;
+            daysGrid += `<div class="py-0.5 hover:bg-slate-100 text-slate-700 cursor-pointer rounded font-medium">${d}</div>`;
           }
         }
         daysGrid += `</div>`;
@@ -1167,7 +1470,6 @@
       });
     }
 
-    // EXCEL-STYLE PINNED COMMENT BOX LOGIC
     function toggleCommentBox(e, targetElem, dateStr, encodedBookings) {
       e.stopPropagation();
       
@@ -1182,18 +1484,29 @@
 
       dayBookings.forEach((item) => {
         const b = item.booking;
+        
+        let foodSummaryHtml = '';
+        if (b.foodOrders && b.foodOrders.length > 0) {
+          const totalCharge = b.foodOrders.reduce((acc, fo) => acc + (fo.foodCharge || 0), 0);
+          if (totalCharge > 0) {
+            foodSummaryHtml = `<p><span class="text-slate-400">Food Extra:</span> <span class="text-amber-300 font-medium">₹${totalCharge} (${b.foodOrders.length} item/s)</span></p>`;
+          }
+        }
+
         const card = document.createElement('div');
-        card.className = "bg-slate-800/95 border border-slate-700/80 p-2.5 rounded-lg space-y-1 text-xs shadow-inner";
+        card.className = "bg-slate-800/95 border border-slate-700/80 p-2 rounded space-y-0.5 text-[10px] shadow-inner";
         
         card.innerHTML = `
-          <div class="flex justify-between items-center text-amber-300 font-bold border-b border-slate-700/60 pb-1">
-            <span class="truncate max-w-[130px]"><i class="fa-solid fa-user text-[10px] mr-1 text-amber-400"></i> ${b.name || 'Guest'}</span>
-            <span class="bg-indigo-900/90 text-indigo-200 text-[10px] px-1.5 py-0.5 rounded font-mono border border-indigo-700">Room ${b.roomNo}</span>
+          <div class="flex justify-between items-center text-amber-300 font-bold border-b border-slate-700/60 pb-0.5">
+            <span class="truncate max-w-[100px]"><i class="fa-solid fa-user text-[9px] mr-1 text-amber-400"></i> ${b.name || 'Guest'}</span>
+            <span class="bg-indigo-900/90 text-indigo-200 text-[8px] px-1 py-0.2 rounded font-mono border border-indigo-700">${b.bookingCode}</span>
           </div>
-          <p><span class="text-slate-400">Contact:</span> <strong class="text-slate-200 font-medium">${b.contactNo || 'N/A'}</strong></p>
-          <p><span class="text-slate-400">Status:</span> <strong class="text-emerald-400 font-medium">${item.statusText}</strong></p>
-          <p><span class="text-slate-400">Check-In:</span> <span class="text-slate-300 font-mono text-[11px]">${b.checkIn ? b.checkIn.replace('T', ' ') : '-'}</span></p>
-          <p><span class="text-slate-400">Check-Out:</span> <span class="text-slate-300 font-mono text-[11px]">${b.checkOut ? b.checkOut.replace('T', ' ') : '-'}</span></p>
+          <p><span class="text-slate-400">Contact:</span> <strong class="text-slate-200">${b.contactNo || 'N/A'}</strong></p>
+          <p><span class="text-slate-400">Invoice:</span> <span class="text-slate-300 font-mono text-[9px]">${b.invoiceNo}</span></p>
+          <p><span class="text-slate-400">Status:</span> <strong class="text-emerald-400">${item.statusText}</strong></p>
+          ${foodSummaryHtml}
+          <p><span class="text-slate-400">Check-In:</span> <span class="text-slate-300 font-mono text-[9px]">${formatDateTime(b.checkIn)}</span></p>
+          <p><span class="text-slate-400">Check-Out:</span> <span class="text-slate-300 font-mono text-[9px]">${formatDateTime(b.checkOut)}</span></p>
         `;
 
         container.appendChild(card);
@@ -1203,11 +1516,11 @@
       const scrollY = window.scrollY || document.documentElement.scrollTop;
       const scrollX = window.scrollX || document.documentElement.scrollLeft;
 
-      commBox.style.top = `${rect.bottom + scrollY + 6}px`;
+      commBox.style.top = `${rect.bottom + scrollY + 4}px`;
       
       let leftPos = rect.left + scrollX - 10;
-      if (leftPos + 300 > window.innerWidth) {
-        leftPos = window.innerWidth - 310;
+      if (leftPos + 260 > window.innerWidth) {
+        leftPos = window.innerWidth - 270;
       }
       commBox.style.left = `${Math.max(10, leftPos)}px`;
 
@@ -1240,11 +1553,16 @@
       const wsDash = XLSX.utils.aoa_to_sheet(dashData);
       XLSX.utils.book_append_sheet(wb, wsDash, "Dashboard");
 
-      const bookingHeaders = [["Invoice No", "Name", "Address", "ID No", "Contact No", "Room No", "Agent Info", "Capacity", "Check In", "Check Out", "Days", "Price/Day", "Total", "Advance", "Due"]];
-      const bookingRows = state.bookings.map((b, idx) => [
-        generateInvoiceNumber(idx), b.name, b.address, b.idNo, b.contactNo, b.roomNo, b.agentInfo, b.capacity,
-        b.checkIn.replace('T', ' '), b.checkOut.replace('T', ' '), b.noOfDays, b.perDayPrice, b.totalAmount, b.advanced, b.totalDue
-      ]);
+      const bookingHeaders = [["Booking ID", "Invoice ID", "Name", "Address", "ID No", "Contact No", "Room No", "Agent Info", "Capacity", "Check In", "Check Out", "Days", "Price/Day", "Total Food Charges", "Total", "Advance", "Due"]];
+      const bookingRows = state.bookings.map((b) => {
+        const totalFoodCharge = (b.foodOrders || []).reduce((acc, fo) => acc + (fo.foodCharge || 0), 0);
+        return [
+          b.bookingCode,
+          b.invoiceNo,
+          b.name, b.address, b.idNo, b.contactNo, b.roomNo, b.agentInfo, b.capacity,
+          formatDateTime(b.checkIn), formatDateTime(b.checkOut), b.noOfDays, b.perDayPrice, totalFoodCharge, b.totalAmount, b.advanced, b.totalDue
+        ];
+      });
       const wsBooking = XLSX.utils.aoa_to_sheet([...bookingHeaders, ...bookingRows]);
       XLSX.utils.book_append_sheet(wb, wsBooking, "Booking Details");
 
