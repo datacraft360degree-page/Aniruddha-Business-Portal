@@ -103,7 +103,7 @@
           <span id="alert-badge" class="hidden absolute -top-1.5 -right-1.5 bg-rose-600 text-white text-[9px] font-black px-1.5 py-0.2 rounded-full border border-white animate-bounce">0</span>
         </button>
         <button onclick="saveChanges()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-2.5 py-1 rounded text-[11px] font-semibold flex items-center gap-1 transition">
-          <i class="fa-solid fa-floppy-disk text-[10px]"></i> Save
+          <i class="fa-solid fa-floppy-disk text-[10px]"></i> Save changes
         </button>
         <button onclick="exportToExcel()" class="bg-indigo-600 hover:bg-indigo-800 text-white px-2.5 py-1 rounded text-[11px] font-semibold flex items-center gap-1 transition">
           <i class="fa-solid fa-file-excel text-[10px]"></i> Export
@@ -115,7 +115,7 @@
   <!-- Notification Toast -->
   <div id="toast" class="hidden fixed bottom-4 right-4 bg-slate-900 text-white px-3 py-2 rounded-md shadow-lg z-50 flex items-center gap-2 no-print border border-slate-700 text-[11px]">
     <i class="fa-solid fa-circle-check text-emerald-400 text-sm"></i>
-    <span id="toast-message" class="font-medium">Changes saved successfully!</span>
+    <span id="toast-message" class="font-medium">Changes Auto save successfully!</span>
   </div>
 
   <!-- Main Content Area -->
@@ -519,6 +519,15 @@
   </div>
 
   <script>
+    // Tab Close / Reload Prompt[cite: 1]
+    window.addEventListener('beforeunload', function (e) {
+      // Prevents tab closure without confirmation[cite: 1]
+      e.preventDefault();
+      // Required for browser compatibility to display the prompt dialog[cite: 1]
+      e.returnValue = 'Please click "Save Changes" button to save the history.'; 
+      return e.returnValue;
+    });
+
     // Helper function to format ISO/DateTime strings to dd-mm-yyyy hh:mm (24-hour)
     function formatDateTime(dtStr) {
       if (!dtStr) return '-';
@@ -702,6 +711,12 @@
 
       checkUpcomingCheckoutsWithDue();
       setInterval(checkUpcomingCheckoutsWithDue, 60000);
+
+      // Auto-save data every 15 minutes (900,000 milliseconds)
+      setInterval(saveChanges, 900000);
+
+      // Notify the user immediately on opening/loading the web page
+      showNotificationToast("Changes Auto save successfully!");
     });
 
     function checkUpcomingCheckoutsWithDue() {
@@ -1540,12 +1555,21 @@
       document.getElementById('excel-comment-box').classList.add('hidden');
     }
 
+    function showNotificationToast(msg = "Changes Auto save successfully!") {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-message');
+      if (toastMsg) toastMsg.innerText = msg;
+      
+      if (toast) {
+        toast.classList.remove('hidden');
+        setTimeout(() => toast.classList.add('hidden'), 4000);
+      }
+    }
+
     function saveChanges(showToast = true) {
       localStorage.setItem('webapp_data', JSON.stringify(state));
       if (showToast) {
-        const toast = document.getElementById('toast');
-        toast.classList.remove('hidden');
-        setTimeout(() => toast.classList.add('hidden'), 3000);
+        showNotificationToast("Changes Auto save successfully!");
       }
     }
 
