@@ -246,15 +246,16 @@
           </div>
           
           <div class="flex items-center space-x-2 w-full md:w-auto">
-            <!-- Updated Input with Datalist for typing hints & dropdown selection -->
-            <div class="flex items-center bg-slate-50 border border-slate-300 rounded p-0.5 space-x-1">
-              <input list="booking-search-list" id="booking-search-input" oninput="searchBookingById()" placeholder="Type or select Booking ID..." class="bg-transparent text-[11px] px-1.5 py-0.5 focus:outline-none w-36 sm:w-48 text-slate-700 font-semibold">
-              <datalist id="booking-search-list"></datalist>
-              <button onclick="searchBookingById()" class="bg-slate-700 hover:bg-slate-800 text-white px-2 py-0.5 rounded text-[10px] font-semibold flex items-center gap-1 transition">
-                <i class="fa-solid fa-magnifying-glass"></i> Search
-              </button>
-              <button onclick="clearSearchBooking()" class="text-slate-400 hover:text-slate-600 px-1 text-[10px]" title="Clear">
-                <i class="fa-solid fa-xmark"></i>
+            <!-- ENHANCED: Advanced Select Dropdown for Room Search -->
+            <div class="flex items-center bg-slate-50 border border-slate-300 rounded p-1 space-x-1.5">
+              <label for="booking-search-select" class="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-1 pl-1">
+                <i class="fa-solid fa-filter text-indigo-600"></i> Search by:
+              </label>
+              <select id="booking-search-select" onchange="searchBookingByRoomNo()" class="bg-white text-[11px] border border-slate-300 rounded px-2 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-bold text-indigo-700 cursor-pointer">
+                <!-- Populated dynamically -->
+              </select>
+              <button onclick="clearSearchBooking()" class="text-slate-400 hover:text-slate-600 px-1 text-[10px]" title="Reset Filter">
+                <i class="fa-solid fa-rotate-left"></i> Reset
               </button>
             </div>
 
@@ -785,28 +786,39 @@
       selectedYear: 2026
     };
 
+    // ENHANCED: Populates the Room Filter Dropdown cleanly with all registered rooms
     function populateBookingSearchDropdown() {
-      const datalist = document.getElementById('booking-search-list');
-      if (!datalist) return;
+      const select = document.getElementById('booking-search-select');
+      if (!select) return;
 
-      datalist.innerHTML = '';
+      const currentValue = select.value;
+      select.innerHTML = '<option value="">All Rooms</option>';
       
-      state.bookings.forEach(b => {
-        if (b.bookingCode) {
-          const opt = document.createElement('option');
-          opt.value = b.bookingCode;
-          datalist.appendChild(opt);
-        }
+      const rooms = new Set();
+      state.master.forEach(m => rooms.add(m.roomNo));
+      state.bookings.forEach(b => rooms.add(b.roomNo));
+
+      Array.from(rooms).sort((a, b) => a - b).forEach(roomNo => {
+        const opt = document.createElement('option');
+        opt.value = roomNo;
+        opt.text = `Room ${roomNo}`;
+        select.appendChild(opt);
       });
+
+      if (currentValue) {
+        select.value = currentValue;
+      }
     }
 
-    function searchBookingById() {
-      const searchTerm = document.getElementById('booking-search-input').value.trim().toLowerCase();
-      renderBookingsTable(searchTerm);
+    // ENHANCED: Filters table dynamically based on selected Room Dropdown option
+    function searchBookingByRoomNo() {
+      const roomVal = document.getElementById('booking-search-select').value;
+      renderBookingsTable(roomVal);
     }
 
     function clearSearchBooking() {
-      document.getElementById('booking-search-input').value = '';
+      const select = document.getElementById('booking-search-select');
+      if (select) select.value = "";
       renderBookingsTable();
     }
 
@@ -1471,20 +1483,19 @@
       }
     }
 
-    function renderBookingsTable(filterQuery = "") {
+    // ENHANCED: Table renderer filtered specifically by Room No selection
+    function renderBookingsTable(roomFilter = "") {
       const tbody = document.getElementById('bookings-tbody');
       tbody.innerHTML = '';
 
       let listToRender = state.bookings;
 
-      if (filterQuery) {
-        listToRender = state.bookings.filter(b => 
-          (b.bookingCode && b.bookingCode.toLowerCase().includes(filterQuery))
-        );
+      if (roomFilter !== "" && roomFilter !== null && roomFilter !== undefined) {
+        listToRender = state.bookings.filter(b => parseInt(b.roomNo) === parseInt(roomFilter));
       }
 
       if (listToRender.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="11" class="text-center py-6 text-slate-400">No bookings found matching your search.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="11" class="text-center py-6 text-slate-400">No bookings found for the selected room.</td></tr>`;
         return;
       }
 
@@ -1567,18 +1578,21 @@
     function updateMasterRow(index, key, value) {
       state.master[index][key] = value;
       populateRoomDropdown();
+      populateBookingSearchDropdown();
     }
 
     function addMasterRow() {
       state.master.push({ agentName: "New Agent", phone: "1234567890", roomNo: state.master.length + 1, capacity: 2 });
       renderMasterTable();
       populateRoomDropdown();
+      populateBookingSearchDropdown();
     }
 
     function removeMasterRow(index) {
       state.master.splice(index, 1);
       renderMasterTable();
       populateRoomDropdown();
+      populateBookingSearchDropdown();
     }
 
     function renderCalendar(year) {
