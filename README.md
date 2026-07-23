@@ -179,7 +179,7 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-3 pb-2 border-b border-slate-100">
           <div>
             <h2 class="text-xs font-bold text-slate-800 flex items-center gap-1">
-              <i class="fa-solid fa-address-card text-indigo-600"></i> Customer & Reservation Directory
+              <i class="fa-solid fa-address-card text-indigo-600"></i> Guest Information & Reservation Directory
             </h2>
           </div>
           
@@ -207,7 +207,8 @@
               <tr class="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                 <th class="py-2 px-2">Booking ID</th>
                 <th class="py-2 px-2">Guest Name</th>
-                <th class="py-2 px-2">Contact / ID</th>
+                <th class="py-2 px-2">Contact No</th>
+                <th class="py-2 px-2">ID Number</th>
                 <th class="py-2 px-2">Room</th>
                 <th class="py-2 px-2">Agent</th>
                 <th class="py-2 px-2 min-w-[150px]">Stay Window</th>
@@ -320,20 +321,23 @@
           </h4>
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <div>
-              <label class="block font-semibold text-slate-600 mb-0.5">Customer Name</label>
-              <input type="text" id="cust-name" required class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+              <label class="block font-semibold text-slate-600 mb-0.5">Guest Name <span class="text-rose-500">*</span></label>
+              <!-- Mandatory Guest Name enforcing characters/letters only -->
+              <input type="text" id="cust-name" required pattern="[A-Za-z\s]+" oninput="this.value = this.value.replace(/[^A-Za-z\s]/g, '')" title="Please enter Guest Name using characters only (letters and spaces)" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
             </div>
             <div>
-              <label class="block font-semibold text-slate-600 mb-0.5">Address</label>
-              <input type="text" id="cust-address" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+              <label class="block font-semibold text-slate-600 mb-0.5">Address <span class="text-rose-500">*</span></label>
+              <input type="text" id="cust-address" required title="Address is mandatory" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
             </div>
             <div>
-              <label class="block font-semibold text-slate-600 mb-0.5">ID Number</label>
-              <input type="text" id="cust-id" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+              <label class="block font-semibold text-slate-600 mb-0.5">ID Number <span class="text-rose-500">*</span></label>
+              <!-- Mandatory ID Number allowing both characters and numbers -->
+              <input type="text" id="cust-id" required pattern="[A-Za-z0-9\s]+" oninput="this.value = this.value.replace(/[^A-Za-z0-9\s]/g, '')" title="Please enter letters and numbers" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
             </div>
             <div>
-              <label class="block font-semibold text-slate-600 mb-0.5">Contact No</label>
-              <input type="text" id="cust-contact" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+              <label class="block font-semibold text-slate-600 mb-0.5">Contact No <span class="text-rose-500">*</span></label>
+              <!-- Mandatory Contact No enforcing numbers only -->
+              <input type="text" id="cust-contact" required pattern="[0-9]+" oninput="this.value = this.value.replace(/[^0-9]/g, '')" title="Please enter numbers only" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
             </div>
           </div>
         </div>
@@ -520,7 +524,6 @@
       if (!dtStr) return '-';
       const d = new Date(dtStr);
       if (isNaN(d.getTime())) {
-        // Fallback for manual replacement if Date parsing fails
         const parts = dtStr.split('T');
         if (parts.length === 2) {
           const dateParts = parts[0].split('-');
@@ -559,7 +562,7 @@
           invoiceNo: "INV-2026-0000001",
           name: "Kapil",
           address: "Kolkata",
-          idNo: "2578 0001 6658",
+          idNo: "ABC25780001",
           contactNo: "1234567890",
           roomNo: 2,
           agentInfo: "A2 1234567890",
@@ -581,7 +584,7 @@
           invoiceNo: "INV-2026-0000002",
           name: "Aniruddha",
           address: "Mumbai",
-          idNo: "9988 7766 5544",
+          idNo: "XYZ99887766",
           contactNo: "9876543210",
           roomNo: 4,
           agentInfo: "A1 1234567890",
@@ -666,7 +669,6 @@
         try { 
           const parsed = JSON.parse(saved);
           if (parsed.bookings) {
-            // Migrate legacy single food order structure to array if necessary
             parsed.bookings.forEach(b => {
               if (!b.foodOrders) {
                 b.foodOrders = [];
@@ -1072,7 +1074,6 @@
       const foodDate = dateElem.value;
       const foodTime = timeElem.value;
 
-      // Allow users to clear inputs without triggering warning loop
       if (!foodDate && !foodTime) return true;
 
       const inDate = document.getElementById('cust-checkin-date').value;
@@ -1160,6 +1161,17 @@
     function handleSaveBooking(e) {
       e.preventDefault();
 
+      // Additional strict check for mandatory guest information fields
+      const guestName = document.getElementById('cust-name').value.trim();
+      const guestAddress = document.getElementById('cust-address').value.trim();
+      const guestId = document.getElementById('cust-id').value.trim();
+      const guestContact = document.getElementById('cust-contact').value.trim();
+
+      if (!guestName || !guestAddress || !guestId || !guestContact) {
+        alert("⚠️ All Guest Information fields (Guest Name, Address, ID Number, and Contact No) are mandatory to proceed!");
+        return;
+      }
+
       if (!validateAllFoodTimes()) {
         return;
       }
@@ -1175,7 +1187,6 @@
       const checkIn = `${inDate}T${inTime}`;
       const checkOut = `${outDate}T${outTime}`;
 
-      // Extract multiple food orders
       const foodOrdersList = [];
       document.querySelectorAll('.food-order-row').forEach(row => {
         const desc = row.querySelector('.cust-food-desc').value || '';
@@ -1239,10 +1250,10 @@
         id: id || `bk_${Date.now()}`,
         bookingCode: existingCode,
         invoiceNo: existingInv,
-        name: document.getElementById('cust-name').value,
-        address: document.getElementById('cust-address').value,
-        idNo: document.getElementById('cust-id').value,
-        contactNo: document.getElementById('cust-contact').value,
+        name: guestName,
+        address: guestAddress,
+        idNo: guestId,
+        contactNo: guestContact,
         roomNo: roomNo,
         agentInfo: document.getElementById('cust-agent').value,
         capacity: document.getElementById('cust-capacity').value,
@@ -1297,7 +1308,7 @@
       }
 
       if (listToRender.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="10" class="text-center py-6 text-slate-400">No bookings found matching your search.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="11" class="text-center py-6 text-slate-400">No bookings found matching your search.</td></tr>`;
         return;
       }
 
@@ -1320,10 +1331,8 @@
             <span class="bg-indigo-50 border border-indigo-200 text-indigo-700 font-mono font-bold px-1.5 py-0.2 rounded text-[9px] block w-max">${b.bookingCode}</span>
           </td>
           <td class="py-2 px-2 font-bold text-slate-800">${b.name}</td>
-          <td class="py-2 px-2 text-[10px] text-slate-500">
-            <div class="font-medium text-slate-700">${b.contactNo}</div>
-            <div class="text-slate-400">${b.idNo}</div>
-          </td>
+          <td class="py-2 px-2 text-[10px] font-medium text-slate-700">${b.contactNo || '-'}</td>
+          <td class="py-2 px-2 text-[10px] text-slate-500 font-mono">${b.idNo || '-'}</td>
           <td class="py-2 px-2">
             <span class="bg-indigo-50 text-indigo-700 font-bold px-1.5 py-0.2 rounded text-[10px] inline-block">Room ${b.roomNo}</span>
             <div class="text-[9px] text-slate-400">${b.capacity}</div>
@@ -1368,7 +1377,7 @@
         tr.className = "hover:bg-slate-50 transition";
         tr.innerHTML = `
           <td class="py-1.5 px-2"><input type="text" value="${row.agentName}" onchange="updateMasterRow(${index}, 'agentName', this.value)" class="w-full bg-white border border-slate-300 rounded px-2 py-0.5 focus:border-indigo-500 text-[11px]"></td>
-          <td class="py-1.5 px-2"><input type="text" value="${row.phone}" onchange="updateMasterRow(${index}, 'phone', this.value)" class="w-full bg-white border border-slate-300 rounded px-2 py-0.5 focus:border-indigo-500 text-[11px]"></td>
+          <td class="py-1.5 px-2"><input type="text" pattern="[0-9]+" oninput="this.value = this.value.replace(/[^0-9]/g, '')" value="${row.phone}" onchange="updateMasterRow(${index}, 'phone', this.value)" class="w-full bg-white border border-slate-300 rounded px-2 py-0.5 focus:border-indigo-500 text-[11px]"></td>
           <td class="py-1.5 px-2"><input type="number" value="${row.roomNo}" onchange="updateMasterRow(${index}, 'roomNo', this.value)" class="w-full bg-white border border-slate-300 rounded px-2 py-0.5 focus:border-indigo-500 font-semibold text-indigo-700 text-[11px]"></td>
           <td class="py-1.5 px-2"><input type="number" value="${row.capacity}" onchange="updateMasterRow(${index}, 'capacity', this.value)" class="w-full bg-white border border-slate-300 rounded px-2 py-0.5 focus:border-indigo-500 text-[11px]"></td>
           <td class="py-1.5 px-2 text-center">
@@ -1553,7 +1562,7 @@
       const wsDash = XLSX.utils.aoa_to_sheet(dashData);
       XLSX.utils.book_append_sheet(wb, wsDash, "Dashboard");
 
-      const bookingHeaders = [["Booking ID", "Invoice ID", "Name", "Address", "ID No", "Contact No", "Room No", "Agent Info", "Capacity", "Check In", "Check Out", "Days", "Price/Day", "Total Food Charges", "Total", "Advance", "Due"]];
+      const bookingHeaders = [["Booking ID", "Invoice ID", "Guest Name", "Address", "ID No", "Contact No", "Room No", "Agent Info", "Capacity", "Check In", "Check Out", "Days", "Price/Day", "Total Food Charges", "Total", "Advance", "Due"]];
       const bookingRows = state.bookings.map((b) => {
         const totalFoodCharge = (b.foodOrders || []).reduce((acc, fo) => acc + (fo.foodCharge || 0), 0);
         return [
