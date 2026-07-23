@@ -125,7 +125,7 @@
     <section id="tab-dashboard" class="tab-content space-y-3">
       <div class="bg-gradient-to-r from-indigo-700 via-indigo-600 to-blue-600 rounded-lg p-3 text-white shadow-sm flex justify-between items-center">
         <div>
-          <h2 class="text-base font-bold tracking-tight">Hi Aniruddha, Welcome back! 🏠</h2>
+          <h2 class="text-base font-bold tracking-tight">Hi Aniruddha, Welcome to dashboard 🏠</h2>
           <p class="text-indigo-100 text-[10px] mt-0.5">Quickly view, schedule, and manage room allocations and orders.</p>
         </div>
       </div>
