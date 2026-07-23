@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -61,6 +62,65 @@
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col relative antialiased text-xs" onclick="closeCommentBox()">
 
+  <!-- LOGIN MODAL OVERLAY -->
+  <div id="login-overlay" class="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-sm w-full p-6 space-y-4 text-left">
+      <div class="text-center space-y-1">
+        <div class="bg-indigo-100 text-indigo-700 w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl shadow-inner">
+          <i class="fa-solid fa-lock"></i>
+        </div>
+        <h2 class="text-base font-bold text-slate-800">Homestay Business Portal</h2>
+        <p class="text-[11px] text-slate-500">Please enter your credentials to access the system</p>
+      </div>
+
+      <form onsubmit="handleLogin(event)" class="space-y-3">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 mb-1">User ID</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center text-slate-400 text-xs">
+              <i class="fa-solid fa-user"></i>
+            </span>
+            <input type="text" id="login-userid" required placeholder="Enter User ID" class="w-full bg-slate-50 border border-slate-300 rounded-md pl-8 pr-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 mb-1">Password</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center text-slate-400 text-xs">
+              <i class="fa-solid fa-key"></i>
+            </span>
+            <input type="password" id="login-password" required placeholder="Enter Password" class="w-full bg-slate-50 border border-slate-300 rounded-md pl-8 pr-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs">
+          </div>
+        </div>
+
+        <div id="login-error" class="hidden bg-rose-50 border border-rose-200 text-rose-600 text-[10px] p-2 rounded text-center font-medium">
+          Invalid User ID or Password!
+        </div>
+
+        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-md shadow transition text-xs flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-right-to-bracket"></i> Login
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- SESSION AUTO LOGOUT WARNING MODAL -->
+  <div id="logout-warning-modal" class="hidden fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl border border-slate-200 max-w-xs w-full p-4 space-y-3 text-center">
+      <div class="bg-amber-100 text-amber-600 w-10 h-10 rounded-full flex items-center justify-center mx-auto text-lg">
+        <i class="fa-solid fa-hourglass-half"></i>
+      </div>
+      <div>
+        <h3 class="text-xs font-bold text-slate-800">Inactivity Timeout Warning</h3>
+        <p class="text-[10px] text-slate-500 mt-1">You will be logged out automatically in <strong id="logout-countdown-seconds" class="text-rose-600">60</strong> seconds due to inactivity.</p>
+      </div>
+      <button onclick="resetInactivityTimer()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-1.5 rounded text-[11px] transition shadow">
+        Stay Logged In
+      </button>
+    </div>
+  </div>
+
   <!-- Excel Comment Box Popout -->
   <div id="excel-comment-box" onclick="event.stopPropagation()" class="excel-comment-box hidden absolute z-50 bg-slate-900 text-white text-[11px] rounded-lg p-2.5 shadow-2xl border border-amber-400 space-y-2 w-64 transition-all duration-150">
     <div class="font-bold text-amber-300 border-b border-slate-700 pb-1 flex justify-between items-center text-[10px]">
@@ -107,6 +167,9 @@
         </button>
         <button onclick="exportToExcel()" class="bg-indigo-600 hover:bg-indigo-800 text-white px-2.5 py-1 rounded text-[11px] font-semibold flex items-center gap-1 transition">
           <i class="fa-solid fa-file-excel text-[10px]"></i> Export
+        </button>
+        <button onclick="logoutUser()" title="Logout" class="bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1 rounded text-[11px] font-semibold flex items-center gap-1 transition">
+          <i class="fa-solid fa-right-from-bracket text-[10px]"></i> Logout
         </button>
       </div>
     </div>
@@ -521,10 +584,115 @@
   <script>
     // Tab Close / Reload Prompt
     window.addEventListener('beforeunload', function (e) {
-      e.preventDefault();
-      e.returnValue = 'Please click "Save Changes" button to save the history.'; 
-      return e.returnValue;
+      if (isLoggedIn) {
+        e.preventDefault();
+        e.returnValue = 'Please click "Save Changes" button to save the history.'; 
+        return e.returnValue;
+      }
     });
+
+    // --- LOGIN AND INACTIVITY LOGOUT MANAGEMENT ---
+    let isLoggedIn = false;
+    let inactivityTimer = null;
+    let warningTimer = null;
+    let countdownInterval = null;
+    const INACTIVITY_LIMIT_MS = 5 * 60 * 1000; // 5 Minutes
+    const WARNING_BUFFER_MS = 1 * 60 * 1000;   // Show warning at 4 minutes (1 min remaining)
+
+    const DEFAULT_USER_ID = "admin";
+    const DEFAULT_PASSWORD = "admin123";
+
+    function checkAuthStatus() {
+      const sessionAuth = sessionStorage.getItem('app_authenticated');
+      if (sessionAuth === 'true') {
+        isLoggedIn = true;
+        document.getElementById('login-overlay').classList.add('hidden');
+        startInactivityMonitoring();
+      } else {
+        isLoggedIn = false;
+        document.getElementById('login-overlay').classList.remove('hidden');
+      }
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const user = document.getElementById('login-userid').value.trim();
+      const pass = document.getElementById('login-password').value.trim();
+
+      if (user === DEFAULT_USER_ID && pass === DEFAULT_PASSWORD) {
+        isLoggedIn = true;
+        sessionStorage.setItem('app_authenticated', 'true');
+        document.getElementById('login-overlay').classList.add('hidden');
+        document.getElementById('login-error').classList.add('hidden');
+        startInactivityMonitoring();
+      } else {
+        document.getElementById('login-error').classList.remove('hidden');
+      }
+    }
+
+    function logoutUser() {
+      isLoggedIn = false;
+      sessionStorage.removeItem('app_authenticated');
+      stopInactivityMonitoring();
+      document.getElementById('logout-warning-modal').classList.add('hidden');
+      document.getElementById('login-password').value = '';
+      document.getElementById('login-overlay').classList.remove('hidden');
+    }
+
+    function startInactivityMonitoring() {
+      stopInactivityMonitoring();
+      
+      const activityEvents = ['mousemove', 'keydown', 'mousedown', 'touchstart', 'scroll'];
+      activityEvents.forEach(evt => {
+        window.addEventListener(evt, resetInactivityTimer);
+      });
+
+      resetInactivityTimer();
+    }
+
+    function stopInactivityMonitoring() {
+      if (inactivityTimer) clearTimeout(inactivityTimer);
+      if (warningTimer) clearTimeout(warningTimer);
+      if (countdownInterval) clearInterval(countdownInterval);
+      
+      const activityEvents = ['mousemove', 'keydown', 'mousedown', 'touchstart', 'scroll'];
+      activityEvents.forEach(evt => {
+        window.removeEventListener(evt, resetInactivityTimer);
+      });
+    }
+
+    function resetInactivityTimer() {
+      if (!isLoggedIn) return;
+
+      if (inactivityTimer) clearTimeout(inactivityTimer);
+      if (warningTimer) clearTimeout(warningTimer);
+      if (countdownInterval) clearInterval(countdownInterval);
+
+      document.getElementById('logout-warning-modal').classList.add('hidden');
+
+      // Set Warning timer (4 minutes)
+      warningTimer = setTimeout(showInactivityWarning, INACTIVITY_LIMIT_MS - WARNING_BUFFER_MS);
+
+      // Set Final Logout timer (5 minutes)
+      inactivityTimer = setTimeout(logoutUser, INACTIVITY_LIMIT_MS);
+    }
+
+    function showInactivityWarning() {
+      if (!isLoggedIn) return;
+
+      let secondsLeft = 60;
+      document.getElementById('logout-countdown-seconds').innerText = secondsLeft;
+      document.getElementById('logout-warning-modal').classList.remove('hidden');
+
+      countdownInterval = setInterval(() => {
+        secondsLeft--;
+        if (secondsLeft >= 0) {
+          document.getElementById('logout-countdown-seconds').innerText = secondsLeft;
+        } else {
+          clearInterval(countdownInterval);
+        }
+      }, 1000);
+    }
 
     // Helper function to format ISO/DateTime strings to dd-mm-yyyy hh:mm (24-hour)
     function formatDateTime(dtStr) {
@@ -698,6 +866,7 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
+      checkAuthStatus();
       loadSavedData();
       initDashboard();
       populateRoomDropdown();
