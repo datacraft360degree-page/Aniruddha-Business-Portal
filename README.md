@@ -142,6 +142,27 @@
     </div>
   </div>
 
+  <!-- MASTER DATA PERMANENT DELETION RECONFIRMATION POPUP MODAL -->
+  <div id="master-delete-confirm-modal" class="hidden fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 no-print">
+    <div class="bg-white rounded-xl shadow-2xl border border-rose-200 max-w-sm w-full p-5 space-y-3 text-center">
+      <div class="bg-rose-100 text-rose-600 w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl shadow-inner">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <div>
+        <h3 class="text-xs font-bold text-slate-800">Confirm Permanent Deletion</h3>
+        <p id="master-delete-modal-msg" class="text-[11px] text-slate-600 mt-1">Are you sure you want to permanently delete this data from Master Tab? This action cannot be undone.</p>
+      </div>
+      <div class="flex space-x-2 pt-2">
+        <button type="button" onclick="closeMasterDeleteModal()" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-1.5 rounded text-[11px] transition">
+          Cancel
+        </button>
+        <button type="button" onclick="confirmMasterDeletion()" class="w-1/2 bg-rose-600 hover:bg-rose-700 text-white font-bold py-1.5 rounded shadow transition text-[11px] flex items-center justify-center gap-1">
+          <i class="fa-solid fa-trash-can text-[10px]"></i> Delete Permanently
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- SESSION AUTO LOGOUT WARNING MODAL -->
   <div id="logout-warning-modal" class="hidden fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white rounded-lg shadow-xl border border-slate-200 max-w-xs w-full p-4 space-y-3 text-center">
@@ -524,13 +545,13 @@
             </div>
             <div>
               <label class="block font-semibold text-slate-600 mb-0.5">ID Number <span class="text-rose-500">*</span></label>
-              <!-- Mandatory ID Number allowing both characters and numbers -->
-              <input type="text" id="cust-id" required pattern="[A-Za-z0-9\s]+" oninput="this.value = this.value.replace(/[^A-Za-z0-9\s]/g, '')" title="Please enter letters and numbers" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+              <!-- Mandatory ID Number allowing both characters and numbers upto 16 length -->
+              <input type="text" id="cust-id" required maxlength="16" pattern="[A-Za-z0-9\s]+" oninput="this.value = this.value.replace(/[^A-Za-z0-9\s]/g, '')" title="Please enter letters and numbers (up to 16 characters)" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
             </div>
             <div>
               <label class="block font-semibold text-slate-600 mb-0.5">Contact No <span class="text-rose-500">*</span></label>
-              <!-- Mandatory Contact No enforcing numbers only -->
-              <input type="text" id="cust-contact" required pattern="[0-9]+" oninput="this.value = this.value.replace(/[^0-9]/g, '')" title="Please enter numbers only" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+              <!-- Mandatory Contact No enforcing numbers only upto 10 digits -->
+              <input type="text" id="cust-contact" required maxlength="10" pattern="[0-9]{10}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" title="Please enter exactly 10 digits" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
             </div>
           </div>
         </div>
@@ -733,6 +754,58 @@
     const DEFAULT_USER_ID = "Admin";
     const DEFAULT_PASSWORD = "Aadmin123";
 
+    // --- MASTER TAB DELETION RECONFIRMATION MODAL STATE ---
+    let pendingMasterDeleteType = null; // 'booking' or 'row'
+    let pendingMasterDeleteTarget = null; // booking id or row index
+
+    function openMasterDeleteModal(type, target) {
+      pendingMasterDeleteType = type;
+      pendingMasterDeleteTarget = target;
+
+      const msgElem = document.getElementById('master-delete-modal-msg');
+      if (type === 'booking') {
+        const b = state.bookings.find(item => item.id === target);
+        const bCode = b ? b.bookingCode : 'this booking';
+        msgElem.innerText = `Are you sure you want to permanently delete booking ${bCode} from the Master Tab? This action cannot be undone.`;
+      } else if (type === 'row') {
+        msgElem.innerText = `Are you sure you want to permanently delete this Master Agent & Room Entry? This action cannot be undone.`;
+      }
+
+      document.getElementById('master-delete-confirm-modal').classList.remove('hidden');
+    }
+
+    function closeMasterDeleteModal() {
+      pendingMasterDeleteType = null;
+      pendingMasterDeleteTarget = null;
+      document.getElementById('master-delete-confirm-modal').classList.add('hidden');
+    }
+
+    function confirmMasterDeletion() {
+      if (pendingMasterDeleteType === 'booking') {
+        const id = pendingMasterDeleteTarget;
+        const idx = state.bookings.findIndex(b => b.id === id);
+        if (idx !== -1) {
+          state.bookings[idx].inactive = true;
+        }
+        populateBookingSearchDropdown();
+        searchMasterBookingById();
+        renderBookingsTable();
+        updateDashboardCards();
+        renderCalendar(defaultAppYear);
+        checkUpcomingCheckoutsWithDue();
+        saveChanges(false, false);
+      } else if (pendingMasterDeleteType === 'row') {
+        const index = pendingMasterDeleteTarget;
+        state.master.splice(index, 1);
+        renderMasterTable();
+        populateRoomDropdown();
+        populateBookingSearchDropdown();
+        renderBookingsTable();
+        saveChanges(false, false);
+      }
+      closeMasterDeleteModal();
+    }
+
     function checkAuthStatus() {
       const sessionAuth = sessionStorage.getItem('app_authenticated');
       if (sessionAuth === 'true') {
@@ -754,7 +827,7 @@
         isLoggedIn = true;
         sessionStorage.setItem('app_authenticated', 'true');
         document.getElementById('login-overlay').classList.add('hidden');
-        document.getElementById('login-error').classList.add('hidden');
+        document.getElementById('login-error').classList.remove('hidden');
         startInactivityMonitoring();
       } else {
         document.getElementById('login-error').classList.remove('hidden');
@@ -1181,9 +1254,18 @@
       state.selectedYear = defaultAppYear;
     }
 
+    function setMinBookingDates() {
+      const today = new Date().toISOString().split('T')[0];
+      const checkInInput = document.getElementById('cust-checkin-date');
+      const checkOutInput = document.getElementById('cust-checkout-date');
+      if (checkInInput) checkInInput.min = today;
+      if (checkOutInput) checkOutInput.min = today;
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
       checkAuthStatus();
       loadSavedData();
+      setMinBookingDates();
       populateDashboardYearDropdown();
       initDashboard();
       populateRoomDropdown();
@@ -1641,6 +1723,7 @@
         }
       }
 
+      setMinBookingDates();
       const form = document.getElementById('booking-form');
       form.reset();
       document.getElementById('food-orders-container').innerHTML = '';
@@ -1705,6 +1788,19 @@
     }
 
     function handleStayDatesChange() {
+      const today = new Date().toISOString().split('T')[0];
+      const inDateInput = document.getElementById('cust-checkin-date');
+      const outDateInput = document.getElementById('cust-checkout-date');
+
+      if (inDateInput.value && inDateInput.value < today) {
+        alert("⚠️ Check-In date cannot be prior to the current date!");
+        inDateInput.value = today;
+      }
+      if (outDateInput.value && outDateInput.value < today) {
+        alert("⚠️ Check-Out date cannot be prior to the current date!");
+        outDateInput.value = today;
+      }
+
       calculateModalBilling();
       validateAllFoodTimes();
     }
@@ -1792,10 +1888,19 @@
         foodTotalCharge += parseFloat(input.value) || 0;
       });
 
-      const advance = parseFloat(document.getElementById('cust-advance').value) || 0;
-      
       const roomTotal = days * price;
       const total = roomTotal + foodTotalCharge;
+
+      const advanceInput = document.getElementById('cust-advance');
+      let advance = parseFloat(advanceInput.value) || 0;
+
+      // 1. Logic constraint: Advance amount cannot exceed Total amount
+      if (advance > total) {
+        alert("⚠️ Advance amount cannot be greater than Total amount!");
+        advance = total;
+        advanceInput.value = total;
+      }
+
       const due = total - advance;
 
       document.getElementById('cust-days').value = days;
@@ -1816,6 +1921,26 @@
         return;
       }
 
+      // Logic constraints validations
+      if (guestId.length > 16) {
+        alert("⚠️ ID Number character length limit is up to 16!");
+        return;
+      }
+
+      if (guestContact.length !== 10) {
+        alert("⚠️ Contact No must be exactly 10 digits!");
+        return;
+      }
+
+      const today = new Date().toISOString().split('T')[0];
+      const inDate = document.getElementById('cust-checkin-date').value;
+      const outDate = document.getElementById('cust-checkout-date').value;
+
+      if (inDate < today || outDate < today) {
+        alert("⚠️ Check-In and Check-Out dates cannot be previous dates relative to today!");
+        return;
+      }
+
       if (!validateAllFoodTimes()) {
         return;
       }
@@ -1823,9 +1948,7 @@
       const id = document.getElementById('modal-booking-id').value;
       const roomNo = parseInt(document.getElementById('cust-room').value);
       
-      const inDate = document.getElementById('cust-checkin-date').value;
       const inTime = document.getElementById('cust-checkin-time').value || '00:00';
-      const outDate = document.getElementById('cust-checkout-date').value;
       const outTime = document.getElementById('cust-checkout-time').value || '00:00';
 
       const checkIn = `${inDate}T${inTime}`;
@@ -1890,6 +2013,12 @@
         existingCode = generated.bookingCode;
         existingInv = generated.invoiceNo;
       }
+
+      const totalAmt = parseFloat(document.getElementById('cust-total').value) || 0;
+      let advAmt = parseFloat(document.getElementById('cust-advance').value) || 0;
+      if (advAmt > totalAmt) {
+        advAmt = totalAmt;
+      }
       
       const newBooking = {
         id: id || `bk_${Date.now()}`,
@@ -1907,9 +2036,9 @@
         noOfDays: parseInt(document.getElementById('cust-days').value) || 0,
         perDayPrice: parseFloat(document.getElementById('cust-price').value) || 0,
         foodOrders: foodOrdersList,
-        totalAmount: parseFloat(document.getElementById('cust-total').value) || 0,
-        advanced: parseFloat(document.getElementById('cust-advance').value) || 0,
-        totalDue: parseFloat(document.getElementById('cust-due').value) || 0,
+        totalAmount: totalAmt,
+        advanced: advAmt,
+        totalDue: totalAmt - advAmt,
         inactive: false
       };
 
@@ -1931,19 +2060,8 @@
     }
 
     function deleteBooking(id) {
-      if (confirm('Are you sure you want to delete this booking entry?')) {
-        const idx = state.bookings.findIndex(b => b.id === id);
-        if (idx !== -1) {
-          state.bookings[idx].inactive = true;
-        }
-        populateBookingSearchDropdown();
-        searchMasterBookingById();
-        renderBookingsTable();
-        updateDashboardCards();
-        renderCalendar(defaultAppYear);
-        checkUpcomingCheckoutsWithDue();
-        saveChanges(false, false);
-      }
+      // Trigger permanent deletion reconfirmation modal for Master Tab
+      openMasterDeleteModal('booking', id);
     }
 
     function renderBookingsTable(roomFilter = "") {
@@ -2159,11 +2277,8 @@
     }
 
     function removeMasterRow(index) {
-      state.master.splice(index, 1);
-      renderMasterTable();
-      populateRoomDropdown();
-      populateBookingSearchDropdown();
-      renderBookingsTable();
+      // Trigger permanent deletion reconfirmation modal for Master Tab
+      openMasterDeleteModal('row', index);
     }
 
     function renderCalendar(year) {
@@ -2173,127 +2288,133 @@
       const container = document.getElementById('calendar-container');
       container.innerHTML = '';
 
-      const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+      ];
 
-      months.forEach((month, monthIdx) => {
+      for (let m = 0; m < 12; m++) {
         const monthCard = document.createElement('div');
-        monthCard.className = "bg-white border border-slate-200 rounded-lg p-2 shadow-sm";
-        
-        let header = `<h4 class="font-bold text-slate-800 text-center mb-1 text-[11px] border-b border-slate-100 pb-1">${month} ${year}</h4>`;
-        let daysHeader = `<div class="grid grid-cols-7 text-center text-[9px] font-bold text-slate-400 mb-0.5"><div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div></div>`;
-        
-        let firstDay = new Date(year, monthIdx, 1).getDay();
-        let totalDays = new Date(year, monthIdx + 1, 0).getDate();
-        
-        let daysGrid = `<div class="grid grid-cols-7 text-center text-[10px] gap-0.5">`;
-        for (let i = 0; i < firstDay; i++) {
-          daysGrid += `<div></div>`;
+        monthCard.className = "bg-slate-50 rounded-lg p-2 border border-slate-200 shadow-2xs space-y-1";
+
+        const title = document.createElement('h4');
+        title.className = "text-[11px] font-bold text-indigo-800 border-b border-slate-200 pb-1 text-center";
+        title.innerText = `${monthNames[m]} ${year}`;
+        monthCard.appendChild(title);
+
+        const grid = document.createElement('div');
+        grid.className = "grid grid-cols-7 gap-0.5 text-center text-[9px]";
+
+        const dayHeaders = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+        dayHeaders.forEach(dh => {
+          const header = document.createElement('div');
+          header.className = "font-extrabold text-slate-400 py-0.5";
+          header.innerText = dh;
+          grid.appendChild(header);
+        });
+
+        const firstDay = new Date(year, m, 1).getDay();
+        const daysInMonth = new Date(year, m + 1, 0).getDate();
+
+        for (let empty = 0; empty < firstDay; empty++) {
+          const blank = document.createElement('div');
+          grid.appendChild(blank);
         }
 
-        for (let d = 1; d <= totalDays; d++) {
-          const currDate = new Date(year, monthIdx, d);
-          let dayBookings = [];
+        for (let day = 1; day <= daysInMonth; day++) {
+          const cellDate = new Date(year, m, day);
+          cellDate.setHours(12, 0, 0, 0);
 
-          for (let b of state.bookings) {
-            if (b.inactive || !b.checkIn || !b.checkOut) continue;
+          const matchedBookings = state.bookings.filter(b => {
+            if (b.inactive) return false;
             const cIn = new Date(b.checkIn);
             const cOut = new Date(b.checkOut);
+            cIn.setHours(0, 0, 0, 0);
+            cOut.setHours(23, 59, 59, 999);
+            return cellDate >= cIn && cellDate <= cOut;
+          });
 
-            const checkInStart = new Date(cIn.getFullYear(), cIn.getMonth(), cIn.getDate());
-            const checkOutEnd = new Date(cOut.getFullYear(), cOut.getMonth(), cOut.getDate());
+          const cell = document.createElement('div');
+          const isBooked = matchedBookings.length > 0;
 
-            if (currDate >= checkInStart && currDate <= checkOutEnd) {
-              let statusText = "Reserved Stay";
-              if (currDate.getTime() === checkInStart.getTime()) statusText = "Check-in Date";
-              else if (currDate.getTime() === checkOutEnd.getTime()) statusText = "Check-out Date";
+          const isToday = (cellDate.toDateString() === new Date().toDateString());
 
-              dayBookings.push({
-                booking: b,
-                statusText: statusText
-              });
-            }
+          cell.className = `py-1 rounded font-bold transition relative flex items-center justify-center cursor-pointer ${
+            isBooked 
+              ? 'bg-amber-400 text-slate-900 border border-amber-500 shadow-xs' 
+              : (isToday ? 'bg-indigo-600 text-white font-extrabold' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-100')
+          }`;
+
+          cell.innerText = day;
+
+          if (isBooked) {
+            cell.onclick = (e) => {
+              e.stopPropagation();
+              openCommentBox(e, cellDate, matchedBookings);
+            };
           }
 
-          let dayClass = "bg-slate-50 hover:bg-slate-100 text-slate-700 cursor-pointer";
-          if (dayBookings.length > 0) {
-            dayClass = "bg-indigo-600 text-white font-bold hover:bg-indigo-700 shadow-xs cursor-pointer";
-          }
-
-          daysGrid += `<div onclick="openCalendarCommentBox(event, '${year}-${monthIdx + 1}-${d}')" class="p-1 rounded ${dayClass} text-[9px] transition flex flex-col items-center justify-center min-h-[22px] relative">
-            <span>${d}</span>
-            ${dayBookings.length > 0 ? `<span class="w-1 h-1 bg-amber-400 rounded-full mt-0.5"></span>` : ''}
-          </div>`;
+          grid.appendChild(cell);
         }
-        daysGrid += `</div>`;
 
-        monthCard.innerHTML = header + daysHeader + daysGrid;
+        monthCard.appendChild(grid);
         container.appendChild(monthCard);
-      });
+      }
     }
 
-    function openCalendarCommentBox(e, dateStr) {
-      e.stopPropagation();
-      const parts = dateStr.split('-');
-      const targetDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-      
-      const commBox = document.getElementById('excel-comment-box');
-      const header = document.getElementById('comm-date-header');
+    function openCommentBox(event, dateObj, bookings) {
+      const box = document.getElementById('excel-comment-box');
       const listContainer = document.getElementById('comm-booking-list');
+      const header = document.getElementById('comm-date-header');
 
-      header.innerText = formatDate(targetDate);
+      header.innerText = formatDate(dateObj);
       listContainer.innerHTML = '';
 
-      const matchedBookings = [];
+      bookings.forEach(b => {
+        const isMasterValid = isRoomInMaster(b.roomNo);
 
-      for (let b of state.bookings) {
-        if (b.inactive || !b.checkIn || !b.checkOut) continue;
-        const cIn = new Date(b.checkIn);
-        const cOut = new Date(b.checkOut);
-
-        const checkInStart = new Date(cIn.getFullYear(), cIn.getMonth(), cIn.getDate());
-        const checkOutEnd = new Date(cOut.getFullYear(), cOut.getMonth(), cOut.getDate());
-
-        if (targetDate >= checkInStart && targetDate <= checkOutEnd) {
-          let role = "In Stay";
-          if (targetDate.getTime() === checkInStart.getTime()) role = "Check-In";
-          else if (targetDate.getTime() === checkOutEnd.getTime()) role = "Check-Out";
-
-          matchedBookings.push({ booking: b, role: role });
+        let foodOrdersText = '';
+        if (b.foodOrders && b.foodOrders.length > 0) {
+          const totalFoodCharge = b.foodOrders.reduce((acc, fo) => acc + (fo.foodCharge || 0), 0);
+          if (totalFoodCharge > 0) {
+            foodOrdersText = `<div class="text-[9px] text-amber-300 mt-0.5"><i class="fa-solid fa-utensils text-[8px] mr-1"></i>Extra Orders: ₹${totalFoodCharge}</div>`;
+          }
         }
-      }
 
-      if (matchedBookings.length === 0) {
-        listContainer.innerHTML = `<div class="text-slate-400 italic text-[10px] py-1 text-center">No reservations found for this date.</div>`;
-      } else {
-        matchedBookings.forEach(item => {
-          const b = item.booking;
-          const card = document.createElement('div');
-          card.className = "bg-slate-800 p-1.5 rounded border border-slate-700 space-y-0.5 text-[10px]";
-          card.innerHTML = `
-            <div class="flex justify-between items-center">
-              <strong class="text-amber-300 font-bold">${b.name}</strong>
-              <span class="bg-indigo-900 text-indigo-200 text-[8px] px-1 rounded uppercase font-bold">${item.role}</span>
-            </div>
-            <div class="text-slate-300 text-[9px]">Room: <strong>${b.roomNo}</strong> | Phone: ${b.contactNo || '-'}</div>
-            <div class="text-slate-400 text-[8px]">ID: ${b.bookingCode}</div>
-          `;
-          listContainer.appendChild(card);
-        });
-      }
+        const item = document.createElement('div');
+        item.className = "bg-slate-800 p-2 rounded border border-slate-700 text-[10px] space-y-0.5";
+        item.innerHTML = `
+          <div class="flex justify-between items-center">
+            <strong class="text-amber-300 font-mono text-[9px]">${b.bookingCode || 'N/A'}</strong>
+            <span class="bg-indigo-900 text-indigo-200 px-1.5 py-0.2 rounded font-bold text-[9px]">Room ${b.roomNo}</span>
+          </div>
+          <div class="font-bold text-white">${b.name}</div>
+          <div class="text-slate-300 text-[9px]">Contact: ${b.contactNo || '-'}</div>
+          <div class="text-slate-300 text-[9px]">ID No: ${b.idNo || '-'}</div>
+          <div class="text-emerald-400 font-semibold text-[9px]"><i class="fa-solid fa-plane-arrival mr-0.5"></i> ${formatDateTime(b.checkIn)}</div>
+          <div class="text-rose-400 font-semibold text-[9px]"><i class="fa-solid fa-plane-departure mr-0.5"></i> ${formatDateTime(b.checkOut)}</div>
+          ${foodOrdersText}
+          <div class="flex justify-between items-center pt-1 border-t border-slate-700 text-[9px] mt-1">
+            <span class="text-slate-300">Total: ₹${b.totalAmount}</span>
+            <span class="${b.totalDue > 0 ? 'text-rose-400' : 'text-emerald-400'} font-bold">Due: ₹${b.totalDue}</span>
+          </div>
+        `;
+        listContainer.appendChild(item);
+      });
 
-      // Position Popup Near Clicked Target
-      const rect = e.currentTarget.getBoundingClientRect();
-      const scrollX = window.scrollX || document.documentElement.scrollLeft;
-      const scrollY = window.scrollY || document.documentElement.scrollTop;
+      const rect = event.currentTarget.getBoundingClientRect();
+      const scrollX = window.scrollX || window.pageXOffset;
+      const scrollY = window.scrollY || window.pageYOffset;
 
-      commBox.style.top = `${rect.bottom + scrollY + 5}px`;
-      commBox.style.left = `${Math.min(rect.left + scrollX - 80, window.innerWidth - 270)}px`;
-      commBox.classList.remove('hidden');
+      box.style.left = `${rect.left + scrollX - 20}px`;
+      box.style.top = `${rect.bottom + scrollY + 8}px`;
+
+      box.classList.remove('hidden');
     }
 
     function closeCommentBox() {
-      const commBox = document.getElementById('excel-comment-box');
-      if (commBox) commBox.classList.add('hidden');
+      const box = document.getElementById('excel-comment-box');
+      if (box) box.classList.add('hidden');
     }
   </script>
 </body>
