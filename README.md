@@ -374,6 +374,7 @@
                 <th class="py-2 px-2">Guest Name</th>
                 <th class="py-2 px-2">Contact No</th>
                 <th class="py-2 px-2">ID Number</th>
+                <th class="py-2 px-2">Attached ID Proof</th>
                 <th class="py-2 px-2">Room</th>
                 <th class="py-2 px-2">Agent</th>
                 <th class="py-2 px-2 min-w-[150px]">Stay Window</th>
@@ -568,6 +569,19 @@
               <label class="block font-semibold text-slate-600 mb-0.5">Contact No <span class="text-rose-500">*</span></label>
               <!-- Mandatory Contact No enforcing numbers only upto 10 digits (Exempted from Title Case transformation) -->
               <input type="text" id="cust-contact" required maxlength="10" pattern="[0-9]{10}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" title="Please enter exactly 10 digits" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+            </div>
+            <!-- ATTACHED ID PROOF CELL (PDF ONLY, 10KB - 900KB) -->
+            <div class="sm:col-span-2">
+              <label class="block font-semibold text-slate-600 mb-0.5 flex justify-between items-center">
+                <span>Attached ID Proof <span class="text-[9px] text-indigo-500 font-normal">(PDF, 10KB - 900KB)</span></span>
+                <button type="button" id="cust-id-file-remove" onclick="removeAttachedIdProof()" class="hidden text-rose-500 hover:text-rose-700 text-[9px] font-bold">Remove</button>
+              </label>
+              <div class="flex items-center gap-1.5">
+                <input type="file" id="cust-id-file" accept="application/pdf" onchange="handleIdProofUpload(event)" class="w-full text-[10px] text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer bg-white border border-slate-300 rounded py-0.5">
+                <input type="hidden" id="cust-id-file-base64">
+                <input type="hidden" id="cust-id-file-name">
+              </div>
+              <p id="cust-id-file-status" class="text-[9px] text-slate-400 mt-0.5 italic">No PDF document attached.</p>
             </div>
           </div>
         </div>
@@ -773,6 +787,67 @@
         if (countryInput) {
           countryInput.value = 'India';
         }
+      }
+    }
+
+    // ID PROOF ATTACHMENT HANDLER (PDF, 10KB to 900KB)
+    function handleIdProofUpload(e) {
+      const fileInput = e.target;
+      const file = fileInput.files[0];
+      const statusText = document.getElementById('cust-id-file-status');
+      const base64Input = document.getElementById('cust-id-file-base64');
+      const fileNameInput = document.getElementById('cust-id-file-name');
+      const removeBtn = document.getElementById('cust-id-file-remove');
+
+      if (!file) return;
+
+      // 1. Verify format is PDF
+      if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith('.pdf')) {
+        alert("⚠️ Invalid file format! Only PDF files are allowed.");
+        fileInput.value = '';
+        return;
+      }
+
+      // 2. Verify file size is between 10 KB and 200 KB
+      const minSize = 10 * 1024;  // 10 KB
+      const maxSize = 900 * 1024; // 900 KB
+
+      if (file.size < minSize || file.size > maxSize) {
+        const fileSizeKB = (file.size / 1024).toFixed(1);
+        alert(`⚠️ Invalid file size (${fileSizeKB} KB)!\n\nThe attached ID proof PDF must be between 10 KB and 900 KB.`);
+        fileInput.value = '';
+        return;
+      }
+
+      // Read file and convert to Base64 data URL
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        base64Input.value = evt.target.result;
+        fileNameInput.value = file.name;
+        statusText.innerHTML = `<span class="text-emerald-600 font-semibold"><i class="fa-solid fa-circle-check"></i> Attached: ${file.name} (${(file.size / 1024).toFixed(1)} KB)</span>`;
+        removeBtn.classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeAttachedIdProof() {
+      document.getElementById('cust-id-file').value = '';
+      document.getElementById('cust-id-file-base64').value = '';
+      document.getElementById('cust-id-file-name').value = '';
+      document.getElementById('cust-id-file-status').innerText = 'No PDF document attached.';
+      document.getElementById('cust-id-file-remove').classList.add('hidden');
+    }
+
+    function openPdfAttachment(base64Data) {
+      if (!base64Data) {
+        alert("No ID Proof attached!");
+        return;
+      }
+      const win = window.open();
+      if (win) {
+        win.document.write(`<iframe src="${base64Data}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
+      } else {
+        alert("Please allow popups to view attached PDF document.");
       }
     }
 
@@ -1036,6 +1111,8 @@
           country: "India",
           zipCode: "700001",
           idNo: "ABC25780001",
+          idProofBase64: "",
+          idProofFileName: "",
           contactNo: "1234567890",
           roomNo: 2,
           agentInfo: "A2 1234567890",
@@ -1062,6 +1139,8 @@
           country: "India",
           zipCode: "400001",
           idNo: "XYZ99887766",
+          idProofBase64: "",
+          idProofFileName: "",
           contactNo: "9876543210",
           roomNo: 4,
           agentInfo: "A1 1234567890",
@@ -1128,6 +1207,7 @@
           "Guest Name": b.name || "-",
           "Contact No": b.contactNo || "-",
           "ID Number": b.idNo || "-",
+          "Attached ID Proof": b.idProofFileName ? `Attached (${b.idProofFileName})` : "None",
           "Address": b.address || "-",
           "City": b.city || "-",
           "State": b.state || "-",
@@ -1285,6 +1365,8 @@
                   });
                 }
               }
+              if (b.idProofBase64 === undefined) b.idProofBase64 = "";
+              if (b.idProofFileName === undefined) b.idProofFileName = "";
             });
             state = parsed;
             // Always set Dashboard selection and Calendar View to Current Active Year on load/refresh
@@ -1773,6 +1855,7 @@
       setMinBookingDates();
       const form = document.getElementById('booking-form');
       form.reset();
+      removeAttachedIdProof();
       document.getElementById('food-orders-container').innerHTML = '';
 
       if (bookingId) {
@@ -1788,6 +1871,14 @@
           document.getElementById('cust-zip').value = b.zipCode || '';
           document.getElementById('cust-id').value = b.idNo;
           document.getElementById('cust-contact').value = b.contactNo;
+
+          // Restore Attached ID Proof Data
+          if (b.idProofBase64) {
+            document.getElementById('cust-id-file-base64').value = b.idProofBase64;
+            document.getElementById('cust-id-file-name').value = b.idProofFileName || 'Attached_ID_Proof.pdf';
+            document.getElementById('cust-id-file-status').innerHTML = `<span class="text-emerald-600 font-semibold"><i class="fa-solid fa-circle-check"></i> Attached: ${b.idProofFileName || 'Attached_ID_Proof.pdf'}</span>`;
+            document.getElementById('cust-id-file-remove').classList.remove('hidden');
+          }
           
           populateRoomDropdown(b.roomNo);
 
@@ -2086,6 +2177,8 @@
         country: guestCountry,
         zipCode: guestZip,
         idNo: guestId,
+        idProofBase64: document.getElementById('cust-id-file-base64').value || "",
+        idProofFileName: document.getElementById('cust-id-file-name').value || "",
         contactNo: guestContact,
         roomNo: roomNo,
         agentInfo: document.getElementById('cust-agent').value,
@@ -2170,7 +2263,7 @@
       });
 
       if (listToRender.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="11" class="text-center py-6 text-slate-400">No bookings found for the selected room.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="12" class="text-center py-6 text-slate-400">No bookings found for the selected room.</td></tr>`;
         return;
       }
 
@@ -2249,6 +2342,16 @@
           editBtnClass = "text-indigo-600 hover:text-indigo-800 p-1 text-sm";
         }
 
+        // ID Proof Attachment Render
+        let idProofCellHtml = `<span class="text-slate-400 italic text-[10px]">None</span>`;
+        if (b.idProofBase64) {
+          idProofCellHtml = `
+            <button onclick="openPdfAttachment('${b.idProofBase64}')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 transition">
+              <i class="fa-solid fa-file-pdf text-rose-600"></i> View PDF
+            </button>
+          `;
+        }
+
         const tr = document.createElement('tr');
         tr.className = `${statusBgClass} transition border-b border-slate-200/60`;
         tr.innerHTML = `
@@ -2258,41 +2361,34 @@
               ${b.inactive ? '<span class="w-2.5 h-2.5 bg-rose-600 rounded-full inline-block flex-shrink-0" title="Inactive Booking"></span>' : ''}
               <span class="bg-indigo-50 border border-indigo-200 text-indigo-700 font-mono font-bold px-1.5 py-0.2 rounded text-[9px] block w-max">${b.bookingCode}</span>
             </div>
-            ${b.inactive ? '<span class="bg-slate-600 text-white font-bold px-1 py-0.1 rounded text-[8px] uppercase block mt-0.5 w-max">Inactive</span>' : (!isMasterValid ? '<span class="bg-rose-700 text-white font-bold px-1 py-0.1 rounded text-[8px] uppercase block mt-0.5 w-max">Deleted</span>' : '')}
+            ${b.inactive ? '<span class="bg-slate-600 text-white font-bold px-1 py-0.1 rounded text-[8px] uppercase block mt-0.5 w-max">Inactive</span>' : (!isMasterValid ? '<span class="bg-rose-700 text-white font-bold px-1 py-0.1 rounded text-[8px] uppercase block mt-0.5 w-max">Master Removed</span>' : '')}
           </td>
-          <td class="py-2 px-2 font-bold ${!isMasterValid ? 'text-rose-950' : 'text-slate-800'}">${formatTitleCase(b.name)}</td>
-          <td class="py-2 px-2 text-[10px] font-medium ${!isMasterValid ? 'text-rose-900' : 'text-slate-700'}">${b.contactNo || '-'}</td>
-          <td class="py-2 px-2 text-[10px] ${!isMasterValid ? 'text-rose-900 font-bold' : 'text-slate-500'} font-mono">${b.idNo || '-'}</td>
-          <td class="py-2 px-2">
-            <span class="${!isMasterValid ? 'bg-rose-300 border border-rose-400 text-rose-950 font-bold' : 'bg-slate-100 border border-slate-200 text-slate-700 font-semibold'} px-1.5 py-0.5 rounded text-[10px]">
-              Room ${b.roomNo}
-            </span>
-          </td>
-          <td class="py-2 px-2 text-[10px] ${!isMasterValid ? 'text-rose-900' : 'text-slate-600'}">${b.agentInfo || '-'}</td>
-          <td class="py-2 px-2 text-[10px] ${!isMasterValid ? 'text-rose-950 font-bold' : 'text-slate-600'}">
-            <div><i class="fa-solid fa-plane-arrival text-emerald-600 mr-1"></i>${checkInFmt}</div>
-            <div><i class="fa-solid fa-plane-departure text-rose-500 mr-1"></i>${checkOutFmt}</div>
+          <td class="py-2 px-2 font-bold ${!isMasterValid ? 'text-rose-950' : 'text-slate-800'}">${b.name}</td>
+          <td class="py-2 px-2 font-medium">${b.contactNo || '-'}</td>
+          <td class="py-2 px-2 font-mono text-[10px]">${b.idNo || '-'}</td>
+          <td class="py-2 px-2">${idProofCellHtml}</td>
+          <td class="py-2 px-2"><span class="bg-indigo-50 text-indigo-700 font-bold px-1.5 py-0.2 rounded text-[10px]">Room ${b.roomNo}</span></td>
+          <td class="py-2 px-2 ${!isMasterValid ? 'text-rose-900' : 'text-slate-600'} text-[10px]">${b.agentInfo || '-'}</td>
+          <td class="py-2 px-2 text-[10px]">
+            <div class="font-semibold ${!isMasterValid ? 'text-rose-950' : 'text-slate-700'}">${checkInFmt}</div>
+            <div class="${!isMasterValid ? 'text-rose-900' : 'text-slate-500'} text-[9px]">to ${checkOutFmt}</div>
           </td>
           <td class="py-2 px-2">
-            <div class="font-bold ${!isMasterValid ? 'text-rose-950' : 'text-slate-800'}">₹${b.totalAmount}</div>
-            <div class="text-[9px] ${!isMasterValid ? 'text-rose-900' : 'text-slate-500'}">${b.noOfDays}d @ ₹${b.perDayPrice}</div>
+            <div class="font-bold ${!isMasterValid ? 'text-rose-950' : 'text-slate-800'}">₹${b.perDayPrice}/day (${b.noOfDays}d)</div>
             ${foodSummaryHtml}
           </td>
-          <td class="py-2 px-2 font-bold text-emerald-600">₹${b.advanced}</td>
-          <td class="py-2 px-2 font-bold ${b.totalDue > 0 ? 'text-rose-600' : 'text-slate-400'}">
-            ₹${b.totalDue}
+          <td class="py-2 px-2 font-bold ${!isMasterValid ? 'text-rose-950' : 'text-slate-800'}">
+            ₹${b.totalAmount}
+            <span class="block text-[9px] text-emerald-600 font-medium">Adv: ₹${b.advanced}</span>
           </td>
-          <td class="py-2 px-2 text-center whitespace-nowrap">
-            <div class="flex items-center justify-center space-x-1.5">
-              <button onclick="${editOnClick}" class="${editBtnClass}" title="Edit Booking">
+          <td class="py-2 px-2 font-bold ${b.totalDue > 0 ? 'text-rose-600' : 'text-emerald-600'}">₹${b.totalDue}</td>
+          <td class="py-2 px-2 text-center">
+            <div class="flex items-center justify-center space-x-1">
+              <button onclick="${editOnClick}" class="${editBtnClass}" title="Edit Booking Details">
                 <i class="fa-solid fa-pen-to-square"></i>
-              </button>
-              <button onclick="${printOnClickRec}" class="${recBtnClass}" title="Print Receipt">
-                Receipt
-              </button>
-              <button onclick="${printOnClickInv}" class="${invBtnClass}" title="Print Invoice">
-                Invoice
-              </button>
+              </button>              
+              <button onclick="${printOnClickInv}" class="${invBtnClass}">Invoice</button>
+              <button onclick="${printOnClickRec}" class="${recBtnClass}">Receipt</button>
             </div>
           </td>
         `;
@@ -2304,16 +2400,29 @@
       const tbody = document.getElementById('master-tbody');
       tbody.innerHTML = '';
 
+      if (state.master.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-slate-400">No agent or room data available.</td></tr>`;
+        return;
+      }
+
       state.master.forEach((m, idx) => {
         const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+        tr.className = "bg-white hover:bg-slate-50 transition border-b border-slate-100";
         tr.innerHTML = `
-          <td class="py-2 px-2 font-semibold text-slate-800">${m.agentName}</td>
-          <td class="py-2 px-2 text-slate-600">${m.phone}</td>
-          <td class="py-2 px-2"><span class="bg-indigo-50 text-indigo-700 font-bold px-2 py-0.5 rounded text-[10px]">Room ${m.roomNo}</span></td>
-          <td class="py-2 px-2 text-slate-600">${m.capacity} Person</td>
+          <td class="py-2 px-2">
+            <input type="text" value="${m.agentName}" oninput="state.master[${idx}].agentName = formatTitleCase(this.value); updateBookingAgentDetails(${m.roomNo})" onchange="saveChanges(false, true)" class="w-full bg-transparent font-semibold text-slate-800 focus:bg-white focus:border focus:border-indigo-300 rounded px-1 py-0.5">
+          </td>
+          <td class="py-2 px-2">
+            <input type="text" value="${m.phone}" oninput="state.master[${idx}].phone = this.value; updateBookingAgentDetails(${m.roomNo})" onchange="saveChanges(false, true)" class="w-full bg-transparent text-slate-600 focus:bg-white focus:border focus:border-indigo-300 rounded px-1 py-0.5">
+          </td>
+          <td class="py-2 px-2">
+            <input type="number" value="${m.roomNo}" oninput="state.master[${idx}].roomNo = parseInt(this.value) || 0" onchange="populateRoomDropdown(); populateBookingSearchDropdown(); renderBookingsTable(); saveChanges(false, true)" class="w-20 bg-transparent font-bold text-indigo-700 focus:bg-white focus:border focus:border-indigo-300 rounded px-1 py-0.5">
+          </td>
+          <td class="py-2 px-2">
+            <input type="number" value="${m.capacity}" oninput="state.master[${idx}].capacity = parseInt(this.value) || 0" onchange="saveChanges(false, true)" class="w-16 bg-transparent font-medium text-slate-700 focus:bg-white focus:border focus:border-indigo-300 rounded px-1 py-0.5">
+          </td>
           <td class="py-2 px-2 text-center">
-            <button onclick="openMasterDeleteModal('row', ${idx})" class="text-rose-500 hover:text-rose-700 p-1" title="Delete Entry">
+            <button onclick="removeMasterRow(${idx})" class="text-rose-500 hover:text-rose-700 p-1 text-xs" title="Delete Master Entry">
               <i class="fa-solid fa-trash-can"></i>
             </button>
           </td>
@@ -2322,21 +2431,27 @@
       });
     }
 
-    function addMasterRow() {
-      const agent = prompt("Enter Agent Name:");
-      if (!agent) return;
-      const phone = prompt("Enter Agent Contact No:");
-      if (!phone) return;
-      const room = prompt("Enter Room No (Numeric):");
-      if (!room) return;
-      const cap = prompt("Enter Capacity (Number of Persons):");
-      if (!cap) return;
+    function updateBookingAgentDetails(roomNo) {
+      const matched = state.master.find(m => parseInt(m.roomNo) === parseInt(roomNo));
+      if (!matched) return;
 
+      state.bookings.forEach(b => {
+        if (parseInt(b.roomNo) === parseInt(roomNo)) {
+          b.agentInfo = `${matched.agentName} ${matched.phone}`;
+          b.capacity = `${matched.capacity} Person`;
+        }
+      });
+
+      renderBookingsTable();
+    }
+
+    function addMasterRow() {
+      const nextRoom = state.master.length > 0 ? Math.max(...state.master.map(m => m.roomNo)) + 1 : 1;
       state.master.push({
-        agentName: agent.trim(),
-        phone: phone.trim(),
-        roomNo: parseInt(room),
-        capacity: parseInt(cap)
+        agentName: "New Agent",
+        phone: "0000000000",
+        roomNo: nextRoom,
+        capacity: 2
       });
 
       renderMasterTable();
@@ -2346,125 +2461,142 @@
       saveChanges(false, false);
     }
 
+    function removeMasterRow(index) {
+      // Trigger permanent deletion reconfirmation modal for Master Tab
+      openMasterDeleteModal('row', index);
+    }
+
     function renderCalendar(year) {
-      if (year) state.selectedYear = year;
-      const targetYear = state.selectedYear || defaultAppYear;
+      state.selectedYear = year;
+      const calSelect = document.getElementById('cal-year-select');
+      if (calSelect) calSelect.value = year;
 
       const container = document.getElementById('calendar-container');
       container.innerHTML = '';
 
-      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-      for (let month = 0; month < 12; month++) {
-        const monthCard = document.createElement('div');
-        monthCard.className = "bg-slate-50 rounded-lg border border-slate-200 p-2 text-[10px]";
+      months.forEach((monthName, monthIndex) => {
+        const monthBox = document.createElement('div');
+        monthBox.className = "bg-slate-50 rounded-lg p-2.5 border border-slate-200 shadow-xs flex flex-col justify-between";
 
-        const firstDay = new Date(targetYear, month, 1).getDay();
-        const daysInMonth = new Date(targetYear, month + 1, 0).getDate();
+        const title = document.createElement('h4');
+        title.className = "font-bold text-slate-700 text-[11px] mb-1.5 pb-1 border-b border-slate-200 flex justify-between items-center";
+        title.innerHTML = `<span>${monthName}</span> <span class="text-[9px] text-indigo-600 font-mono font-normal">${year}</span>`;
+        monthBox.appendChild(title);
 
-        let gridCells = '';
-        const dayHeaders = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+        const grid = document.createElement('div');
+        grid.className = "grid grid-cols-7 gap-1 text-center text-[9px] font-medium text-slate-500 mb-1";
+        
+        ['S', 'M', 'T', 'W', 'T', 'F', 'S'].forEach(d => {
+          const dh = document.createElement('div');
+          dh.innerText = d;
+          dh.className = "font-bold text-slate-400";
+          grid.appendChild(dh);
+        });
 
-        let headersHtml = dayHeaders.map(d => `<div class="font-bold text-slate-400 text-[9px] text-center py-0.5">${d}</div>`).join('');
+        const firstDay = new Date(year, monthIndex, 1).getDay();
+        const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
 
         for (let i = 0; i < firstDay; i++) {
-          gridCells += `<div></div>`;
+          const empty = document.createElement('div');
+          grid.appendChild(empty);
         }
 
-        const now = new Date();
-        const isCurrentYear = now.getFullYear() === targetYear;
-        const currentMonth = now.getMonth();
-        const currentDate = now.getDate();
+        const todayObj = new Date();
+        const isCurrentYearAndMonth = todayObj.getFullYear() === year && todayObj.getMonth() === monthIndex;
 
         for (let day = 1; day <= daysInMonth; day++) {
-          const dateStr = `${targetYear}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+          const cell = document.createElement('div');
+          const dateStr = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+          
+          const matchingBookings = state.bookings.filter(b => {
+            if (b.inactive || !b.checkIn || !b.checkOut) return false;
+            if (!isRoomInMaster(b.roomNo)) return false;
 
-          const dayBookings = state.bookings.filter(b => {
-            if (b.inactive || !isRoomInMaster(b.roomNo)) return false;
-            const checkInDate = b.checkIn ? b.checkIn.split('T')[0] : '';
-            const checkOutDate = b.checkOut ? b.checkOut.split('T')[0] : '';
-            return dateStr >= checkInDate && dateStr <= checkOutDate;
+            const bIn = b.checkIn.split('T')[0];
+            const bOut = b.checkOut.split('T')[0];
+
+            return (dateStr >= bIn && dateStr <= bOut);
           });
 
-          const isToday = isCurrentYear && month === currentMonth && day === currentDate;
-          const hasBookings = dayBookings.length > 0;
+          const isBooked = matchingBookings.length > 0;
+          const isToday = isCurrentYearAndMonth && todayObj.getDate() === day;
 
-          let bgStyle = isToday 
-            ? "bg-indigo-600 text-white font-black rounded-full" 
-            : (hasBookings ? "bg-amber-100 text-amber-900 font-bold rounded-md hover:bg-amber-200 border border-amber-300/80" : "text-slate-700 hover:bg-slate-200 rounded-md");
+          cell.className = `py-1 rounded text-[10px] font-bold cursor-pointer transition relative flex items-center justify-center ${
+            isToday 
+              ? 'ring-2 ring-indigo-600 ring-offset-1 z-10' 
+              : ''
+          } ${
+            isBooked 
+              ? 'bg-amber-400 text-slate-900 hover:bg-amber-500 shadow-xs' 
+              : 'bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-100'
+          }`;
 
-          gridCells += `
-            <div onclick="showDateBookings(event, '${dateStr}')" class="relative flex items-center justify-center h-6 cursor-pointer transition ${bgStyle}">
-              <span>${day}</span>
-              ${hasBookings ? `<span class="absolute bottom-0.5 w-1 h-1 bg-amber-600 rounded-full"></span>` : ''}
-            </div>
-          `;
+          cell.innerText = day;
+
+          if (isBooked) {
+            cell.onclick = (e) => {
+              e.stopPropagation();
+              showExcelCommentBox(e, dateStr, matchingBookings);
+            };
+          }
+
+          grid.appendChild(cell);
         }
 
-        monthCard.innerHTML = `
-          <div class="font-bold text-slate-700 text-[11px] mb-1.5 pb-1 border-b border-slate-200 flex justify-between items-center px-1">
-            <span>${monthNames[month]}</span>
-            <span class="text-[9px] text-slate-400 font-normal">${targetYear}</span>
-          </div>
-          <div class="grid grid-cols-7 gap-0.5 text-center">
-            ${headersHtml}
-            ${gridCells}
-          </div>
-        `;
-
-        container.appendChild(monthCard);
-      }
+        monthBox.appendChild(grid);
+        container.appendChild(monthBox);
+      });
     }
 
-    function showDateBookings(e, dateStr) {
-      e.stopPropagation();
+    function showExcelCommentBox(e, dateStr, bookings) {
+      const box = document.getElementById('excel-comment-box');
+      const dateHeader = document.getElementById('comm-date-header');
+      const listContainer = document.getElementById('comm-booking-list');
 
-      const dayBookings = state.bookings.filter(b => {
-        if (b.inactive || !isRoomInMaster(b.roomNo)) return false;
-        const checkInDate = b.checkIn ? b.checkIn.split('T')[0] : '';
-        const checkOutDate = b.checkOut ? b.checkOut.split('T')[0] : '';
-        return dateStr >= checkInDate && dateStr <= checkOutDate;
+      dateHeader.innerText = formatDate(dateStr);
+      listContainer.innerHTML = '';
+
+      bookings.forEach(b => {
+        const item = document.createElement('div');
+        item.className = "bg-slate-800 p-2 rounded border border-slate-700 space-y-1 hover:border-amber-400 transition cursor-pointer";
+        item.onclick = () => {
+          closeCommentBox();
+          openBookingModal(b.id);
+        };
+
+        item.innerHTML = `
+          <div class="flex justify-between items-center">
+            <span class="font-bold text-amber-300 text-[11px]">${b.name}</span>
+            <span class="bg-indigo-900 text-indigo-200 px-1.5 py-0.2 rounded text-[9px] font-mono">Room ${b.roomNo}</span>
+          </div>
+          <div class="text-[9px] text-slate-300">
+            Contact: ${b.contactNo || 'N/A'}<br>
+            ID No: ${b.idNo || 'N/A'}<br>
+            Stay: ${formatDateTime(b.checkIn)} to ${formatDateTime(b.checkOut)}
+          </div>
+          <div class="flex justify-between items-center text-[9px] pt-1 border-t border-slate-700/60">
+            <span class="text-emerald-400 font-semibold">Total: ₹${b.totalAmount}</span>
+            <span class="${b.totalDue > 0 ? 'text-rose-400 font-bold' : 'text-emerald-400 font-bold'}">
+              ${b.totalDue > 0 ? `Due: ₹${b.totalDue}` : 'Paid'}
+            </span>
+          </div>
+        `;
+        listContainer.appendChild(item);
       });
 
-      const box = document.getElementById('excel-comment-box');
-      const list = document.getElementById('comm-booking-list');
-      const header = document.getElementById('comm-date-header');
+      const rect = e.target.getBoundingClientRect();
+      const scrollY = window.scrollY || window.pageYOffset;
+      const scrollX = window.scrollX || window.pageXOffset;
 
-      header.innerText = `Overview (${formatDate(dateStr)})`;
-      list.innerHTML = '';
-
-      if (dayBookings.length === 0) {
-        list.innerHTML = `<p class="text-slate-400 text-[10px] italic py-1">No reservations on this date.</p>`;
-      } else {
-        dayBookings.forEach(b => {
-          const isDue = b.totalDue > 0;
-          const item = document.createElement('div');
-          item.className = "bg-slate-800 p-2 rounded border border-slate-700 space-y-1 text-[10px]";
-          item.innerHTML = `
-            <div class="flex justify-between items-center">
-              <span class="font-bold text-amber-300">${formatTitleCase(b.name)}</span>
-              <span class="bg-indigo-900 text-indigo-200 font-mono text-[9px] px-1 rounded">${b.bookingCode}</span>
-            </div>
-            <div class="text-slate-300 flex justify-between text-[9px]">
-              <span>Room ${b.roomNo} (${b.capacity || 'Std'})</span>
-              <span class="text-slate-400">${b.agentInfo || 'Direct'}</span>
-            </div>
-            <div class="text-[9px] text-slate-400">
-              Check-in: ${formatDateTime(b.checkIn)}<br>
-              Check-out: ${formatDateTime(b.checkOut)}
-            </div>
-            <div class="flex justify-between items-center pt-1 border-t border-slate-700 text-[9px]">
-              <span class="text-emerald-400">Paid: ₹${b.advanced}</span>
-              <span class="${isDue ? 'text-rose-400 font-bold' : 'text-slate-400'}">Due: ₹${b.totalDue}</span>
-            </div>
-          `;
-          list.appendChild(item);
-        });
+      box.style.top = `${rect.bottom + scrollY + 5}px`;
+      
+      let leftPos = rect.left + scrollX - 20;
+      if (leftPos + 260 > window.innerWidth) {
+        leftPos = window.innerWidth - 270;
       }
-
-      const rect = e.currentTarget.getBoundingClientRect();
-      box.style.top = `${rect.bottom + window.scrollY + 6}px`;
-      box.style.left = `${Math.min(rect.left + window.scrollX - 20, window.innerWidth - 270)}px`;
+      box.style.left = `${Math.max(10, leftPos)}px`;
 
       box.classList.remove('hidden');
     }
