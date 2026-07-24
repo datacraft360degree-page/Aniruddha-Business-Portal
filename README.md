@@ -874,14 +874,41 @@
     const currentRealYear = new Date().getFullYear();
     const defaultAppYear = currentRealYear >= 2026 && currentRealYear <= 2085 ? currentRealYear : 2026;
 
+    // Helper functions to generate active live booking date ranges dynamically
+    function getLiveCheckIn() {
+      const d = new Date();
+      d.setDate(d.getDate() - 1);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}T11:00`;
+    }
+
+    function getLiveCheckOut() {
+      const d = new Date();
+      d.setDate(d.getDate() + 1);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}T11:00`;
+    }
+
+    function getLiveFoodTime() {
+      const d = new Date();
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}T16:30`;
+    }
+
     // State Directory
     let state = {
-      yearlyCounters: { "2026": 2 },
+      yearlyCounters: { [defaultAppYear]: 2 },
       bookings: [
         {
           id: "bk_1",
-          bookingCode: "BKG-2026-0000001",
-          invoiceNo: "INV-2026-0000001",
+          bookingCode: `BKG-${defaultAppYear}-0000001`,
+          invoiceNo: `INV-${defaultAppYear}-0000001`,
           name: "Kapil",
           address: "Kolkata",
           idNo: "ABC25780001",
@@ -889,12 +916,12 @@
           roomNo: 2,
           agentInfo: "A2 1234567890",
           capacity: "2 Person",
-          checkIn: "2026-07-22T11:00",
-          checkOut: "2026-07-24T11:00",
+          checkIn: getLiveCheckIn(),
+          checkOut: getLiveCheckOut(),
           noOfDays: 2,
           perDayPrice: 1200,
           foodOrders: [
-            { foodDesc: "2x Breakfast, Tea", foodDateTime: "2026-07-22T16:30", foodCharge: 300 }
+            { foodDesc: "2x Breakfast, Tea", foodDateTime: getLiveFoodTime(), foodCharge: 300 }
           ],
           totalAmount: 2700,
           advanced: 1000,
@@ -902,8 +929,8 @@
         },
         {
           id: "bk_2",
-          bookingCode: "BKG-2026-0000002",
-          invoiceNo: "INV-2026-0000002",
+          bookingCode: `BKG-${defaultAppYear}-0000002`,
+          invoiceNo: `INV-${defaultAppYear}-0000002`,
           name: "Aniruddha",
           address: "Mumbai",
           idNo: "XYZ99887766",
@@ -911,8 +938,8 @@
           roomNo: 4,
           agentInfo: "A1 1234567890",
           capacity: "4 Person",
-          checkIn: "2026-07-22T14:00",
-          checkOut: "2026-07-25T10:00",
+          checkIn: getLiveCheckIn(),
+          checkOut: getLiveCheckOut(),
           noOfDays: 3,
           perDayPrice: 1500,
           foodOrders: [],
@@ -1069,7 +1096,7 @@
             state.dashSelectedYear = defaultAppYear;
             state.selectedYear = defaultAppYear;
             if (!state.yearlyCounters) {
-              state.yearlyCounters = { "2026": state.bookings.length || 0 };
+              state.yearlyCounters = { [defaultAppYear]: state.bookings.length || 0 };
             }
           }
         } catch(e){}
@@ -1814,15 +1841,41 @@
         listToRender = listToRender.filter(b => parseInt(b.roomNo) === parseInt(roomFilter));
       }
 
-      // Sort booking list in descending order by Booking ID Code
-      listToRender.sort((a, b) => (b.bookingCode || '').localeCompare(a.bookingCode || ''));
+      const now = new Date().getTime();
+
+      // Helper to calculate status priority:
+      // Priority 1: Live Bookings (Yellow)
+      // Priority 2: Closed Bookings (Green)
+      // Priority 3: Upcoming / Future Bookings (Others)
+      const getStatusPriority = (b) => {
+        const cIn = new Date(b.checkIn).getTime();
+        const cOut = new Date(b.checkOut).getTime();
+
+        if (now >= cIn && now <= cOut) {
+          return 1; // Yellow Highlight (Live)
+        } else if (now > cOut) {
+          return 2; // Green Highlight (Closed)
+        }
+        return 3; // Others (Upcoming)
+      };
+
+      // Primary Sort: Status Priority (Yellow -> Green -> Others)
+      // Secondary Sort: Descending order by Booking Code ID
+      listToRender.sort((a, b) => {
+        const priorityA = getStatusPriority(a);
+        const priorityB = getStatusPriority(b);
+
+        if (priorityA !== priorityB) {
+          return priorityA - priorityB;
+        }
+
+        return (b.bookingCode || '').localeCompare(a.bookingCode || '');
+      });
 
       if (listToRender.length === 0) {
         tbody.innerHTML = `<tr><td colspan="11" class="text-center py-6 text-slate-400">No bookings found for the selected room.</td></tr>`;
         return;
       }
-
-      const now = new Date().getTime();
 
       listToRender.forEach((b) => {
         const checkInFmt = formatDateTime(b.checkIn);
@@ -1835,10 +1888,10 @@
         let statusBgClass = "hover:bg-slate-50";
         if (now >= checkInTime && now <= checkOutTime) {
           // Live Booking -> Highlight with Yellow color
-          statusBgClass = "bg-yellow-100 hover:bg-yellow-200/80";
+          statusBgClass = "bg-yellow-200 hover:bg-yellow-300/80";
         } else if (now > checkOutTime) {
           // Closed Booking -> Highlight with Green color
-          statusBgClass = "bg-emerald-100 hover:bg-emerald-200/80";
+          statusBgClass = "bg-emerald-200 hover:bg-emerald-300/80";
         }
 
         let foodSummaryHtml = '';
