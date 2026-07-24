@@ -225,11 +225,31 @@
 
     <!-- DASHBOARD TAB -->
     <section id="tab-dashboard" class="tab-content space-y-3">
-      <div class="bg-gradient-to-r from-indigo-700 via-indigo-600 to-blue-600 rounded-lg p-3 text-white shadow-sm flex justify-between items-center">
+      <div class="bg-gradient-to-r from-indigo-700 via-indigo-600 to-blue-600 rounded-lg p-3 text-white shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <div>
           <h2 class="text-base font-bold tracking-tight">Hi Aniruddha, Welcome to dashboard 🏠</h2>
           <p class="text-indigo-100 text-[10px] mt-0.5">Quickly view, schedule, and manage room allocations and orders.</p>
         </div>
+        <!-- Year Selection & Consolidated Summary Options -->
+        <div class="flex items-center bg-indigo-900/60 p-1.5 rounded-lg border border-indigo-400/40 space-x-2">
+          <label for="dash-year-select" class="text-[10px] font-bold text-indigo-100 uppercase flex items-center gap-1">
+            <i class="fa-solid fa-filter text-amber-300"></i> Filter Year:
+          </label>
+          <select id="dash-year-select" onchange="handleDashboardYearChange(this.value)" class="bg-white text-indigo-900 text-[11px] font-bold rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer shadow">
+            <!-- Options dynamically populated in JS -->
+          </select>
+        </div>
+      </div>
+
+      <!-- Summary Filter Banner Indicator -->
+      <div class="flex items-center justify-between bg-white px-3 py-1.5 rounded-md border border-slate-200 shadow-xs">
+        <span class="text-[11px] font-semibold text-slate-600 flex items-center gap-1.5">
+          <i class="fa-solid fa-chart-line text-indigo-600"></i>
+          Showing Summary For: <strong id="dash-filter-label" class="text-indigo-700 font-bold">Consolidated (All Years)</strong>
+        </span>
+        <button onclick="handleDashboardYearChange('CURRENT')" class="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2 py-0.5 rounded transition border border-slate-300">
+          Reset to Current Year
+        </button>
       </div>
 
       <!-- Compact Summary Cards -->
@@ -266,10 +286,11 @@
 
       <!-- Compact Years Grid -->
       <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-3">
-        <div class="mb-2">
+        <div class="mb-2 flex justify-between items-center">
           <h3 class="text-xs font-bold text-slate-800 flex items-center gap-1">
             <i class="fa-solid fa-calendar-days text-indigo-600"></i> Active Years Directory (2026 – 2085)
           </h3>
+          <span class="text-[10px] text-slate-400 font-medium">Click any year to filter dashboard & open year calendar</span>
         </div>
         <div id="years-grid" class="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-12 gap-1.5"></div>
       </div>
@@ -283,6 +304,11 @@
             <h2 class="text-xs font-bold text-slate-800 flex items-center gap-1">
               <i class="fa-solid fa-address-card text-indigo-600"></i> Guest Information & Reservation Directory
             </h2>
+            <!-- Legend Indicator -->
+            <div class="flex items-center gap-3 mt-1.5 text-[10px]">
+              <span class="flex items-center gap-1 font-semibold text-amber-800"><span class="w-2.5 h-2.5 bg-yellow-200 border border-yellow-400 rounded-sm inline-block"></span> Live Booking</span>
+              <span class="flex items-center gap-1 font-semibold text-emerald-800"><span class="w-2.5 h-2.5 bg-emerald-200 border border-emerald-400 rounded-sm inline-block"></span> Closed Booking</span>
+            </div>
           </div>
           
           <div class="flex items-center space-x-2 w-full md:w-auto">
@@ -360,23 +386,25 @@
         </div>
       </div>
 
-      <!-- SEPARATE TABLE: BOOKING ID SEARCH & DELETION CONTROL -->
+      <!-- SEPARATE TABLE: BOOKING ID TYPING SEARCH & DELETION CONTROL -->
       <div class="bg-white rounded-lg shadow-sm border border-rose-200/80 p-3 space-y-2.5">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-100 pb-2">
           <div>
             <h2 class="text-xs font-bold text-slate-800 flex items-center gap-1">
               <i class="fa-solid fa-trash-can text-rose-600"></i>Booking Deletion Manager
             </h2>
-            <p class="text-[10px] text-slate-500">Search for a booking by its Booking ID to safely remove it from the system.</p>
+            <p class="text-[10px] text-slate-500">Type a Booking ID directly to safely locate and remove it from the system.</p>
           </div>
           
-          <div class="flex items-center space-x-2 bg-slate-50 border border-slate-300 rounded p-1">
-            <label for="master-booking-search-select" class="text-[10px] font-bold text-slate-600 uppercase flex items-center gap-1 pl-1">
-              <i class="fa-solid fa-magnifying-glass text-indigo-600"></i> Select Booking ID:
+          <!-- Direct Text Input for Booking ID Typing Search -->
+          <div class="flex items-center bg-slate-50 border border-slate-300 rounded p-1 space-x-1.5">
+            <label for="master-booking-search-input" class="text-[10px] font-bold text-slate-600 uppercase flex items-center gap-1 pl-1">
+              <i class="fa-solid fa-magnifying-glass text-indigo-600"></i> Type Booking ID:
             </label>
-            <select id="master-booking-search-select" onchange="searchMasterBookingById()" class="bg-white text-[11px] border border-slate-300 rounded px-2 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono font-bold text-indigo-700 cursor-pointer">
-              <!-- Populated dynamically -->
-            </select>
+            <input type="text" id="master-booking-search-input" oninput="searchMasterBookingById()" placeholder="e.g. BKG-2026-0000001" class="bg-white text-[11px] border border-slate-300 rounded px-2 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono font-bold text-indigo-700 uppercase w-48">
+            <button onclick="clearMasterBookingSearch()" class="text-slate-400 hover:text-slate-600 px-1 text-[10px]" title="Clear Search">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
           </div>
         </div>
 
@@ -396,7 +424,7 @@
             </thead>
             <tbody id="master-delete-tbody" class="divide-y divide-slate-100 text-[11px]">
               <tr>
-                <td colspan="8" class="text-center py-4 text-slate-400">Please select a Booking ID from the dropdown above to view and delete details.</td>
+                <td colspan="8" class="text-center py-4 text-slate-400">Please type a Booking ID into the search field above to view and delete details.</td>
               </tr>
             </tbody>
           </table>
@@ -414,9 +442,12 @@
             </h2>
           </div>
           
-          <div class="flex items-center space-x-1.5 bg-slate-50 p-1 rounded border border-slate-200">
-            <label for="cal-year-select" class="text-[9px] font-bold text-slate-500 uppercase">Year:</label>
-            <select id="cal-year-select" onchange="renderCalendar(parseInt(this.value))" class="bg-white border border-slate-300 text-indigo-700 font-bold px-2 py-0.5 rounded focus:outline-none cursor-pointer text-[11px]"></select>
+          <!-- Calendar Search Bar matched with Dashboard Style -->
+          <div class="flex items-center bg-indigo-900/60 p-1.5 rounded-lg border border-indigo-400/40 space-x-2">
+            <label for="cal-year-select" class="text-[10px] font-bold text-indigo-100 uppercase flex items-center gap-1">
+              <i class="fa-solid fa-filter text-amber-300"></i> Filter Year:
+            </label>
+            <select id="cal-year-select" onchange="renderCalendar(parseInt(this.value))" class="bg-white text-indigo-900 text-[11px] font-bold rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer shadow"></select>
           </div>
         </div>
 
@@ -683,8 +714,8 @@
     let inactivityTimer = null;
     let warningTimer = null;
     let countdownInterval = null;
-    const INACTIVITY_LIMIT_MS = 5 * 60 * 1000; // 5 Minutes
-    const WARNING_BUFFER_MS = 1 * 60 * 1000;   // Show warning at 4 minutes (1 min remaining)
+    const INACTIVITY_LIMIT_MS = 10 * 60 * 1000; // Updated to 10 Minutes
+    const WARNING_BUFFER_MS = 1 * 60 * 1000;   // Show warning at 9 minutes (1 min remaining)
 
     const DEFAULT_USER_ID = "Admin";
     const DEFAULT_PASSWORD = "Aadmin123";
@@ -782,10 +813,10 @@
 
       document.getElementById('logout-warning-modal').classList.add('hidden');
 
-      // Set Warning timer (4 minutes)
+      // Set Warning timer (9 minutes)
       warningTimer = setTimeout(showInactivityWarning, INACTIVITY_LIMIT_MS - WARNING_BUFFER_MS);
 
-      // Set Final Logout timer (5 minutes)
+      // Set Final Logout timer (10 minutes)
       inactivityTimer = setTimeout(logoutUser, INACTIVITY_LIMIT_MS);
     }
 
@@ -838,6 +869,10 @@
       const year = dateObj.getFullYear();
       return `${day}-${month}-${year}`;
     }
+
+    // Dynamic Default Year Determination (Current Year or default 2026)
+    const currentRealYear = new Date().getFullYear();
+    const defaultAppYear = currentRealYear >= 2026 && currentRealYear <= 2085 ? currentRealYear : 2026;
 
     // State Directory
     let state = {
@@ -893,7 +928,8 @@
         { agentName: "A1", phone: "1234567890", roomNo: 4, capacity: 4 },
         { agentName: "A3", phone: "1234567890", roomNo: 5, capacity: 4 }
       ],
-      selectedYear: 2026
+      selectedYear: defaultAppYear,
+      dashSelectedYear: defaultAppYear // Always open Dashboard showing current year
     };
 
     // Populates the Room Filter Dropdown cleanly with all registered rooms
@@ -920,66 +956,57 @@
       }
     }
 
-    // Populates the Master Data Booking ID Search Dropdown
-    function populateMasterBookingSearchDropdown() {
-      const select = document.getElementById('master-booking-search-select');
-      if (!select) return;
-
-      const currentValue = select.value;
-      select.innerHTML = '<option value="">-- Select Booking ID --</option>';
-
-      state.bookings.forEach(b => {
-        const opt = document.createElement('option');
-        opt.value = b.bookingCode;
-        opt.text = b.bookingCode;
-        select.appendChild(opt);
-      });
-
-      if (currentValue && state.bookings.some(b => b.bookingCode === currentValue)) {
-        select.value = currentValue;
-      } else {
-        select.value = "";
-      }
-
-      searchMasterBookingById();
-    }
-
-    // Filters and renders the Master Data Deletion table based on chosen Booking ID
+    // Filters and renders the Master Data Deletion table based on typed Booking ID Input
     function searchMasterBookingById() {
-      const selectedCode = document.getElementById('master-booking-search-select').value;
+      const inputElem = document.getElementById('master-booking-search-input');
+      if (!inputElem) return;
+
+      const query = inputElem.value.trim().toUpperCase();
       const tbody = document.getElementById('master-delete-tbody');
       if (!tbody) return;
 
       tbody.innerHTML = '';
 
-      if (!selectedCode) {
-        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-slate-400">Please select a Booking ID from the dropdown above to view and delete details.</td></tr>`;
+      if (!query) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-slate-400">Please type a Booking ID into the search field above to view and delete details.</td></tr>`;
         return;
       }
 
-      const b = state.bookings.find(item => item.bookingCode === selectedCode);
-      if (!b) {
-        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-rose-500 font-semibold">Booking ID not found or already deleted.</td></tr>`;
+      // Search matching booking by ID (partial or exact)
+      const matchedBookings = state.bookings.filter(item => 
+        (item.bookingCode || '').toUpperCase().includes(query)
+      );
+
+      if (matchedBookings.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-rose-500 font-semibold">No booking found matching "${query}".</td></tr>`;
         return;
       }
 
-      const tr = document.createElement('tr');
-      tr.className = "bg-white hover:bg-slate-50 transition border-b border-slate-100";
-      tr.innerHTML = `
-        <td class="py-2 px-2 font-mono font-bold text-indigo-700">${b.bookingCode}</td>
-        <td class="py-2 px-2 font-bold text-slate-800">${b.name}</td>
-        <td class="py-2 px-2 font-medium text-slate-600">${b.contactNo || '-'}</td>
-        <td class="py-2 px-2"><span class="bg-indigo-50 text-indigo-700 font-bold px-1.5 py-0.2 rounded text-[10px]">Room ${b.roomNo}</span></td>
-        <td class="py-2 px-2 text-[10px] text-slate-600">${formatDateTime(b.checkIn)} to ${formatDateTime(b.checkOut)}</td>
-        <td class="py-2 px-2 font-semibold text-slate-800">₹${b.totalAmount}</td>
-        <td class="py-2 px-2 font-bold text-rose-600">₹${b.totalDue}</td>
-        <td class="py-2 px-2 text-center">
-          <button onclick="deleteBooking('${b.id}')" class="bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1 rounded text-[10px] font-semibold flex items-center gap-1 mx-auto transition shadow-xs">
-            <i class="fa-solid fa-trash-can text-[9px]"></i> Delete Linked Booking
-          </button>
-        </td>
-      `;
-      tbody.appendChild(tr);
+      matchedBookings.forEach(b => {
+        const tr = document.createElement('tr');
+        tr.className = "bg-white hover:bg-slate-50 transition border-b border-slate-100";
+        tr.innerHTML = `
+          <td class="py-2 px-2 font-mono font-bold text-indigo-700">${b.bookingCode}</td>
+          <td class="py-2 px-2 font-bold text-slate-800">${b.name}</td>
+          <td class="py-2 px-2 font-medium text-slate-600">${b.contactNo || '-'}</td>
+          <td class="py-2 px-2"><span class="bg-indigo-50 text-indigo-700 font-bold px-1.5 py-0.2 rounded text-[10px]">Room ${b.roomNo}</span></td>
+          <td class="py-2 px-2 text-[10px] text-slate-600">${formatDateTime(b.checkIn)} to ${formatDateTime(b.checkOut)}</td>
+          <td class="py-2 px-2 font-semibold text-slate-800">₹${b.totalAmount}</td>
+          <td class="py-2 px-2 font-bold text-rose-600">₹${b.totalDue}</td>
+          <td class="py-2 px-2 text-center">
+            <button onclick="deleteBooking('${b.id}')" class="bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1 rounded text-[10px] font-semibold flex items-center gap-1 mx-auto transition shadow-xs">
+              <i class="fa-solid fa-trash-can text-[9px]"></i> Delete Linked Booking
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function clearMasterBookingSearch() {
+      const input = document.getElementById('master-booking-search-input');
+      if (input) input.value = '';
+      searchMasterBookingById();
     }
 
     // Filters table dynamically based on selected Room Dropdown option
@@ -995,9 +1022,9 @@
     }
 
     function generateIDsForYear(checkInDateStr) {
-      let targetYear = 2026;
+      let targetYear = defaultAppYear;
       if (checkInDateStr) {
-        targetYear = new Date(checkInDateStr).getFullYear() || 2026;
+        targetYear = new Date(checkInDateStr).getFullYear() || defaultAppYear;
       }
 
       if (!state.yearlyCounters) state.yearlyCounters = {};
@@ -1038,32 +1065,84 @@
               }
             });
             state = parsed;
+            // Always set Dashboard selection and Calendar View to Current Active Year on load/refresh
+            state.dashSelectedYear = defaultAppYear;
+            state.selectedYear = defaultAppYear;
             if (!state.yearlyCounters) {
               state.yearlyCounters = { "2026": state.bookings.length || 0 };
             }
           }
         } catch(e){}
       }
+      // Guarantee calendar search bar always displays current dynamic year upon refresh
+      state.selectedYear = defaultAppYear;
     }
 
     document.addEventListener("DOMContentLoaded", () => {
       checkAuthStatus();
       loadSavedData();
+      populateDashboardYearDropdown();
       initDashboard();
       populateRoomDropdown();
       populateCalendarYearDropdown();
       populateBookingSearchDropdown();
-      populateMasterBookingSearchDropdown();
+      searchMasterBookingById();
       renderBookingsTable();
       renderMasterTable();
-      renderCalendar(state.selectedYear);
+      renderCalendar(defaultAppYear);
 
       checkUpcomingCheckoutsWithDue();
       setInterval(checkUpcomingCheckoutsWithDue, 60000);
 
-      // Auto-save data every 5 minutes (300,000 milliseconds)
-      setInterval(saveChanges, 300000);
+      // Auto-save data every 5 minutes (300,000 ms)
+      setInterval(triggerPeriodicAutoSave, 300000);
     });
+
+    // Helper to perform autosave every 5 min only when NOT on Dashboard
+    function triggerPeriodicAutoSave() {
+      saveChanges(true, true);
+    }
+
+    function populateDashboardYearDropdown() {
+      const yearSelect = document.getElementById('dash-year-select');
+      if (!yearSelect) return;
+      yearSelect.innerHTML = '';
+
+      // Option 1: Consolidated Summary
+      const optConsolidated = document.createElement('option');
+      optConsolidated.value = "ALL";
+      optConsolidated.text = "All Years (Consolidated)";
+      yearSelect.appendChild(optConsolidated);
+
+      // Populate year range 2026 to 2085
+      for (let y = 2026; y <= 2085; y++) {
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.text = y === defaultAppYear ? `${y} (Current Year)` : `Year ${y}`;
+        yearSelect.appendChild(opt);
+      }
+
+      // Always default select current active year on dashboard
+      yearSelect.value = defaultAppYear;
+      state.dashSelectedYear = defaultAppYear;
+    }
+
+    function handleDashboardYearChange(val) {
+      if (val === 'CURRENT') {
+        val = defaultAppYear;
+      }
+      
+      const select = document.getElementById('dash-year-select');
+      if (select) select.value = val;
+
+      if (val === 'ALL') {
+        state.dashSelectedYear = 'ALL';
+      } else {
+        state.dashSelectedYear = parseInt(val);
+      }
+
+      initDashboard();
+    }
 
     function checkUpcomingCheckoutsWithDue() {
       const now = new Date().getTime();
@@ -1167,12 +1246,13 @@
 
     function populateCalendarYearDropdown() {
       const yearSelect = document.getElementById('cal-year-select');
+      if (!yearSelect) return;
       yearSelect.innerHTML = '';
       for (let y = 2026; y <= 2085; y++) {
         const opt = document.createElement('option');
         opt.value = y;
-        opt.text = `Year ${y}`;
-        if (y === state.selectedYear) opt.selected = true;
+        opt.text = y === defaultAppYear ? `${y} (Current Year)` : `Year ${y}`;
+        if (y === defaultAppYear) opt.selected = true;
         yearSelect.appendChild(opt);
       }
     }
@@ -1222,11 +1302,15 @@
       const activeBtn = document.getElementById(`btn-${tabId}`);
       activeBtn.classList.add('active-tab', 'bg-indigo-600', 'text-white');
       closeCommentBox();
+
+      // ALWAYS reset Dashboard view & filter to show Current Year every time Dashboard is opened
+      if (tabId === 'dashboard') {
+        handleDashboardYearChange(defaultAppYear);
+      }
     }
 
     function selectDashboardYear(year) {
-      state.selectedYear = year;
-      initDashboard();
+      handleDashboardYearChange(year);
       renderCalendar(year);
       switchTab('calendar');
     }
@@ -1234,25 +1318,58 @@
     function initDashboard() {
       const grid = document.getElementById('years-grid');
       grid.innerHTML = '';
+      
       for (let y = 2026; y <= 2085; y++) {
         const item = document.createElement('div');
+        const isSelectedYear = state.dashSelectedYear !== 'ALL' && parseInt(state.dashSelectedYear) === y;
+        const isCurrentRealYear = y === defaultAppYear;
+
         item.className = `text-center py-1 px-1 rounded text-[10px] font-bold border cursor-pointer transition ${
-          y === state.selectedYear 
+          isSelectedYear
             ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' 
-            : 'bg-white text-slate-600 border-slate-200 hover:bg-indigo-50 hover:text-indigo-600'
+            : (isCurrentRealYear ? 'bg-amber-100 text-amber-900 border-amber-400 font-extrabold hover:bg-amber-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-indigo-50 hover:text-indigo-600')
         }`;
+        
         item.innerText = y;
+        if (isCurrentRealYear) {
+          item.title = "Current Active Year";
+        }
+
         item.onclick = () => selectDashboardYear(y);
         grid.appendChild(item);
       }
+
       updateDashboardCards();
     }
 
     function updateDashboardCards() {
-      const totalBookings = state.bookings.length;
-      const totalAmt = state.bookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0);
-      const totalAdv = state.bookings.reduce((sum, b) => sum + (b.advanced || 0), 0);
-      const totalDue = state.bookings.reduce((sum, b) => sum + (b.totalDue || 0), 0);
+      const selectedFilter = state.dashSelectedYear;
+      const label = document.getElementById('dash-filter-label');
+
+      let filteredBookings = [];
+
+      if (selectedFilter === 'ALL' || !selectedFilter) {
+        filteredBookings = [...state.bookings];
+        if (label) label.innerText = "Consolidated Summary (All Years)";
+      } else {
+        const targetYear = parseInt(selectedFilter);
+        filteredBookings = state.bookings.filter(b => {
+          if (!b.checkIn) return false;
+          const yr = new Date(b.checkIn).getFullYear();
+          return yr === targetYear;
+        });
+
+        if (label) {
+          label.innerText = targetYear === defaultAppYear 
+            ? `Year ${targetYear} (Current Year)` 
+            : `Year ${targetYear}`;
+        }
+      }
+
+      const totalBookings = filteredBookings.length;
+      const totalAmt = filteredBookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0);
+      const totalAdv = filteredBookings.reduce((sum, b) => sum + (b.advanced || 0), 0);
+      const totalDue = filteredBookings.reduce((sum, b) => sum + (b.totalDue || 0), 0);
 
       document.getElementById('dash-total-bookings').innerText = totalBookings;
       document.getElementById('dash-total-amount').innerText = `₹${totalAmt.toLocaleString('en-IN')}`;
@@ -1666,24 +1783,24 @@
 
       closeBookingModal();
       populateBookingSearchDropdown();
-      populateMasterBookingSearchDropdown();
+      searchMasterBookingById();
       renderBookingsTable();
       updateDashboardCards();
-      renderCalendar(state.selectedYear);
+      renderCalendar(defaultAppYear);
       checkUpcomingCheckoutsWithDue();
-      saveChanges(false);
+      saveChanges(false, false);
     }
 
     function deleteBooking(id) {
       if (confirm('Are you sure you want to delete this booking entry?')) {
         state.bookings = state.bookings.filter(b => b.id !== id);
         populateBookingSearchDropdown();
-        populateMasterBookingSearchDropdown();
+        searchMasterBookingById();
         renderBookingsTable();
         updateDashboardCards();
-        renderCalendar(state.selectedYear);
+        renderCalendar(defaultAppYear);
         checkUpcomingCheckoutsWithDue();
-        saveChanges(false);
+        saveChanges(false, false);
       }
     }
 
@@ -1691,26 +1808,44 @@
       const tbody = document.getElementById('bookings-tbody');
       tbody.innerHTML = '';
 
-      let listToRender = state.bookings;
+      let listToRender = [...state.bookings];
 
       if (roomFilter !== "" && roomFilter !== null && roomFilter !== undefined) {
-        listToRender = state.bookings.filter(b => parseInt(b.roomNo) === parseInt(roomFilter));
+        listToRender = listToRender.filter(b => parseInt(b.roomNo) === parseInt(roomFilter));
       }
+
+      // Sort booking list in descending order by Booking ID Code
+      listToRender.sort((a, b) => (b.bookingCode || '').localeCompare(a.bookingCode || ''));
 
       if (listToRender.length === 0) {
         tbody.innerHTML = `<tr><td colspan="11" class="text-center py-6 text-slate-400">No bookings found for the selected room.</td></tr>`;
         return;
       }
 
+      const now = new Date().getTime();
+
       listToRender.forEach((b) => {
         const checkInFmt = formatDateTime(b.checkIn);
         const checkOutFmt = formatDateTime(b.checkOut);
+
+        const checkInTime = new Date(b.checkIn).getTime();
+        const checkOutTime = new Date(b.checkOut).getTime();
+
+        // Status Determination & Highlighting
+        let statusBgClass = "hover:bg-slate-50";
+        if (now >= checkInTime && now <= checkOutTime) {
+          // Live Booking -> Highlight with Yellow color
+          statusBgClass = "bg-yellow-100 hover:bg-yellow-200/80";
+        } else if (now > checkOutTime) {
+          // Closed Booking -> Highlight with Green color
+          statusBgClass = "bg-emerald-100 hover:bg-emerald-200/80";
+        }
 
         let foodSummaryHtml = '';
         if (b.foodOrders && b.foodOrders.length > 0) {
           const totalFoodCharge = b.foodOrders.reduce((acc, fo) => acc + (fo.foodCharge || 0), 0);
           if (totalFoodCharge > 0) {
-            foodSummaryHtml = `<div class="text-[9px] text-amber-700 font-semibold"><i class="fa-solid fa-utensils text-[8px] mr-0.5"></i>Food (${b.foodOrders.length}): +₹${totalFoodCharge}</div>`;
+            foodSummaryHtml = `<div class="text-[9px] text-amber-800 font-semibold"><i class="fa-solid fa-utensils text-[8px] mr-0.5"></i>Food (${b.foodOrders.length}): +₹${totalFoodCharge}</div>`;
           }
         }
 
@@ -1722,14 +1857,15 @@
         // Rec button is ALWAYS enabled regardless of due amount
         const printOnClickRec = `printInvoice('${b.id}', true)`;
 
+        // Updated button styles: Prominent, larger padding, eye-catching colors and subtle shadows
         const invBtnClass = isDue 
-          ? "bg-slate-100 text-slate-400 cursor-not-allowed opacity-60 px-1.5 py-0.5 rounded text-[10px] font-semibold border border-slate-200" 
-          : "bg-slate-100 hover:bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded text-[10px] font-semibold transition border border-slate-200";
+          ? "bg-slate-200 text-slate-400 cursor-not-allowed opacity-60 px-2.5 py-1 rounded-md text-[11px] font-bold border border-slate-300" 
+          : "bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 rounded-md text-[11px] font-bold transition shadow-sm border border-indigo-700";
 
-        const recBtnClass = "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded text-[10px] font-semibold transition border border-emerald-200";
+        const recBtnClass = "bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-md text-[11px] font-bold transition shadow-sm border border-emerald-700";
 
         const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+        tr.className = `${statusBgClass} transition border-b border-slate-200/60`;
         tr.innerHTML = `
           <td class="py-2 px-2">
             <span class="bg-indigo-50 border border-indigo-200 text-indigo-700 font-mono font-bold px-1.5 py-0.2 rounded text-[9px] block w-max">${b.bookingCode}</span>
@@ -1739,12 +1875,12 @@
           <td class="py-2 px-2 text-[10px] text-slate-500 font-mono">${b.idNo || '-'}</td>
           <td class="py-2 px-2">
             <span class="bg-indigo-50 text-indigo-700 font-bold px-1.5 py-0.2 rounded text-[10px] inline-block">Room ${b.roomNo}</span>
-            <div class="text-[9px] text-slate-400">${b.capacity}</div>
+            <div class="text-[9px] text-slate-500">${b.capacity}</div>
           </td>
           <td class="py-2 px-2 text-[10px] text-slate-600 font-medium">${b.agentInfo}</td>
           <td class="py-2 px-2 text-[10px]">
-            <div class="text-emerald-700 font-medium"><i class="fa-solid fa-plane-arrival mr-1"></i> ${checkInFmt}</div>
-            <div class="text-rose-600 font-medium"><i class="fa-solid fa-plane-departure mr-1"></i> ${checkOutFmt}</div>
+            <div class="text-emerald-800 font-medium"><i class="fa-solid fa-plane-arrival mr-1"></i> ${checkInFmt}</div>
+            <div class="text-rose-700 font-medium"><i class="fa-solid fa-plane-departure mr-1"></i> ${checkOutFmt}</div>
           </td>
           <td class="py-2 px-2 text-[10px]">
             <div class="font-semibold text-slate-700">${b.noOfDays} d × ₹${b.perDayPrice}</div>
@@ -1752,22 +1888,22 @@
           </td>
           <td class="py-2 px-2 text-[10px]">
             <div class="font-bold text-slate-800">Tot: ₹${b.totalAmount}</div>
-            <div class="text-emerald-600 font-medium">Adv: ₹${b.advanced}</div>
+            <div class="text-emerald-700 font-medium">Adv: ₹${b.advanced}</div>
           </td>
           <td class="py-2 px-2">
-            <span class="px-1.5 py-0.2 rounded text-[10px] font-bold inline-block ${b.totalDue > 0 ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}">
+            <span class="px-1.5 py-0.2 rounded text-[10px] font-bold inline-block ${b.totalDue > 0 ? 'bg-rose-100 text-rose-700' : 'bg-emerald-200 text-emerald-800'}">
               ₹${b.totalDue} Due
             </span>
           </td>
           <td class="py-2 px-2 text-center">
-            <div class="flex items-center justify-center space-x-1">
+            <div class="flex items-center justify-center space-x-1.5">
               <button onclick="${printOnClickInv}" title="${isDue ? 'Pay due amount to enable print' : 'Print Invoice'}" class="${invBtnClass}">
-                <i class="fa-solid fa-file-invoice ${isDue ? 'text-slate-400' : 'text-indigo-600'}"></i> Inv
+                <i class="fa-solid fa-file-invoice ${isDue ? 'text-slate-400' : 'text-white'} mr-0.5"></i> Inv
               </button>
               <button onclick="${printOnClickRec}" title="Print Booking Receipt" class="${recBtnClass}">
-                <i class="fa-solid fa-receipt text-emerald-600"></i> Rec
+                <i class="fa-solid fa-receipt text-white mr-0.5"></i> Rec
               </button>
-              <button onclick="openBookingModal('${b.id}')" title="Edit Booking" class="text-indigo-600 hover:text-indigo-800 p-0.5"><i class="fa-solid fa-pen-to-square"></i></button>
+              <button onclick="openBookingModal('${b.id}')" title="Edit Booking" class="text-indigo-600 hover:text-indigo-800 p-1 text-sm"><i class="fa-solid fa-pen-to-square"></i></button>
             </div>
           </td>
         `;
@@ -1815,7 +1951,6 @@
     }
 
     function renderCalendar(year) {
-      state.selectedYear = year;
       const calSelect = document.getElementById('cal-year-select');
       if (calSelect) calSelect.value = year;
 
@@ -1960,8 +2095,18 @@
       }
     }
 
-    function saveChanges(showToast = true) {
-      localStorage.setItem('webapp_data', JSON.stringify(state));
+    function saveChanges(showToast = true, isAutoSave = false) {
+      // Exclude autosave logic if current tab is Dashboard
+      const isDashboardActive = !document.getElementById('tab-dashboard').classList.contains('hidden');
+      if (isAutoSave && isDashboardActive) {
+        return;
+      }
+
+      // Clone state without persisting calendar search filter year
+      const stateToSave = { ...state };
+      delete stateToSave.selectedYear;
+
+      localStorage.setItem('webapp_data', JSON.stringify(stateToSave));
       if (showToast) {
         showNotificationToast("Changes Auto save successfully!");
       }
