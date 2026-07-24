@@ -373,14 +373,14 @@
                 <th class="py-2 px-2">Booking ID</th>
                 <th class="py-2 px-2">Guest Name</th>
                 <th class="py-2 px-2">Contact No</th>
-                <th class="py-2 px-2">ID Number</th>
-                <th class="py-2 px-2">Attached ID Proof</th>
+                <th class="py-2 px-2">ID No</th>
+                <th class="py-2 px-2">Attached ID</th>
                 <th class="py-2 px-2">Room</th>
-                <th class="py-2 px-2">Agent</th>
+                <th class="py-2 px-2">Agent Info</th>
                 <th class="py-2 px-2 min-w-[150px]">Stay Window</th>
                 <th class="py-2 px-2">Tariff & Extras</th>
-                <th class="py-2 px-2">Payment</th>
-                <th class="py-2 px-2">Balance</th>
+                <th class="py-2 px-2">Payment/Adv</th>
+                <th class="py-2 px-2">Due</th>
                 <th class="py-2 px-2 text-center">Actions</th>
               </tr>
             </thead>
