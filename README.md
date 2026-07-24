@@ -536,21 +536,37 @@
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <div>
               <label class="block font-semibold text-slate-600 mb-0.5">Guest Name <span class="text-rose-500">*</span></label>
-              <!-- Mandatory Guest Name enforcing characters/letters only -->
-              <input type="text" id="cust-name" required pattern="[A-Za-z\s]+" oninput="this.value = this.value.replace(/[^A-Za-z\s]/g, '')" title="Please enter Guest Name using characters only (letters and spaces)" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+              <!-- Mandatory Guest Name enforcing Title Case transformation & letters/spaces only -->
+              <input type="text" id="cust-name" required pattern="[A-Za-z\s]+" oninput="this.value = formatTitleCase(this.value.replace(/[^A-Za-z\s]/g, ''))" title="Please enter Guest Name using characters only (letters and spaces)" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
             </div>
             <div>
               <label class="block font-semibold text-slate-600 mb-0.5">Address <span class="text-rose-500">*</span></label>
-              <input type="text" id="cust-address" required title="Address is mandatory" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+              <input type="text" id="cust-address" required title="Address is mandatory" oninput="this.value = formatTitleCase(this.value)" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-600 mb-0.5">City</label>
+              <input type="text" id="cust-city" placeholder="City" oninput="this.value = formatTitleCase(this.value)" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-600 mb-0.5">State</label>
+              <input type="text" id="cust-state" oninput="this.value = formatTitleCase(this.value); handleStateChange(this.value)" placeholder="State" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-600 mb-0.5">Country</label>
+              <input type="text" id="cust-country" placeholder="Country" oninput="this.value = formatTitleCase(this.value)" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-600 mb-0.5">Pin/Zip Code</label>
+              <input type="text" id="cust-zip" placeholder="Pin/Zip Code" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
             </div>
             <div>
               <label class="block font-semibold text-slate-600 mb-0.5">ID Number <span class="text-rose-500">*</span></label>
-              <!-- Mandatory ID Number allowing both characters and numbers upto 16 length -->
+              <!-- Mandatory ID Number allowing both characters and numbers upto 16 length (Exempted from Title Case transformation) -->
               <input type="text" id="cust-id" required maxlength="16" pattern="[A-Za-z0-9\s]+" oninput="this.value = this.value.replace(/[^A-Za-z0-9\s]/g, '')" title="Please enter letters and numbers (up to 16 characters)" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
             </div>
             <div>
               <label class="block font-semibold text-slate-600 mb-0.5">Contact No <span class="text-rose-500">*</span></label>
-              <!-- Mandatory Contact No enforcing numbers only upto 10 digits -->
+              <!-- Mandatory Contact No enforcing numbers only upto 10 digits (Exempted from Title Case transformation) -->
               <input type="text" id="cust-contact" required maxlength="10" pattern="[0-9]{10}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" title="Please enter exactly 10 digits" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
             </div>
           </div>
@@ -741,6 +757,24 @@
         return e.returnValue;
       }
     });
+
+    // Helper to capitalize first letter of every word & lowercase all other letters (Title Case)
+    function formatTitleCase(text) {
+      if (!text) return '';
+      return text.replace(/\w\S*/g, function(txt) {
+        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+      });
+    }
+
+    // Helper to auto-fill Country as India if State is West Bengal
+    function handleStateChange(stateValue) {
+      if (stateValue && stateValue.trim().toLowerCase() === 'west bengal') {
+        const countryInput = document.getElementById('cust-country');
+        if (countryInput) {
+          countryInput.value = 'India';
+        }
+      }
+    }
 
     // --- LOGIN AND INACTIVITY LOGOUT MANAGEMENT ---
     let isLoggedIn = false;
@@ -997,6 +1031,10 @@
           invoiceNo: `INV-${defaultAppYear}-0000001`,
           name: "Kapil",
           address: "Kolkata",
+          city: "Kolkata",
+          state: "West Bengal",
+          country: "India",
+          zipCode: "700001",
           idNo: "ABC25780001",
           contactNo: "1234567890",
           roomNo: 2,
@@ -1019,6 +1057,10 @@
           invoiceNo: `INV-${defaultAppYear}-0000002`,
           name: "Aniruddha",
           address: "Mumbai",
+          city: "Mumbai",
+          state: "Maharashtra",
+          country: "India",
+          zipCode: "400001",
           idNo: "XYZ99887766",
           contactNo: "9876543210",
           roomNo: 4,
@@ -1087,6 +1129,10 @@
           "Contact No": b.contactNo || "-",
           "ID Number": b.idNo || "-",
           "Address": b.address || "-",
+          "City": b.city || "-",
+          "State": b.state || "-",
+          "Country": b.country || "-",
+          "Pin/Zip Code": b.zipCode || "-",
           "Room No": b.roomNo || "-",
           "Capacity": b.capacity || "-",
           "Agent Info": b.agentInfo || "-",
@@ -1616,8 +1662,9 @@
       document.getElementById('inv-booking-id').innerText = b.bookingCode;
       document.getElementById('inv-date').innerText = today;
 
-      document.getElementById('inv-guest-name').innerText = b.name || 'N/A';
-      document.getElementById('inv-guest-address').innerText = `Address: ${b.address || 'N/A'}`;
+      const fullLocation = [b.address, b.city, b.state, b.country, b.zipCode].filter(Boolean).map(formatTitleCase).join(', ');
+      document.getElementById('inv-guest-name').innerText = formatTitleCase(b.name) || 'N/A';
+      document.getElementById('inv-guest-address').innerText = `Address: ${fullLocation || 'N/A'}`;
       document.getElementById('inv-guest-contact').innerText = `Contact: ${b.contactNo || 'N/A'}`;
       document.getElementById('inv-guest-id').innerText = `ID No: ${b.idNo || 'N/A'}`;
 
@@ -1733,8 +1780,12 @@
         if (b) {
           document.getElementById('modal-title').innerText = 'Edit Booking Details';
           document.getElementById('modal-booking-id').value = b.id;
-          document.getElementById('cust-name').value = b.name;
-          document.getElementById('cust-address').value = b.address;
+          document.getElementById('cust-name').value = formatTitleCase(b.name);
+          document.getElementById('cust-address').value = formatTitleCase(b.address);
+          document.getElementById('cust-city').value = formatTitleCase(b.city || '');
+          document.getElementById('cust-state').value = formatTitleCase(b.state || '');
+          document.getElementById('cust-country').value = formatTitleCase(b.country || '');
+          document.getElementById('cust-zip').value = b.zipCode || '';
           document.getElementById('cust-id').value = b.idNo;
           document.getElementById('cust-contact').value = b.contactNo;
           
@@ -1911,13 +1962,17 @@
     function handleSaveBooking(e) {
       e.preventDefault();
 
-      const guestName = document.getElementById('cust-name').value.trim();
-      const guestAddress = document.getElementById('cust-address').value.trim();
+      const guestName = formatTitleCase(document.getElementById('cust-name').value.trim());
+      const guestAddress = formatTitleCase(document.getElementById('cust-address').value.trim());
+      const guestCity = formatTitleCase(document.getElementById('cust-city').value.trim());
+      const guestState = formatTitleCase(document.getElementById('cust-state').value.trim());
+      const guestCountry = formatTitleCase(document.getElementById('cust-country').value.trim());
+      const guestZip = document.getElementById('cust-zip').value.trim();
       const guestId = document.getElementById('cust-id').value.trim();
       const guestContact = document.getElementById('cust-contact').value.trim();
 
       if (!guestName || !guestAddress || !guestId || !guestContact) {
-        alert("⚠️ All Guest Information fields (Guest Name, Address, ID Number, and Contact No) are mandatory to proceed!");
+        alert("⚠️ Guest Name, Address, ID Number, and Contact No are mandatory to proceed!");
         return;
       }
 
@@ -2026,6 +2081,10 @@
         invoiceNo: existingInv,
         name: guestName,
         address: guestAddress,
+        city: guestCity,
+        state: guestState,
+        country: guestCountry,
+        zipCode: guestZip,
         idNo: guestId,
         contactNo: guestContact,
         roomNo: roomNo,
@@ -2201,40 +2260,39 @@
             </div>
             ${b.inactive ? '<span class="bg-slate-600 text-white font-bold px-1 py-0.1 rounded text-[8px] uppercase block mt-0.5 w-max">Inactive</span>' : (!isMasterValid ? '<span class="bg-rose-700 text-white font-bold px-1 py-0.1 rounded text-[8px] uppercase block mt-0.5 w-max">Deleted</span>' : '')}
           </td>
-          <td class="py-2 px-2 font-bold ${!isMasterValid ? 'text-rose-950' : 'text-slate-800'}">${b.name}</td>
+          <td class="py-2 px-2 font-bold ${!isMasterValid ? 'text-rose-950' : 'text-slate-800'}">${formatTitleCase(b.name)}</td>
           <td class="py-2 px-2 text-[10px] font-medium ${!isMasterValid ? 'text-rose-900' : 'text-slate-700'}">${b.contactNo || '-'}</td>
           <td class="py-2 px-2 text-[10px] ${!isMasterValid ? 'text-rose-900 font-bold' : 'text-slate-500'} font-mono">${b.idNo || '-'}</td>
           <td class="py-2 px-2">
-            <span class="${!isMasterValid ? 'bg-rose-300 border border-rose-400 text-rose-950' : 'bg-indigo-50 text-indigo-700'} font-bold px-1.5 py-0.2 rounded text-[10px] inline-block">Room ${b.roomNo}</span>
-            <div class="text-[9px] ${!isMasterValid ? 'text-rose-900 font-semibold' : 'text-slate-500'}">${b.capacity}</div>
-          </td>
-          <td class="py-2 px-2 text-[10px] ${!isMasterValid ? 'text-rose-900 font-semibold' : 'text-slate-600'} font-medium">${b.agentInfo}</td>
-          <td class="py-2 px-2 text-[10px]">
-            <div class="${!isMasterValid ? 'text-rose-900 font-bold' : 'text-emerald-800 font-medium'}"><i class="fa-solid fa-plane-arrival mr-1"></i> ${checkInFmt}</div>
-            <div class="${!isMasterValid ? 'text-rose-950 font-bold' : 'text-rose-700 font-medium'}"><i class="fa-solid fa-plane-departure mr-1"></i> ${checkOutFmt}</div>
-          </td>
-          <td class="py-2 px-2 text-[10px]">
-            <div class="font-semibold ${!isMasterValid ? 'text-rose-950' : 'text-slate-700'}">${b.noOfDays} d × ₹${b.perDayPrice}</div>
-            ${foodSummaryHtml}
-          </td>
-          <td class="py-2 px-2 text-[10px]">
-            <div class="font-bold ${!isMasterValid ? 'text-rose-950' : 'text-slate-800'}">Tot: ₹${b.totalAmount}</div>
-            <div class="${!isMasterValid ? 'text-rose-900 font-bold' : 'text-emerald-700 font-medium'}">Adv: ₹${b.advanced}</div>
-          </td>
-          <td class="py-2 px-2">
-            <span class="px-1.5 py-0.2 rounded text-[10px] font-bold inline-block ${b.totalDue > 0 ? 'bg-rose-100 text-rose-700' : 'bg-emerald-200 text-emerald-800'}">
-              ₹${b.totalDue} Due
+            <span class="${!isMasterValid ? 'bg-rose-300 border border-rose-400 text-rose-950 font-bold' : 'bg-slate-100 border border-slate-200 text-slate-700 font-semibold'} px-1.5 py-0.5 rounded text-[10px]">
+              Room ${b.roomNo}
             </span>
           </td>
-          <td class="py-2 px-2 text-center">
+          <td class="py-2 px-2 text-[10px] ${!isMasterValid ? 'text-rose-900' : 'text-slate-600'}">${b.agentInfo || '-'}</td>
+          <td class="py-2 px-2 text-[10px] ${!isMasterValid ? 'text-rose-950 font-bold' : 'text-slate-600'}">
+            <div><i class="fa-solid fa-plane-arrival text-emerald-600 mr-1"></i>${checkInFmt}</div>
+            <div><i class="fa-solid fa-plane-departure text-rose-500 mr-1"></i>${checkOutFmt}</div>
+          </td>
+          <td class="py-2 px-2">
+            <div class="font-bold ${!isMasterValid ? 'text-rose-950' : 'text-slate-800'}">₹${b.totalAmount}</div>
+            <div class="text-[9px] ${!isMasterValid ? 'text-rose-900' : 'text-slate-500'}">${b.noOfDays}d @ ₹${b.perDayPrice}</div>
+            ${foodSummaryHtml}
+          </td>
+          <td class="py-2 px-2 font-bold text-emerald-600">₹${b.advanced}</td>
+          <td class="py-2 px-2 font-bold ${b.totalDue > 0 ? 'text-rose-600' : 'text-slate-400'}">
+            ₹${b.totalDue}
+          </td>
+          <td class="py-2 px-2 text-center whitespace-nowrap">
             <div class="flex items-center justify-center space-x-1.5">
-              <button onclick="${printOnClickInv}" title="${b.inactive ? 'Inactive Booking' : (!isMasterValid ? 'Deleted from Master Data (Read-Only)' : (isDue ? 'Pay due amount to enable print' : 'Print Invoice'))}" class="${invBtnClass}">
-                <i class="fa-solid fa-file-invoice ${isDue || !isMasterValid || b.inactive ? 'text-slate-400' : 'text-white'} mr-0.5"></i> Inv
+              <button onclick="${editOnClick}" class="${editBtnClass}" title="Edit Booking">
+                <i class="fa-solid fa-pen-to-square"></i>
               </button>
-              <button onclick="${printOnClickRec}" title="${b.inactive ? 'Inactive Booking' : (!isMasterValid ? 'Deleted from Master Data (Read-Only)' : 'Print Booking Receipt')}" class="${recBtnClass}">
-                <i class="fa-solid fa-receipt ${!isMasterValid || b.inactive ? 'text-slate-400' : 'text-white'} mr-0.5"></i> Rec
+              <button onclick="${printOnClickRec}" class="${recBtnClass}" title="Print Receipt">
+                Receipt
               </button>
-              <button onclick="${editOnClick}" title="${b.inactive ? 'Inactive Booking' : (!isMasterValid ? 'Deleted from Master Data (Read-Only)' : 'Edit Booking')}" class="${editBtnClass}"><i class="fa-solid fa-pen-to-square"></i></button>
+              <button onclick="${printOnClickInv}" class="${invBtnClass}" title="Print Invoice">
+                Invoice
+              </button>
             </div>
           </td>
         `;
@@ -2245,169 +2303,168 @@
     function renderMasterTable() {
       const tbody = document.getElementById('master-tbody');
       tbody.innerHTML = '';
-      state.master.forEach((row, index) => {
+
+      state.master.forEach((m, idx) => {
         const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50 transition";
+        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
         tr.innerHTML = `
-          <td class="py-1.5 px-2"><input type="text" value="${row.agentName}" onchange="updateMasterRow(${index}, 'agentName', this.value)" class="w-full bg-white border border-slate-300 rounded px-2 py-0.5 focus:border-indigo-500 text-[11px]"></td>
-          <td class="py-1.5 px-2"><input type="text" pattern="[0-9]+" oninput="this.value = this.value.replace(/[^0-9]/g, '')" value="${row.phone}" onchange="updateMasterRow(${index}, 'phone', this.value)" class="w-full bg-white border border-slate-300 rounded px-2 py-0.5 focus:border-indigo-500 text-[11px]"></td>
-          <td class="py-1.5 px-2"><input type="number" value="${row.roomNo}" onchange="updateMasterRow(${index}, 'roomNo', this.value)" class="w-full bg-white border border-slate-300 rounded px-2 py-0.5 focus:border-indigo-500 font-semibold text-indigo-700 text-[11px]"></td>
-          <td class="py-1.5 px-2"><input type="number" value="${row.capacity}" onchange="updateMasterRow(${index}, 'capacity', this.value)" class="w-full bg-white border border-slate-300 rounded px-2 py-0.5 focus:border-indigo-500 text-[11px]"></td>
-          <td class="py-1.5 px-2 text-center">
-            <button onclick="removeMasterRow(${index})" class="text-rose-500 hover:text-rose-700 p-0.5"><i class="fa-solid fa-trash-can"></i></button>
+          <td class="py-2 px-2 font-semibold text-slate-800">${m.agentName}</td>
+          <td class="py-2 px-2 text-slate-600">${m.phone}</td>
+          <td class="py-2 px-2"><span class="bg-indigo-50 text-indigo-700 font-bold px-2 py-0.5 rounded text-[10px]">Room ${m.roomNo}</span></td>
+          <td class="py-2 px-2 text-slate-600">${m.capacity} Person</td>
+          <td class="py-2 px-2 text-center">
+            <button onclick="openMasterDeleteModal('row', ${idx})" class="text-rose-500 hover:text-rose-700 p-1" title="Delete Entry">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
           </td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    function updateMasterRow(index, key, value) {
-      state.master[index][key] = value;
-      populateRoomDropdown();
-      populateBookingSearchDropdown();
-      renderBookingsTable();
-    }
-
     function addMasterRow() {
-      state.master.push({ agentName: "New Agent", phone: "1234567890", roomNo: state.master.length + 1, capacity: 2 });
+      const agent = prompt("Enter Agent Name:");
+      if (!agent) return;
+      const phone = prompt("Enter Agent Contact No:");
+      if (!phone) return;
+      const room = prompt("Enter Room No (Numeric):");
+      if (!room) return;
+      const cap = prompt("Enter Capacity (Number of Persons):");
+      if (!cap) return;
+
+      state.master.push({
+        agentName: agent.trim(),
+        phone: phone.trim(),
+        roomNo: parseInt(room),
+        capacity: parseInt(cap)
+      });
+
       renderMasterTable();
       populateRoomDropdown();
       populateBookingSearchDropdown();
       renderBookingsTable();
-    }
-
-    function removeMasterRow(index) {
-      // Trigger permanent deletion reconfirmation modal for Master Tab
-      openMasterDeleteModal('row', index);
+      saveChanges(false, false);
     }
 
     function renderCalendar(year) {
-      const calSelect = document.getElementById('cal-year-select');
-      if (calSelect) calSelect.value = year;
+      if (year) state.selectedYear = year;
+      const targetYear = state.selectedYear || defaultAppYear;
 
       const container = document.getElementById('calendar-container');
       container.innerHTML = '';
 
-      const monthNames = [
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
-      ];
+      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-      for (let m = 0; m < 12; m++) {
+      for (let month = 0; month < 12; month++) {
         const monthCard = document.createElement('div');
-        monthCard.className = "bg-slate-50 rounded-lg p-2 border border-slate-200 shadow-2xs space-y-1";
+        monthCard.className = "bg-slate-50 rounded-lg border border-slate-200 p-2 text-[10px]";
 
-        const title = document.createElement('h4');
-        title.className = "text-[11px] font-bold text-indigo-800 border-b border-slate-200 pb-1 text-center";
-        title.innerText = `${monthNames[m]} ${year}`;
-        monthCard.appendChild(title);
+        const firstDay = new Date(targetYear, month, 1).getDay();
+        const daysInMonth = new Date(targetYear, month + 1, 0).getDate();
 
-        const grid = document.createElement('div');
-        grid.className = "grid grid-cols-7 gap-0.5 text-center text-[9px]";
-
+        let gridCells = '';
         const dayHeaders = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-        dayHeaders.forEach(dh => {
-          const header = document.createElement('div');
-          header.className = "font-extrabold text-slate-400 py-0.5";
-          header.innerText = dh;
-          grid.appendChild(header);
-        });
 
-        const firstDay = new Date(year, m, 1).getDay();
-        const daysInMonth = new Date(year, m + 1, 0).getDate();
+        let headersHtml = dayHeaders.map(d => `<div class="font-bold text-slate-400 text-[9px] text-center py-0.5">${d}</div>`).join('');
 
-        for (let empty = 0; empty < firstDay; empty++) {
-          const blank = document.createElement('div');
-          grid.appendChild(blank);
+        for (let i = 0; i < firstDay; i++) {
+          gridCells += `<div></div>`;
         }
+
+        const now = new Date();
+        const isCurrentYear = now.getFullYear() === targetYear;
+        const currentMonth = now.getMonth();
+        const currentDate = now.getDate();
 
         for (let day = 1; day <= daysInMonth; day++) {
-          const cellDate = new Date(year, m, day);
-          cellDate.setHours(12, 0, 0, 0);
+          const dateStr = `${targetYear}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
-          const matchedBookings = state.bookings.filter(b => {
-            if (b.inactive) return false;
-            const cIn = new Date(b.checkIn);
-            const cOut = new Date(b.checkOut);
-            cIn.setHours(0, 0, 0, 0);
-            cOut.setHours(23, 59, 59, 999);
-            return cellDate >= cIn && cellDate <= cOut;
+          const dayBookings = state.bookings.filter(b => {
+            if (b.inactive || !isRoomInMaster(b.roomNo)) return false;
+            const checkInDate = b.checkIn ? b.checkIn.split('T')[0] : '';
+            const checkOutDate = b.checkOut ? b.checkOut.split('T')[0] : '';
+            return dateStr >= checkInDate && dateStr <= checkOutDate;
           });
 
-          const cell = document.createElement('div');
-          const isBooked = matchedBookings.length > 0;
+          const isToday = isCurrentYear && month === currentMonth && day === currentDate;
+          const hasBookings = dayBookings.length > 0;
 
-          const isToday = (cellDate.toDateString() === new Date().toDateString());
+          let bgStyle = isToday 
+            ? "bg-indigo-600 text-white font-black rounded-full" 
+            : (hasBookings ? "bg-amber-100 text-amber-900 font-bold rounded-md hover:bg-amber-200 border border-amber-300/80" : "text-slate-700 hover:bg-slate-200 rounded-md");
 
-          cell.className = `py-1 rounded font-bold transition relative flex items-center justify-center cursor-pointer ${
-            isBooked 
-              ? 'bg-amber-400 text-slate-900 border border-amber-500 shadow-xs' 
-              : (isToday ? 'bg-indigo-600 text-white font-extrabold' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-100')
-          }`;
-
-          cell.innerText = day;
-
-          if (isBooked) {
-            cell.onclick = (e) => {
-              e.stopPropagation();
-              openCommentBox(e, cellDate, matchedBookings);
-            };
-          }
-
-          grid.appendChild(cell);
+          gridCells += `
+            <div onclick="showDateBookings(event, '${dateStr}')" class="relative flex items-center justify-center h-6 cursor-pointer transition ${bgStyle}">
+              <span>${day}</span>
+              ${hasBookings ? `<span class="absolute bottom-0.5 w-1 h-1 bg-amber-600 rounded-full"></span>` : ''}
+            </div>
+          `;
         }
 
-        monthCard.appendChild(grid);
+        monthCard.innerHTML = `
+          <div class="font-bold text-slate-700 text-[11px] mb-1.5 pb-1 border-b border-slate-200 flex justify-between items-center px-1">
+            <span>${monthNames[month]}</span>
+            <span class="text-[9px] text-slate-400 font-normal">${targetYear}</span>
+          </div>
+          <div class="grid grid-cols-7 gap-0.5 text-center">
+            ${headersHtml}
+            ${gridCells}
+          </div>
+        `;
+
         container.appendChild(monthCard);
       }
     }
 
-    function openCommentBox(event, dateObj, bookings) {
-      const box = document.getElementById('excel-comment-box');
-      const listContainer = document.getElementById('comm-booking-list');
-      const header = document.getElementById('comm-date-header');
+    function showDateBookings(e, dateStr) {
+      e.stopPropagation();
 
-      header.innerText = formatDate(dateObj);
-      listContainer.innerHTML = '';
-
-      bookings.forEach(b => {
-        const isMasterValid = isRoomInMaster(b.roomNo);
-
-        let foodOrdersText = '';
-        if (b.foodOrders && b.foodOrders.length > 0) {
-          const totalFoodCharge = b.foodOrders.reduce((acc, fo) => acc + (fo.foodCharge || 0), 0);
-          if (totalFoodCharge > 0) {
-            foodOrdersText = `<div class="text-[9px] text-amber-300 mt-0.5"><i class="fa-solid fa-utensils text-[8px] mr-1"></i>Extra Orders: ₹${totalFoodCharge}</div>`;
-          }
-        }
-
-        const item = document.createElement('div');
-        item.className = "bg-slate-800 p-2 rounded border border-slate-700 text-[10px] space-y-0.5";
-        item.innerHTML = `
-          <div class="flex justify-between items-center">
-            <strong class="text-amber-300 font-mono text-[9px]">${b.bookingCode || 'N/A'}</strong>
-            <span class="bg-indigo-900 text-indigo-200 px-1.5 py-0.2 rounded font-bold text-[9px]">Room ${b.roomNo}</span>
-          </div>
-          <div class="font-bold text-white">${b.name}</div>
-          <div class="text-slate-300 text-[9px]">Contact: ${b.contactNo || '-'}</div>
-          <div class="text-slate-300 text-[9px]">ID No: ${b.idNo || '-'}</div>
-          <div class="text-emerald-400 font-semibold text-[9px]"><i class="fa-solid fa-plane-arrival mr-0.5"></i> ${formatDateTime(b.checkIn)}</div>
-          <div class="text-rose-400 font-semibold text-[9px]"><i class="fa-solid fa-plane-departure mr-0.5"></i> ${formatDateTime(b.checkOut)}</div>
-          ${foodOrdersText}
-          <div class="flex justify-between items-center pt-1 border-t border-slate-700 text-[9px] mt-1">
-            <span class="text-slate-300">Total: ₹${b.totalAmount}</span>
-            <span class="${b.totalDue > 0 ? 'text-rose-400' : 'text-emerald-400'} font-bold">Due: ₹${b.totalDue}</span>
-          </div>
-        `;
-        listContainer.appendChild(item);
+      const dayBookings = state.bookings.filter(b => {
+        if (b.inactive || !isRoomInMaster(b.roomNo)) return false;
+        const checkInDate = b.checkIn ? b.checkIn.split('T')[0] : '';
+        const checkOutDate = b.checkOut ? b.checkOut.split('T')[0] : '';
+        return dateStr >= checkInDate && dateStr <= checkOutDate;
       });
 
-      const rect = event.currentTarget.getBoundingClientRect();
-      const scrollX = window.scrollX || window.pageXOffset;
-      const scrollY = window.scrollY || window.pageYOffset;
+      const box = document.getElementById('excel-comment-box');
+      const list = document.getElementById('comm-booking-list');
+      const header = document.getElementById('comm-date-header');
 
-      box.style.left = `${rect.left + scrollX - 20}px`;
-      box.style.top = `${rect.bottom + scrollY + 8}px`;
+      header.innerText = `Overview (${formatDate(dateStr)})`;
+      list.innerHTML = '';
+
+      if (dayBookings.length === 0) {
+        list.innerHTML = `<p class="text-slate-400 text-[10px] italic py-1">No reservations on this date.</p>`;
+      } else {
+        dayBookings.forEach(b => {
+          const isDue = b.totalDue > 0;
+          const item = document.createElement('div');
+          item.className = "bg-slate-800 p-2 rounded border border-slate-700 space-y-1 text-[10px]";
+          item.innerHTML = `
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-amber-300">${formatTitleCase(b.name)}</span>
+              <span class="bg-indigo-900 text-indigo-200 font-mono text-[9px] px-1 rounded">${b.bookingCode}</span>
+            </div>
+            <div class="text-slate-300 flex justify-between text-[9px]">
+              <span>Room ${b.roomNo} (${b.capacity || 'Std'})</span>
+              <span class="text-slate-400">${b.agentInfo || 'Direct'}</span>
+            </div>
+            <div class="text-[9px] text-slate-400">
+              Check-in: ${formatDateTime(b.checkIn)}<br>
+              Check-out: ${formatDateTime(b.checkOut)}
+            </div>
+            <div class="flex justify-between items-center pt-1 border-t border-slate-700 text-[9px]">
+              <span class="text-emerald-400">Paid: ₹${b.advanced}</span>
+              <span class="${isDue ? 'text-rose-400 font-bold' : 'text-slate-400'}">Due: ₹${b.totalDue}</span>
+            </div>
+          `;
+          list.appendChild(item);
+        });
+      }
+
+      const rect = e.currentTarget.getBoundingClientRect();
+      box.style.top = `${rect.bottom + window.scrollY + 6}px`;
+      box.style.left = `${Math.min(rect.left + window.scrollX - 20, window.innerWidth - 270)}px`;
 
       box.classList.remove('hidden');
     }
