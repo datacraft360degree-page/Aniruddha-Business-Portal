@@ -304,10 +304,23 @@
             <h2 class="text-xs font-bold text-slate-800 flex items-center gap-1">
               <i class="fa-solid fa-address-card text-indigo-600"></i> Guest Information & Reservation Directory
             </h2>
-            <!-- Legend Indicator -->
+            <!-- Legend Indicator - Updated Order: Yellow -> Blue -> Green -> Red -->
             <div class="flex items-center gap-3 mt-1.5 text-[10px]">
-              <span class="flex items-center gap-1 font-semibold text-amber-800"><span class="w-2.5 h-2.5 bg-yellow-200 border border-yellow-400 rounded-sm inline-block"></span> Live Booking</span>
-              <span class="flex items-center gap-1 font-semibold text-emerald-800"><span class="w-2.5 h-2.5 bg-emerald-200 border border-emerald-400 rounded-sm inline-block"></span> Closed Booking</span>
+              <span class="flex items-center gap-1 font-semibold text-amber-800">
+                <span class="relative flex h-2.5 w-2.5">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+                </span> Live Booking
+              </span>
+              <span class="flex items-center gap-1 font-semibold text-blue-800">
+                <span class="w-2.5 h-2.5 bg-blue-500 rounded-full inline-block"></span> Upcoming Booking
+              </span>
+              <span class="flex items-center gap-1 font-semibold text-emerald-800">
+                <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full inline-block"></span> Closed Booking
+              </span>
+              <span class="flex items-center gap-1 font-semibold text-slate-700">
+                <span class="w-2 h-2 bg-rose-600 rounded-full inline-block"></span> Inactive Booking
+              </span>
             </div>
           </div>
           
@@ -959,6 +972,69 @@
       dashSelectedYear: defaultAppYear // Always open Dashboard showing current year
     };
 
+    // Helper to verify if a room is valid in Master Data
+    function isRoomInMaster(roomNo) {
+      return state.master.some(m => parseInt(m.roomNo) === parseInt(roomNo));
+    }
+
+    // EXPORT TO EXCEL FUNCTION WITH UPDATED STATUS LOGIC
+    function exportToExcel() {
+      if (!state.bookings || state.bookings.length === 0) {
+        alert("No booking records available to export!");
+        return;
+      }
+
+      const now = new Date().getTime();
+
+      const exportData = state.bookings.map(b => {
+        const cIn = new Date(b.checkIn).getTime();
+        const cOut = new Date(b.checkOut).getTime();
+
+        let statusStr = "Upcoming";
+        if (b.inactive) {
+          statusStr = "Inactive"; 
+        } else if (now >= cIn && now <= cOut) {
+          statusStr = "Live";     // Yellow Dot
+        } else if (now < cIn) {
+          statusStr = "Upcoming"; // Blue Dot
+        } else if (now > cOut) {
+          statusStr = "Closed";   // Green Dot
+        }
+
+        let foodSummary = "";
+        if (b.foodOrders && b.foodOrders.length > 0) {
+          foodSummary = b.foodOrders.map(f => `${f.foodDesc || 'Food'} (₹${f.foodCharge || 0})`).join(", ");
+        }
+
+        return {
+          "Booking ID": b.bookingCode || "-",
+          "Invoice ID": b.invoiceNo || "-",
+          "Status": statusStr,
+          "Guest Name": b.name || "-",
+          "Contact No": b.contactNo || "-",
+          "ID Number": b.idNo || "-",
+          "Address": b.address || "-",
+          "Room No": b.roomNo || "-",
+          "Capacity": b.capacity || "-",
+          "Agent Info": b.agentInfo || "-",
+          "Check-In": formatDateTime(b.checkIn),
+          "Check-Out": formatDateTime(b.checkOut),
+          "Stay Days": b.noOfDays || 0,
+          "Price / Day": b.perDayPrice || 0,
+          "Food Orders": foodSummary || "None",
+          "Total Amount": b.totalAmount || 0,
+          "Advance Paid": b.advanced || 0,
+          "Balance Due": b.totalDue || 0
+        };
+      });
+
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Bookings");
+
+      XLSX.writeFile(workbook, `Booking_Report_${formatDate(new Date())}.xlsx`);
+    }
+
     // Populates the Room Filter Dropdown cleanly with all registered rooms
     function populateBookingSearchDropdown() {
       const select = document.getElementById('booking-search-select');
@@ -1130,6 +1206,17 @@
       saveChanges(true, true);
     }
 
+    function saveChanges(isAutoSave = false, quiet = false) {
+      localStorage.setItem('webapp_data', JSON.stringify(state));
+      if (!quiet) {
+        const toast = document.getElementById('toast');
+        const msg = document.getElementById('toast-message');
+        msg.innerText = isAutoSave ? 'Changes Auto save successfully!' : 'Data saved successfully!';
+        toast.classList.remove('hidden');
+        setTimeout(() => toast.classList.add('hidden'), 3000);
+      }
+    }
+
     function populateDashboardYearDropdown() {
       const yearSelect = document.getElementById('dash-year-select');
       if (!yearSelect) return;
@@ -1176,7 +1263,7 @@
       const twoHoursMs = 2 * 60 * 60 * 1000;
 
       const upcomingDues = state.bookings.filter(b => {
-        if (!b.checkOut || (b.totalDue || 0) <= 0) return false;
+        if (!b.checkOut || (b.totalDue || 0) <= 0 || !isRoomInMaster(b.roomNo) || b.inactive) return false;
         const checkOutTime = new Date(b.checkOut).getTime();
         const diff = checkOutTime - now;
         return diff > -3600000 && diff <= twoHoursMs;
@@ -1376,12 +1463,12 @@
       let filteredBookings = [];
 
       if (selectedFilter === 'ALL' || !selectedFilter) {
-        filteredBookings = [...state.bookings];
+        filteredBookings = state.bookings.filter(b => !b.inactive);
         if (label) label.innerText = "Consolidated Summary (All Years)";
       } else {
         const targetYear = parseInt(selectedFilter);
         filteredBookings = state.bookings.filter(b => {
-          if (!b.checkIn) return false;
+          if (b.inactive || !b.checkIn) return false;
           const yr = new Date(b.checkIn).getFullYear();
           return yr === targetYear;
         });
@@ -1409,6 +1496,17 @@
       if (bIndex === -1) return;
 
       const b = state.bookings[bIndex];
+
+      if (b.inactive) {
+        alert("This booking details are inactive and cannot be printed.");
+        return;
+      }
+
+      // Block print if room record was deleted from Master Data
+      if (!isRoomInMaster(b.roomNo)) {
+        alert("This booking details were deleted from Master Data and cannot be printed.");
+        return;
+      }
 
       // Block print ONLY when generating Invoice (isReceipt === false) and there is a balance due
       if (!isReceipt && b.totalDue > 0) {
@@ -1531,6 +1629,18 @@
     }
 
     function openBookingModal(bookingId = null) {
+      if (bookingId) {
+        const b = state.bookings.find(item => item.id === bookingId);
+        if (b && b.inactive) {
+          alert("This booking details are inactive and cannot be edited.");
+          return;
+        }
+        if (b && !isRoomInMaster(b.roomNo)) {
+          alert("This booking details were deleted from Master Data and cannot be opened or edited.");
+          return;
+        }
+      }
+
       const form = document.getElementById('booking-form');
       form.reset();
       document.getElementById('food-orders-container').innerHTML = '';
@@ -1578,7 +1688,7 @@
         document.getElementById('modal-title').innerText = 'Add New Booking';
         document.getElementById('modal-booking-id').value = '';
         
-        populateRoomDropdown(1);
+        populateRoomDropdown(state.master.length > 0 ? state.master[0].roomNo : 1);
 
         document.getElementById('cust-checkin-time').value = "12:00";
         document.getElementById('cust-checkout-time').value = "11:00";
@@ -1748,6 +1858,7 @@
       }
 
       const conflict = state.bookings.find(b => {
+        if (b.inactive) return false;
         if (id && b.id === id) return false;
         if (parseInt(b.roomNo) !== roomNo) return false;
 
@@ -1798,7 +1909,8 @@
         foodOrders: foodOrdersList,
         totalAmount: parseFloat(document.getElementById('cust-total').value) || 0,
         advanced: parseFloat(document.getElementById('cust-advance').value) || 0,
-        totalDue: parseFloat(document.getElementById('cust-due').value) || 0
+        totalDue: parseFloat(document.getElementById('cust-due').value) || 0,
+        inactive: false
       };
 
       if (id) {
@@ -1820,7 +1932,10 @@
 
     function deleteBooking(id) {
       if (confirm('Are you sure you want to delete this booking entry?')) {
-        state.bookings = state.bookings.filter(b => b.id !== id);
+        const idx = state.bookings.findIndex(b => b.id === id);
+        if (idx !== -1) {
+          state.bookings[idx].inactive = true;
+        }
         populateBookingSearchDropdown();
         searchMasterBookingById();
         renderBookingsTable();
@@ -1843,24 +1958,29 @@
 
       const now = new Date().getTime();
 
-      // Helper to calculate status priority:
-      // Priority 1: Live Bookings (Yellow)
-      // Priority 2: Closed Bookings (Green)
-      // Priority 3: Upcoming / Future Bookings (Others)
+      // Priority Helper Order:
+      // Priority 1: Yellow Dot (Live Booking)
+      // Priority 2: Blue Dot (Upcoming Booking)
+      // Priority 3: Green Dot (Closed Booking)
+      // Priority 4: Red Dot (Inactive / Deleted Booking)
       const getStatusPriority = (b) => {
+        const isMasterValid = isRoomInMaster(b.roomNo);
+        if (!isMasterValid || b.inactive) {
+          return 4; // Priority 4: Red Dot / Inactive / Deleted
+        }
+
         const cIn = new Date(b.checkIn).getTime();
         const cOut = new Date(b.checkOut).getTime();
 
         if (now >= cIn && now <= cOut) {
-          return 1; // Yellow Highlight (Live)
-        } else if (now > cOut) {
-          return 2; // Green Highlight (Closed)
+          return 1; // Priority 1: Yellow Dot (Live)
+        } else if (now < cIn) {
+          return 2; // Priority 2: Blue Dot (Upcoming)
+        } else {
+          return 3; // Priority 3: Green Dot (Closed)
         }
-        return 3; // Others (Upcoming)
       };
 
-      // Primary Sort: Status Priority (Yellow -> Green -> Others)
-      // Secondary Sort: Descending order by Booking Code ID
       listToRender.sort((a, b) => {
         const priorityA = getStatusPriority(a);
         const priorityB = getStatusPriority(b);
@@ -1878,70 +1998,110 @@
       }
 
       listToRender.forEach((b) => {
+        const isMasterValid = isRoomInMaster(b.roomNo);
         const checkInFmt = formatDateTime(b.checkIn);
         const checkOutFmt = formatDateTime(b.checkOut);
 
         const checkInTime = new Date(b.checkIn).getTime();
         const checkOutTime = new Date(b.checkOut).getTime();
 
-        // Status Determination & Highlighting
+        // Row background & Status dot styling
         let statusBgClass = "hover:bg-slate-50";
-        if (now >= checkInTime && now <= checkOutTime) {
-          // Live Booking -> Highlight with Yellow color
-          statusBgClass = "bg-yellow-200 hover:bg-yellow-300/80";
+        let statusDotHtml = "";
+
+        if (!isMasterValid) {
+          statusBgClass = "bg-rose-200/90 hover:bg-rose-300/80 text-rose-900";
+        } else if (b.inactive) {
+          statusBgClass = "bg-slate-100 hover:bg-slate-200 text-slate-500 opacity-75";
+        } else if (now < checkInTime) {
+          // Upcoming Booking -> Blue Dot
+          statusDotHtml = `
+            <span class="w-2.5 h-2.5 bg-blue-500 rounded-full inline-block flex-shrink-0" title="Upcoming Booking"></span>
+          `;
+        } else if (now >= checkInTime && now <= checkOutTime) {
+          // Live Booking (Check-in & Check-out dates match booking stay window) -> Yellow Dot
+          statusDotHtml = `
+            <span class="relative flex h-2.5 w-2.5 flex-shrink-0" title="Live Booking">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+            </span>
+          `;
         } else if (now > checkOutTime) {
-          // Closed Booking -> Highlight with Green color
-          statusBgClass = "bg-emerald-200 hover:bg-emerald-300/80";
+          // Closed Booking -> Solid Green Dot
+          statusDotHtml = `
+            <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full inline-block flex-shrink-0" title="Closed Booking"></span>
+          `;
         }
 
         let foodSummaryHtml = '';
         if (b.foodOrders && b.foodOrders.length > 0) {
           const totalFoodCharge = b.foodOrders.reduce((acc, fo) => acc + (fo.foodCharge || 0), 0);
           if (totalFoodCharge > 0) {
-            foodSummaryHtml = `<div class="text-[9px] text-amber-800 font-semibold"><i class="fa-solid fa-utensils text-[8px] mr-0.5"></i>Food (${b.foodOrders.length}): +₹${totalFoodCharge}</div>`;
+            foodSummaryHtml = `<div class="text-[9px] ${!isMasterValid ? 'text-rose-950 font-bold' : 'text-amber-800 font-semibold'}"><i class="fa-solid fa-utensils text-[8px] mr-0.5"></i>Food (${b.foodOrders.length}): +₹${totalFoodCharge}</div>`;
           }
         }
 
         const isDue = b.totalDue > 0;
         
-        // Only Inv button logic blocks when totalDue > 0
-        const printOnClickInv = isDue ? "alert('Pay due amount')" : `printInvoice('${b.id}', false)`;
-        
-        // Rec button is ALWAYS enabled regardless of due amount
-        const printOnClickRec = `printInvoice('${b.id}', true)`;
+        let invBtnClass, recBtnClass, editBtnClass, printOnClickInv, printOnClickRec, editOnClick;
 
-        // Updated button styles: Prominent, larger padding, eye-catching colors and subtle shadows
-        const invBtnClass = isDue 
-          ? "bg-slate-200 text-slate-400 cursor-not-allowed opacity-60 px-2.5 py-1 rounded-md text-[11px] font-bold border border-slate-300" 
-          : "bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 rounded-md text-[11px] font-bold transition shadow-sm border border-indigo-700";
+        if (!isMasterValid || b.inactive) {
+          invBtnClass = "bg-slate-300 text-slate-500 cursor-not-allowed opacity-60 px-2.5 py-1 rounded-md text-[11px] font-bold border border-slate-400";
+          recBtnClass = "bg-slate-300 text-slate-500 cursor-not-allowed opacity-60 px-2.5 py-1 rounded-md text-[11px] font-bold border border-slate-400";
+          editBtnClass = "text-slate-400 cursor-not-allowed p-1 text-sm";
+          
+          if (b.inactive) {
+            printOnClickInv = "alert('This booking details are inactive and cannot be printed.')";
+            printOnClickRec = "alert('This booking details are inactive and cannot be printed.')";
+            editOnClick = "alert('This booking details are inactive and cannot be edited.')";
+          } else {
+            printOnClickInv = "alert('This booking details were deleted from Master Data and cannot be printed as Invoice.')";
+            printOnClickRec = "alert('This booking details were deleted from Master Data and cannot be printed as Receipt.')";
+            editOnClick = "alert('This booking details were deleted from Master Data and is in Read-Only mode.')";
+          }
+        } else {
+          printOnClickInv = isDue ? "alert('Pay due amount')" : `printInvoice('${b.id}', false)`;
+          printOnClickRec = `printInvoice('${b.id}', true)`;
+          editOnClick = `openBookingModal('${b.id}')`;
 
-        const recBtnClass = "bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-md text-[11px] font-bold transition shadow-sm border border-emerald-700";
+          invBtnClass = isDue 
+            ? "bg-slate-200 text-slate-400 cursor-not-allowed opacity-60 px-2.5 py-1 rounded-md text-[11px] font-bold border border-slate-300" 
+            : "bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 rounded-md text-[11px] font-bold transition shadow-sm border border-indigo-700";
+
+          recBtnClass = "bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-md text-[11px] font-bold transition shadow-sm border border-emerald-700";
+          editBtnClass = "text-indigo-600 hover:text-indigo-800 p-1 text-sm";
+        }
 
         const tr = document.createElement('tr');
         tr.className = `${statusBgClass} transition border-b border-slate-200/60`;
         tr.innerHTML = `
           <td class="py-2 px-2">
-            <span class="bg-indigo-50 border border-indigo-200 text-indigo-700 font-mono font-bold px-1.5 py-0.2 rounded text-[9px] block w-max">${b.bookingCode}</span>
+            <div class="flex items-center gap-1.5">
+              ${statusDotHtml}
+              ${b.inactive ? '<span class="w-2.5 h-2.5 bg-rose-600 rounded-full inline-block flex-shrink-0" title="Inactive Booking"></span>' : ''}
+              <span class="bg-indigo-50 border border-indigo-200 text-indigo-700 font-mono font-bold px-1.5 py-0.2 rounded text-[9px] block w-max">${b.bookingCode}</span>
+            </div>
+            ${b.inactive ? '<span class="bg-slate-600 text-white font-bold px-1 py-0.1 rounded text-[8px] uppercase block mt-0.5 w-max">Inactive</span>' : (!isMasterValid ? '<span class="bg-rose-700 text-white font-bold px-1 py-0.1 rounded text-[8px] uppercase block mt-0.5 w-max">Deleted</span>' : '')}
           </td>
-          <td class="py-2 px-2 font-bold text-slate-800">${b.name}</td>
-          <td class="py-2 px-2 text-[10px] font-medium text-slate-700">${b.contactNo || '-'}</td>
-          <td class="py-2 px-2 text-[10px] text-slate-500 font-mono">${b.idNo || '-'}</td>
+          <td class="py-2 px-2 font-bold ${!isMasterValid ? 'text-rose-950' : 'text-slate-800'}">${b.name}</td>
+          <td class="py-2 px-2 text-[10px] font-medium ${!isMasterValid ? 'text-rose-900' : 'text-slate-700'}">${b.contactNo || '-'}</td>
+          <td class="py-2 px-2 text-[10px] ${!isMasterValid ? 'text-rose-900 font-bold' : 'text-slate-500'} font-mono">${b.idNo || '-'}</td>
           <td class="py-2 px-2">
-            <span class="bg-indigo-50 text-indigo-700 font-bold px-1.5 py-0.2 rounded text-[10px] inline-block">Room ${b.roomNo}</span>
-            <div class="text-[9px] text-slate-500">${b.capacity}</div>
+            <span class="${!isMasterValid ? 'bg-rose-300 border border-rose-400 text-rose-950' : 'bg-indigo-50 text-indigo-700'} font-bold px-1.5 py-0.2 rounded text-[10px] inline-block">Room ${b.roomNo}</span>
+            <div class="text-[9px] ${!isMasterValid ? 'text-rose-900 font-semibold' : 'text-slate-500'}">${b.capacity}</div>
           </td>
-          <td class="py-2 px-2 text-[10px] text-slate-600 font-medium">${b.agentInfo}</td>
+          <td class="py-2 px-2 text-[10px] ${!isMasterValid ? 'text-rose-900 font-semibold' : 'text-slate-600'} font-medium">${b.agentInfo}</td>
           <td class="py-2 px-2 text-[10px]">
-            <div class="text-emerald-800 font-medium"><i class="fa-solid fa-plane-arrival mr-1"></i> ${checkInFmt}</div>
-            <div class="text-rose-700 font-medium"><i class="fa-solid fa-plane-departure mr-1"></i> ${checkOutFmt}</div>
+            <div class="${!isMasterValid ? 'text-rose-900 font-bold' : 'text-emerald-800 font-medium'}"><i class="fa-solid fa-plane-arrival mr-1"></i> ${checkInFmt}</div>
+            <div class="${!isMasterValid ? 'text-rose-950 font-bold' : 'text-rose-700 font-medium'}"><i class="fa-solid fa-plane-departure mr-1"></i> ${checkOutFmt}</div>
           </td>
           <td class="py-2 px-2 text-[10px]">
-            <div class="font-semibold text-slate-700">${b.noOfDays} d × ₹${b.perDayPrice}</div>
+            <div class="font-semibold ${!isMasterValid ? 'text-rose-950' : 'text-slate-700'}">${b.noOfDays} d × ₹${b.perDayPrice}</div>
             ${foodSummaryHtml}
           </td>
           <td class="py-2 px-2 text-[10px]">
-            <div class="font-bold text-slate-800">Tot: ₹${b.totalAmount}</div>
-            <div class="text-emerald-700 font-medium">Adv: ₹${b.advanced}</div>
+            <div class="font-bold ${!isMasterValid ? 'text-rose-950' : 'text-slate-800'}">Tot: ₹${b.totalAmount}</div>
+            <div class="${!isMasterValid ? 'text-rose-900 font-bold' : 'text-emerald-700 font-medium'}">Adv: ₹${b.advanced}</div>
           </td>
           <td class="py-2 px-2">
             <span class="px-1.5 py-0.2 rounded text-[10px] font-bold inline-block ${b.totalDue > 0 ? 'bg-rose-100 text-rose-700' : 'bg-emerald-200 text-emerald-800'}">
@@ -1950,13 +2110,13 @@
           </td>
           <td class="py-2 px-2 text-center">
             <div class="flex items-center justify-center space-x-1.5">
-              <button onclick="${printOnClickInv}" title="${isDue ? 'Pay due amount to enable print' : 'Print Invoice'}" class="${invBtnClass}">
-                <i class="fa-solid fa-file-invoice ${isDue ? 'text-slate-400' : 'text-white'} mr-0.5"></i> Inv
+              <button onclick="${printOnClickInv}" title="${b.inactive ? 'Inactive Booking' : (!isMasterValid ? 'Deleted from Master Data (Read-Only)' : (isDue ? 'Pay due amount to enable print' : 'Print Invoice'))}" class="${invBtnClass}">
+                <i class="fa-solid fa-file-invoice ${isDue || !isMasterValid || b.inactive ? 'text-slate-400' : 'text-white'} mr-0.5"></i> Inv
               </button>
-              <button onclick="${printOnClickRec}" title="Print Booking Receipt" class="${recBtnClass}">
-                <i class="fa-solid fa-receipt text-white mr-0.5"></i> Rec
+              <button onclick="${printOnClickRec}" title="${b.inactive ? 'Inactive Booking' : (!isMasterValid ? 'Deleted from Master Data (Read-Only)' : 'Print Booking Receipt')}" class="${recBtnClass}">
+                <i class="fa-solid fa-receipt ${!isMasterValid || b.inactive ? 'text-slate-400' : 'text-white'} mr-0.5"></i> Rec
               </button>
-              <button onclick="openBookingModal('${b.id}')" title="Edit Booking" class="text-indigo-600 hover:text-indigo-800 p-1 text-sm"><i class="fa-solid fa-pen-to-square"></i></button>
+              <button onclick="${editOnClick}" title="${b.inactive ? 'Inactive Booking' : (!isMasterValid ? 'Deleted from Master Data (Read-Only)' : 'Edit Booking')}" class="${editBtnClass}"><i class="fa-solid fa-pen-to-square"></i></button>
             </div>
           </td>
         `;
@@ -1987,6 +2147,7 @@
       state.master[index][key] = value;
       populateRoomDropdown();
       populateBookingSearchDropdown();
+      renderBookingsTable();
     }
 
     function addMasterRow() {
@@ -1994,6 +2155,7 @@
       renderMasterTable();
       populateRoomDropdown();
       populateBookingSearchDropdown();
+      renderBookingsTable();
     }
 
     function removeMasterRow(index) {
@@ -2001,6 +2163,7 @@
       renderMasterTable();
       populateRoomDropdown();
       populateBookingSearchDropdown();
+      renderBookingsTable();
     }
 
     function renderCalendar(year) {
@@ -2032,7 +2195,7 @@
           let dayBookings = [];
 
           for (let b of state.bookings) {
-            if (!b.checkIn || !b.checkOut) continue;
+            if (b.inactive || !b.checkIn || !b.checkOut) continue;
             const cIn = new Date(b.checkIn);
             const cOut = new Date(b.checkOut);
 
@@ -2051,23 +2214,15 @@
             }
           }
 
+          let dayClass = "bg-slate-50 hover:bg-slate-100 text-slate-700 cursor-pointer";
           if (dayBookings.length > 0) {
-            const bookingsJson = encodeURIComponent(JSON.stringify(dayBookings));
-            const formattedDateStr = formatDate(currDate);
-            
-            const badgeBg = dayBookings.length > 1 
-              ? 'bg-amber-600 text-white font-black hover:bg-amber-700' 
-              : 'bg-indigo-600 text-white font-bold hover:bg-indigo-700';
-
-            daysGrid += `<div 
-              onclick="toggleCommentBox(event, this, '${formattedDateStr}', '${bookingsJson}')" 
-              class="relative py-0.5 ${badgeBg} rounded cursor-pointer shadow-sm flex flex-col items-center justify-center">
-                <span>${d}</span>
-                <span class="absolute top-0 right-0 w-0 h-0 border-t-[4px] border-r-[4px] border-t-amber-300 border-r-transparent rounded-tr-sm"></span>
-              </div>`;
-          } else {
-            daysGrid += `<div class="py-0.5 hover:bg-slate-100 text-slate-700 cursor-pointer rounded font-medium">${d}</div>`;
+            dayClass = "bg-indigo-600 text-white font-bold hover:bg-indigo-700 shadow-xs cursor-pointer";
           }
+
+          daysGrid += `<div onclick="openCalendarCommentBox(event, '${year}-${monthIdx + 1}-${d}')" class="p-1 rounded ${dayClass} text-[9px] transition flex flex-col items-center justify-center min-h-[22px] relative">
+            <span>${d}</span>
+            ${dayBookings.length > 0 ? `<span class="w-1 h-1 bg-amber-400 rounded-full mt-0.5"></span>` : ''}
+          </div>`;
         }
         daysGrid += `</div>`;
 
@@ -2076,127 +2231,69 @@
       });
     }
 
-    function toggleCommentBox(e, targetElem, dateStr, encodedBookings) {
+    function openCalendarCommentBox(e, dateStr) {
       e.stopPropagation();
+      const parts = dateStr.split('-');
+      const targetDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
       
       const commBox = document.getElementById('excel-comment-box');
-      const container = document.getElementById('comm-booking-list');
-      const dateHeader = document.getElementById('comm-date-header');
-      
-      const dayBookings = JSON.parse(decodeURIComponent(encodedBookings));
+      const header = document.getElementById('comm-date-header');
+      const listContainer = document.getElementById('comm-booking-list');
 
-      dateHeader.innerText = `${dateStr} (${dayBookings.length} ${dayBookings.length > 1 ? 'Bookings' : 'Booking'})`;
-      container.innerHTML = '';
+      header.innerText = formatDate(targetDate);
+      listContainer.innerHTML = '';
 
-      dayBookings.forEach((item) => {
-        const b = item.booking;
-        
-        let foodSummaryHtml = '';
-        if (b.foodOrders && b.foodOrders.length > 0) {
-          const totalCharge = b.foodOrders.reduce((acc, fo) => acc + (fo.foodCharge || 0), 0);
-          if (totalCharge > 0) {
-            foodSummaryHtml = `<p><span class="text-slate-400">Food Extra:</span> <span class="text-amber-300 font-medium">₹${totalCharge} (${b.foodOrders.length} item/s)</span></p>`;
-          }
+      const matchedBookings = [];
+
+      for (let b of state.bookings) {
+        if (b.inactive || !b.checkIn || !b.checkOut) continue;
+        const cIn = new Date(b.checkIn);
+        const cOut = new Date(b.checkOut);
+
+        const checkInStart = new Date(cIn.getFullYear(), cIn.getMonth(), cIn.getDate());
+        const checkOutEnd = new Date(cOut.getFullYear(), cOut.getMonth(), cOut.getDate());
+
+        if (targetDate >= checkInStart && targetDate <= checkOutEnd) {
+          let role = "In Stay";
+          if (targetDate.getTime() === checkInStart.getTime()) role = "Check-In";
+          else if (targetDate.getTime() === checkOutEnd.getTime()) role = "Check-Out";
+
+          matchedBookings.push({ booking: b, role: role });
         }
-
-        const card = document.createElement('div');
-        card.className = "bg-slate-800/95 border border-slate-700/80 p-2 rounded space-y-0.5 text-[10px] shadow-inner";
-        
-        card.innerHTML = `
-          <div class="flex justify-between items-center text-amber-300 font-bold border-b border-slate-700/60 pb-0.5">
-            <span class="truncate max-w-[100px]"><i class="fa-solid fa-user text-[9px] mr-1 text-amber-400"></i> ${b.name || 'Guest'}</span>
-            <span class="bg-indigo-900/90 text-indigo-200 text-[8px] px-1 py-0.2 rounded font-mono border border-indigo-700">${b.bookingCode}</span>
-          </div>
-          <p><span class="text-slate-400">Contact:</span> <strong class="text-slate-200">${b.contactNo || 'N/A'}</strong></p>
-          <p><span class="text-slate-400">Invoice:</span> <span class="text-slate-300 font-mono text-[9px]">${b.invoiceNo}</span></p>
-          <p><span class="text-slate-400">Status:</span> <strong class="text-emerald-400">${item.statusText}</strong></p>
-          ${foodSummaryHtml}
-          <p><span class="text-slate-400">Check-In:</span> <span class="text-slate-300 font-mono text-[9px]">${formatDateTime(b.checkIn)}</span></p>
-          <p><span class="text-slate-400">Check-Out:</span> <span class="text-slate-300 font-mono text-[9px]">${formatDateTime(b.checkOut)}</span></p>
-        `;
-
-        container.appendChild(card);
-      });
-
-      const rect = targetElem.getBoundingClientRect();
-      const scrollY = window.scrollY || document.documentElement.scrollTop;
-      const scrollX = window.scrollX || document.documentElement.scrollLeft;
-
-      commBox.style.top = `${rect.bottom + scrollY + 4}px`;
-      
-      let leftPos = rect.left + scrollX - 10;
-      if (leftPos + 260 > window.innerWidth) {
-        leftPos = window.innerWidth - 270;
       }
-      commBox.style.left = `${Math.max(10, leftPos)}px`;
 
+      if (matchedBookings.length === 0) {
+        listContainer.innerHTML = `<div class="text-slate-400 italic text-[10px] py-1 text-center">No reservations found for this date.</div>`;
+      } else {
+        matchedBookings.forEach(item => {
+          const b = item.booking;
+          const card = document.createElement('div');
+          card.className = "bg-slate-800 p-1.5 rounded border border-slate-700 space-y-0.5 text-[10px]";
+          card.innerHTML = `
+            <div class="flex justify-between items-center">
+              <strong class="text-amber-300 font-bold">${b.name}</strong>
+              <span class="bg-indigo-900 text-indigo-200 text-[8px] px-1 rounded uppercase font-bold">${item.role}</span>
+            </div>
+            <div class="text-slate-300 text-[9px]">Room: <strong>${b.roomNo}</strong> | Phone: ${b.contactNo || '-'}</div>
+            <div class="text-slate-400 text-[8px]">ID: ${b.bookingCode}</div>
+          `;
+          listContainer.appendChild(card);
+        });
+      }
+
+      // Position Popup Near Clicked Target
+      const rect = e.currentTarget.getBoundingClientRect();
+      const scrollX = window.scrollX || document.documentElement.scrollLeft;
+      const scrollY = window.scrollY || document.documentElement.scrollTop;
+
+      commBox.style.top = `${rect.bottom + scrollY + 5}px`;
+      commBox.style.left = `${Math.min(rect.left + scrollX - 80, window.innerWidth - 270)}px`;
       commBox.classList.remove('hidden');
     }
 
     function closeCommentBox() {
-      document.getElementById('excel-comment-box').classList.add('hidden');
-    }
-
-    function showNotificationToast(msg = "Changes Auto save successfully!") {
-      const toast = document.getElementById('toast');
-      const toastMsg = document.getElementById('toast-message');
-      if (toastMsg) toastMsg.innerText = msg;
-      
-      if (toast) {
-        toast.classList.remove('hidden');
-        setTimeout(() => toast.classList.add('hidden'), 4000);
-      }
-    }
-
-    function saveChanges(showToast = true, isAutoSave = false) {
-      // Exclude autosave logic if current tab is Dashboard
-      const isDashboardActive = !document.getElementById('tab-dashboard').classList.contains('hidden');
-      if (isAutoSave && isDashboardActive) {
-        return;
-      }
-
-      // Clone state without persisting calendar search filter year
-      const stateToSave = { ...state };
-      delete stateToSave.selectedYear;
-
-      localStorage.setItem('webapp_data', JSON.stringify(stateToSave));
-      if (showToast) {
-        showNotificationToast("Changes Auto save successfully!");
-      }
-    }
-
-    function exportToExcel() {
-      const wb = XLSX.utils.book_new();
-
-      const dashData = [
-        ["Business Portal Summary"],
-        ["Total Active Bookings", state.bookings.length],
-        [],
-        ["Active Years (2026-2085)"],
-        [2026, 2027, 2028, 2029, 2030, 2031]
-      ];
-      const wsDash = XLSX.utils.aoa_to_sheet(dashData);
-      XLSX.utils.book_append_sheet(wb, wsDash, "Dashboard");
-
-      const bookingHeaders = [["Booking ID", "Invoice ID", "Guest Name", "Address", "ID No", "Contact No", "Room No", "Agent Info", "Capacity", "Check In", "Check Out", "Days", "Price/Day", "Total Food Charges", "Total", "Advance", "Due"]];
-      const bookingRows = state.bookings.map((b) => {
-        const totalFoodCharge = (b.foodOrders || []).reduce((acc, fo) => acc + (fo.foodCharge || 0), 0);
-        return [
-          b.bookingCode,
-          b.invoiceNo,
-          b.name, b.address, b.idNo, b.contactNo, b.roomNo, b.agentInfo, b.capacity,
-          formatDateTime(b.checkIn), formatDateTime(b.checkOut), b.noOfDays, b.perDayPrice, totalFoodCharge, b.totalAmount, b.advanced, b.totalDue
-        ];
-      });
-      const wsBooking = XLSX.utils.aoa_to_sheet([...bookingHeaders, ...bookingRows]);
-      XLSX.utils.book_append_sheet(wb, wsBooking, "Booking Details");
-
-      const masterHeader = [["Agent Name", "Agent Ph No", "Room No", "Capacity"]];
-      const masterRows = state.master.map(m => [m.agentName, m.phone, m.roomNo, m.capacity]);
-      const wsMaster = XLSX.utils.aoa_to_sheet([...masterHeader, ...masterRows]);
-      XLSX.utils.book_append_sheet(wb, wsMaster, "Master");
-
-      XLSX.writeFile(wb, "Business_Portal_Compact_Export.xlsx");
+      const commBox = document.getElementById('excel-comment-box');
+      if (commBox) commBox.classList.add('hidden');
     }
   </script>
 </body>
