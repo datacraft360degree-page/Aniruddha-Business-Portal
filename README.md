@@ -1882,29 +1882,8 @@
           document.getElementById('cust-advance').value = b.advanced;
           calculateModalBilling();
 
-          // Point 3 Restriction Logic:
-          // Check if editing a previous bill before check out date (with time restriction till 23:59:59)
-          const now = new Date();
-          const checkOutDateObj = b.checkOut ? new Date(b.checkOut) : null;
-          let isPastCheckOut = false;
-
-          if (checkOutDateObj) {
-            // Check out date boundary with time restriction till 23:59:59
-            const checkOutEndBoundary = new Date(checkOutDateObj);
-            checkOutEndBoundary.setHours(23, 59, 59, 999);
-            if (now > checkOutEndBoundary) {
-              isPastCheckOut = true;
-            }
-          }
-
-          const isPreviousEntry = b.checkIn && (new Date(b.checkIn) < new Date(now.getFullYear(), now.getMonth(), now.getDate()));
-
-          if (isPreviousEntry && !isPastCheckOut) {
-            // Restrict non-food & non-billing summary fields to read-only mode
-            setModalFieldsReadOnly(true);
-          } else {
-            setModalFieldsReadOnly(false);
-          }
+          // Any generated Booking ID locks all fields except extra food and billing summary
+          setModalFieldsReadOnly(true);
         }
       } else {
         document.getElementById('modal-title').innerText = 'Add New Booking';
@@ -2660,5 +2639,3 @@
   </script>
 </body>
 </html>
-
-
