@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -498,7 +499,7 @@
       <div class="bg-amber-500 p-3 text-white flex justify-between items-center">
         <div class="flex items-center space-x-2">
           <i class="fa-solid fa-bell text-base"></i>
-          <h3 class="text-xs font-bold">Upcoming Check-out Dues Alert (2 hrs)</h3>
+          <h3 class="text-xs font-bold">Check-out Alert</h3>
         </div>
         <button onclick="closeAlertModal()" class="text-amber-100 hover:text-white px-1 text-base">
           <i class="fa-solid fa-xmark"></i>
@@ -541,8 +542,8 @@
               <input type="text" id="cust-name" required pattern="[A-Za-z\s]+" oninput="this.value = formatTitleCase(this.value.replace(/[^A-Za-z\s]/g, ''))" title="Please enter Guest Name using characters only (letters and spaces)" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
             </div>
             <div>
-              <label class="block font-semibold text-slate-600 mb-0.5">Address <span class="text-rose-500">*</span></label>
-              <input type="text" id="cust-address" required title="Address is mandatory" oninput="this.value = formatTitleCase(this.value)" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+              <label class="block font-semibold text-slate-600 mb-0.5">Address</label>
+              <input type="text" id="cust-address" oninput="this.value = formatTitleCase(this.value)" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
             </div>
             <div>
               <label class="block font-semibold text-slate-600 mb-0.5">City</label>
@@ -573,7 +574,7 @@
             <!-- ATTACHED ID PROOF CELL (PDF ONLY, 10KB - 900KB) -->
             <div class="sm:col-span-2">
               <label class="block font-semibold text-slate-600 mb-0.5 flex justify-between items-center">
-                <span>Attached ID Proof <span class="text-[9px] text-indigo-500 font-normal">(PDF, 10KB - 900KB)</span></span>
+                <span>Attached ID Proof <span class="text-rose-500">*</span> <span class="text-[9px] text-indigo-500 font-normal">(PDF, 10KB - 900KB)</span></span>
                 <button type="button" id="cust-id-file-remove" onclick="removeAttachedIdProof()" class="hidden text-rose-500 hover:text-rose-700 text-[9px] font-bold">Remove</button>
               </label>
               <div class="flex items-center gap-1.5">
@@ -632,7 +633,7 @@
             <h4 class="text-[9px] font-bold uppercase tracking-wider text-amber-800 flex items-center gap-1">
               <i class="fa-solid fa-utensils text-amber-600"></i> Extra Food / Drink Orders List
             </h4>
-            <button type="button" onclick="addFoodOrderItem()" class="bg-amber-600 hover:bg-amber-700 text-white px-2 py-0.5 rounded text-[10px] font-semibold flex items-center gap-1 transition">
+            <button type="button" id="btn-add-food-order" onclick="addFoodOrderItem()" class="bg-amber-600 hover:bg-amber-700 text-white px-2 py-0.5 rounded text-[10px] font-semibold flex items-center gap-1 transition">
               <i class="fa-solid fa-plus text-[9px]"></i> Add Food Order
             </button>
           </div>
@@ -672,7 +673,7 @@
 
         <div class="flex justify-end space-x-2 pt-1">
           <button type="button" onclick="closeBookingModal()" class="px-3 py-1 bg-slate-100 text-slate-700 rounded font-semibold transition">Cancel</button>
-          <button type="submit" class="px-4 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded font-semibold shadow transition">Save Booking</button>
+          <button type="submit" id="btn-save-booking" class="px-4 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded font-semibold shadow transition">Save Booking</button>
         </div>
       </form>
     </div>
@@ -808,7 +809,7 @@
         return;
       }
 
-      // 2. Verify file size is between 10 KB and 200 KB
+      // 2. Verify file size is between 10 KB and 900 KB
       const minSize = 10 * 1024;  // 10 KB
       const maxSize = 900 * 1024; // 900 KB
 
@@ -1472,50 +1473,75 @@
       const now = new Date().getTime();
       const twoHoursMs = 2 * 60 * 60 * 1000;
 
-      const upcomingDues = state.bookings.filter(b => {
-        if (!b.checkOut || (b.totalDue || 0) <= 0 || !isRoomInMaster(b.roomNo) || b.inactive) return false;
+      // Condition 1 & 2 Alert List Filtering:
+      // Condition 1: Alerts trigger before 2 hours of check out date & time
+      // Condition 2: Alerts remain active UNTIL due payment is closed
+      const alertBookings = state.bookings.filter(b => {
+        if (!b.checkOut || !isRoomInMaster(b.roomNo) || b.inactive) return false;
+        
         const checkOutTime = new Date(b.checkOut).getTime();
         const diff = checkOutTime - now;
-        return diff > -3600000 && diff <= twoHoursMs;
+        const isBeforeTwoHours = (diff <= twoHoursMs);
+        const hasDue = (b.totalDue || 0) > 0;
+
+        // Alerts should remain notify in both conditions:
+        // 1) before 2 hours of check out
+        // 2) until due payment is closed
+        return (isBeforeTwoHours || hasDue);
       });
 
       const badge = document.getElementById('alert-badge');
-      if (upcomingDues.length > 0) {
-        badge.innerText = upcomingDues.length;
+      if (alertBookings.length > 0) {
+        badge.innerText = alertBookings.length;
         badge.classList.remove('hidden');
       } else {
         badge.classList.add('hidden');
       }
 
-      renderAlertModalList(upcomingDues);
+      renderAlertModalList(alertBookings);
     }
 
-    function renderAlertModalList(duesList) {
+    function renderAlertModalList(alertList) {
       const container = document.getElementById('alert-list-container');
       const textCount = document.getElementById('alert-list-count-text');
       container.innerHTML = '';
 
-      textCount.innerText = `${duesList.length} active warnings found`;
+      textCount.innerText = `${alertList.length} active warnings found`;
 
-      if (duesList.length === 0) {
+      if (alertList.length === 0) {
         container.innerHTML = `
           <div class="text-center py-8 space-y-1">
             <div class="bg-emerald-50 text-emerald-600 w-10 h-10 rounded-full flex items-center justify-center mx-auto text-base">
               <i class="fa-solid fa-circle-check"></i>
             </div>
-            <p class="font-bold text-slate-700">No Pending Checkout Dues</p>
-            <p class="text-slate-400 text-[10px]">All upcoming check-outs within 2 hours are clear or fully paid.</p>
+            <p class="font-bold text-slate-700">No Check-out Alerts</p>
+            <p class="text-slate-400 text-[10px]">No upcoming check-outs within 2 hours or pending dues found.</p>
           </div>
         `;
         return;
       }
 
-      duesList.forEach((b, i) => {
+      alertList.forEach((b, i) => {
         const timeFormatted = formatDateTime(b.checkOut);
+        const hasDue = (b.totalDue || 0) > 0;
 
         const card = document.createElement('div');
         card.className = "bg-amber-50/60 border border-amber-200 rounded-md overflow-hidden shadow-sm";
         
+        // Dynamic Alert Message Formatting as per Condition 1:
+        // If no due: show check out date & time with room no & guest name
+        // If due: show check out date & time with room no, guest name & total amount/due amount
+        let alertMessageText = "";
+        let alertBadgeHtml = "";
+
+        if (!hasDue) {
+          alertMessageText = `Checkout: <strong>${timeFormatted}</strong> | Room ${b.roomNo} | Guest: <strong>${b.name}</strong>`;
+          alertBadgeHtml = `<span class="text-[11px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">No Due (Paid)</span>`;
+        } else {
+          alertMessageText = `Checkout: <strong>${timeFormatted}</strong> | Room ${b.roomNo} | Guest: <strong>${b.name}</strong> | Total: ₹${b.totalAmount} | Due: ₹${b.totalDue}`;
+          alertBadgeHtml = `<span class="text-[11px] font-black text-rose-600 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded">₹${b.totalDue.toLocaleString('en-IN')} Due</span>`;
+        }
+
         card.innerHTML = `
           <div class="p-2.5 flex justify-between items-center cursor-pointer hover:bg-amber-100/50 transition" onclick="toggleAlertDetails('alert-details-${i}')">
             <div class="flex items-center space-x-2">
@@ -1525,13 +1551,11 @@
                   ${b.name} <span class="bg-indigo-100 text-indigo-800 text-[9px] px-1.5 py-0.2 rounded font-mono">${b.bookingCode || 'N/A'}</span>
                   <span class="bg-slate-100 text-slate-700 text-[9px] px-1.5 py-0.2 rounded font-medium">Room ${b.roomNo}</span>
                 </h4>
-                <p class="text-[10px] text-slate-500">Checkout: <strong class="text-amber-700">${timeFormatted}</strong></p>
+                <p class="text-[10px] text-slate-600 mt-0.5">${alertMessageText}</p>
               </div>
             </div>
             <div class="flex items-center space-x-1.5">
-              <span class="text-[11px] font-black text-rose-600 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded">
-                ₹${b.totalDue.toLocaleString('en-IN')} Due
-              </span>
+              ${alertBadgeHtml}
               <i class="fa-solid fa-chevron-down text-slate-400 text-[10px]"></i>
             </div>
           </div>
@@ -1545,7 +1569,7 @@
             </div>
             <div class="flex justify-end pt-1 border-t border-slate-100">
               <button onclick="closeAlertModal(); openBookingModal('${b.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 rounded font-bold text-[10px] flex items-center gap-1 transition">
-                <i class="fa-solid fa-wallet"></i> Collect Payment / Edit
+                <i class="fa-solid fa-wallet"></i> View / Edit Booking
               </button>
             </div>
           </div>
@@ -1718,27 +1742,32 @@
         return;
       }
 
-      // Block print ONLY when generating Invoice (isReceipt === false) and there is a balance due
-      if (!isReceipt && b.totalDue > 0) {
-        alert("Pay due amount");
-        return;
-      }
-
+      // Point 6 Requirement: If there is due, hide E-Invoice & its number, and print option will be inactive mode.
+      // After due amount paid, unhide E-invoice & number and active print option.
+      const hasDue = b.totalDue > 0;
       const today = formatDate(new Date());
 
       const invBadge = document.getElementById('inv-badge');
       const invIdContainer = document.getElementById('inv-id-container');
       const invPrintBtn = document.getElementById('inv-print-btn');
 
-      if (isReceipt) {
+      if (hasDue) {
         invBadge.classList.add('hidden');
         invIdContainer.classList.add('hidden');
-        if (invPrintBtn) invPrintBtn.innerHTML = `<i class="fa-solid fa-print"></i> Print Receipt`;
+        if (invPrintBtn) {
+          invPrintBtn.disabled = true;
+          invPrintBtn.className = "px-4 py-1 bg-slate-300 text-slate-500 rounded font-semibold cursor-not-allowed flex items-center gap-1 border border-slate-400";
+          invPrintBtn.innerHTML = `<i class="fa-solid fa-lock"></i> Print Disabled (Clear Due)`;
+        }
       } else {
         invBadge.classList.remove('hidden');
         invIdContainer.classList.remove('hidden');
         document.getElementById('inv-id').innerText = b.invoiceNo;
-        if (invPrintBtn) invPrintBtn.innerHTML = `<i class="fa-solid fa-print"></i> Print Invoice`;
+        if (invPrintBtn) {
+          invPrintBtn.disabled = false;
+          invPrintBtn.className = "px-4 py-1 bg-indigo-600 text-white rounded font-semibold shadow flex items-center gap-1 transition hover:bg-indigo-700 cursor-pointer";
+          invPrintBtn.innerHTML = `<i class="fa-solid fa-print"></i> Print Invoice`;
+        }
       }
 
       document.getElementById('inv-booking-id').innerText = b.bookingCode;
@@ -1821,7 +1850,7 @@
         </div>
 
         <div class="sm:col-span-1 flex justify-end">
-          <button type="button" onclick="removeFoodOrderItem(this)" class="text-rose-500 hover:text-rose-700 p-1.5" title="Remove Order">
+          <button type="button" onclick="removeFoodOrderItem(this)" class="btn-remove-food-item text-rose-500 hover:text-rose-700 p-1.5" title="Remove Order">
             <i class="fa-solid fa-trash-can"></i>
           </button>
         </div>
@@ -1908,11 +1937,37 @@
           document.getElementById('cust-price').value = b.perDayPrice;
           document.getElementById('cust-advance').value = b.advanced;
           calculateModalBilling();
+
+          // Point 3 Restriction Logic:
+          // Check if editing a previous bill before check out date (with time restriction till 23:59:59)
+          const now = new Date();
+          const checkOutDateObj = b.checkOut ? new Date(b.checkOut) : null;
+          let isPastCheckOut = false;
+
+          if (checkOutDateObj) {
+            // Check out date boundary with time restriction till 23:59:59
+            const checkOutEndBoundary = new Date(checkOutDateObj);
+            checkOutEndBoundary.setHours(23, 59, 59, 999);
+            if (now > checkOutEndBoundary) {
+              isPastCheckOut = true;
+            }
+          }
+
+          const isPreviousEntry = b.checkIn && (new Date(b.checkIn) < new Date(now.getFullYear(), now.getMonth(), now.getDate()));
+
+          if (isPreviousEntry && !isPastCheckOut) {
+            // Restrict non-food & non-billing summary fields to read-only mode
+            setModalFieldsReadOnly(true);
+          } else {
+            setModalFieldsReadOnly(false);
+          }
         }
       } else {
         document.getElementById('modal-title').innerText = 'Add New Booking';
         document.getElementById('modal-booking-id').value = '';
         
+        setModalFieldsReadOnly(false);
+
         populateRoomDropdown(state.master.length > 0 ? state.master[0].roomNo : 1);
 
         document.getElementById('cust-checkin-time').value = "12:00";
@@ -1923,6 +1978,39 @@
       }
 
       document.getElementById('booking-modal').classList.remove('hidden');
+    }
+
+    // Helper to toggle read-only mode for modal inputs except extra food & billing summary
+    function setModalFieldsReadOnly(isReadOnly) {
+      const readOnlyInputs = [
+        'cust-name', 'cust-address', 'cust-city', 'cust-state', 'cust-country',
+        'cust-zip', 'cust-id', 'cust-contact', 'cust-room',
+        'cust-checkin-date', 'cust-checkin-time', 'cust-checkout-date', 'cust-checkout-time'
+      ];
+
+      readOnlyInputs.forEach(id => {
+        const elem = document.getElementById(id);
+        if (elem) {
+          if (isReadOnly) {
+            elem.setAttribute('disabled', 'disabled');
+            elem.classList.add('bg-slate-100', 'cursor-not-allowed');
+          } else {
+            elem.removeAttribute('disabled');
+            elem.classList.remove('bg-slate-100', 'cursor-not-allowed');
+          }
+        }
+      });
+
+      const fileInput = document.getElementById('cust-id-file');
+      if (fileInput) {
+        if (isReadOnly) fileInput.setAttribute('disabled', 'disabled');
+        else fileInput.removeAttribute('disabled');
+      }
+
+      const removeFileBtn = document.getElementById('cust-id-file-remove');
+      if (removeFileBtn) {
+        if (isReadOnly) removeFileBtn.classList.add('hidden');
+      }
     }
 
     function closeBookingModal() {
@@ -2062,8 +2150,12 @@
       const guestId = document.getElementById('cust-id').value.trim();
       const guestContact = document.getElementById('cust-contact').value.trim();
 
-      if (!guestName || !guestAddress || !guestId || !guestContact) {
-        alert("⚠️ Guest Name, Address, ID Number, and Contact No are mandatory to proceed!");
+      const attachedBase64 = document.getElementById('cust-id-file-base64').value;
+      const attachedFileName = document.getElementById('cust-id-file-name').value;
+
+      // Point 2 Requirement: Guest name, contact no, id number, id attachment is mandatory field in booking details tab.
+      if (!guestName || !guestContact || !guestId || !attachedBase64) {
+        alert("⚠️ Guest Name, Contact No, ID Number, and ID Attachment are mandatory fields!");
         return;
       }
 
@@ -2082,8 +2174,11 @@
       const inDate = document.getElementById('cust-checkin-date').value;
       const outDate = document.getElementById('cust-checkout-date').value;
 
-      if (inDate < today || outDate < today) {
-        alert("⚠️ Check-In and Check-Out dates cannot be previous dates relative to today!");
+      const bookingModalId = document.getElementById('modal-booking-id').value;
+
+      // Point 3 Requirement: We cannot book new entry before today’s date
+      if (!bookingModalId && inDate < today) {
+        alert("⚠️ Cannot book new entry before today’s date!");
         return;
       }
 
@@ -2091,7 +2186,7 @@
         return;
       }
 
-      const id = document.getElementById('modal-booking-id').value;
+      const id = bookingModalId;
       const roomNo = parseInt(document.getElementById('cust-room').value);
       
       const inTime = document.getElementById('cust-checkin-time').value || '00:00';
@@ -2177,8 +2272,8 @@
         country: guestCountry,
         zipCode: guestZip,
         idNo: guestId,
-        idProofBase64: document.getElementById('cust-id-file-base64').value || "",
-        idProofFileName: document.getElementById('cust-id-file-name').value || "",
+        idProofBase64: attachedBase64,
+        idProofFileName: attachedFileName,
         contactNo: guestContact,
         roomNo: roomNo,
         agentInfo: document.getElementById('cust-agent').value,
@@ -2313,32 +2408,24 @@
 
         const isDue = b.totalDue > 0;
         
-        let invBtnClass, recBtnClass, editBtnClass, printOnClickInv, printOnClickRec, editOnClick;
+        let printBtnClass, editBtnClass, printOnClick, editOnClick;
 
         if (!isMasterValid || b.inactive) {
-          invBtnClass = "bg-slate-300 text-slate-500 cursor-not-allowed opacity-60 px-2.5 py-1 rounded-md text-[11px] font-bold border border-slate-400";
-          recBtnClass = "bg-slate-300 text-slate-500 cursor-not-allowed opacity-60 px-2.5 py-1 rounded-md text-[11px] font-bold border border-slate-400";
+          printBtnClass = "bg-slate-300 text-slate-500 cursor-not-allowed opacity-60 px-2.5 py-1 rounded-md text-[11px] font-bold border border-slate-400";
           editBtnClass = "text-slate-400 cursor-not-allowed p-1 text-sm";
           
           if (b.inactive) {
-            printOnClickInv = "alert('This booking details are inactive and cannot be printed.')";
-            printOnClickRec = "alert('This booking details are inactive and cannot be printed.')";
+            printOnClick = "alert('This booking details are inactive and cannot be printed.')";
             editOnClick = "alert('This booking details are inactive and cannot be edited.')";
           } else {
-            printOnClickInv = "alert('This booking details were deleted from Master Data and cannot be printed as Invoice.')";
-            printOnClickRec = "alert('This booking details were deleted from Master Data and cannot be printed as Receipt.')";
+            printOnClick = "alert('This booking details were deleted from Master Data and cannot be printed.')";
             editOnClick = "alert('This booking details were deleted from Master Data and is in Read-Only mode.')";
           }
         } else {
-          printOnClickInv = isDue ? "alert('Pay due amount')" : `printInvoice('${b.id}', false)`;
-          printOnClickRec = `printInvoice('${b.id}', true)`;
+          printOnClick = `printInvoice('${b.id}', false)`;
           editOnClick = `openBookingModal('${b.id}')`;
 
-          invBtnClass = isDue 
-            ? "bg-slate-200 text-slate-400 cursor-not-allowed opacity-60 px-2.5 py-1 rounded-md text-[11px] font-bold border border-slate-300" 
-            : "bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 rounded-md text-[11px] font-bold transition shadow-sm border border-indigo-700";
-
-          recBtnClass = "bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-md text-[11px] font-bold transition shadow-sm border border-emerald-700";
+          printBtnClass = "bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 rounded-md text-[11px] font-bold transition shadow-sm border border-indigo-700";
           editBtnClass = "text-indigo-600 hover:text-indigo-800 p-1 text-sm";
         }
 
@@ -2387,8 +2474,8 @@
               <button onclick="${editOnClick}" class="${editBtnClass}" title="Edit Booking Details">
                 <i class="fa-solid fa-pen-to-square"></i>
               </button>              
-              <button onclick="${printOnClickInv}" class="${invBtnClass}">Invoice</button>
-              <button onclick="${printOnClickRec}" class="${recBtnClass}">Receipt</button>
+              <!-- Point 6: Single "Print" button beside edit button -->
+              <button onclick="${printOnClick}" class="${printBtnClass}">Print</button>
             </div>
           </td>
         `;
@@ -2510,6 +2597,8 @@
           const cell = document.createElement('div');
           const dateStr = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
           
+          // Point 5 Requirement: Inactive bookings will NOT show in calendar.
+          // Point 4 Requirement: Closed bookings remain in history and are NOT removed.
           const matchingBookings = state.bookings.filter(b => {
             if (b.inactive || !b.checkIn || !b.checkOut) return false;
             if (!isRoomInMaster(b.roomNo)) return false;
@@ -2558,6 +2647,10 @@
       dateHeader.innerText = formatDate(dateStr);
       listContainer.innerHTML = '';
 
+      const now = new Date().getTime();
+
+      // Point 4 Requirement: Calendar msg box will show ONLY:
+      // (guest name, contact no, room no, check in & check out date, total amount, due amount, closed, live, upcoming status)
       bookings.forEach(b => {
         const item = document.createElement('div');
         item.className = "bg-slate-800 p-2 rounded border border-slate-700 space-y-1 hover:border-amber-400 transition cursor-pointer";
@@ -2566,6 +2659,20 @@
           openBookingModal(b.id);
         };
 
+        const cInMs = new Date(b.checkIn).getTime();
+        const cOutMs = new Date(b.checkOut).getTime();
+
+        let statusText = "Upcoming";
+        let statusColorClass = "text-blue-400 font-bold";
+
+        if (now >= cInMs && now <= cOutMs) {
+          statusText = "Live";
+          statusColorClass = "text-amber-400 font-bold";
+        } else if (now > cOutMs) {
+          statusText = "Closed";
+          statusColorClass = "text-emerald-400 font-bold";
+        }
+
         item.innerHTML = `
           <div class="flex justify-between items-center">
             <span class="font-bold text-amber-300 text-[11px]">${b.name}</span>
@@ -2573,8 +2680,9 @@
           </div>
           <div class="text-[9px] text-slate-300">
             Contact: ${b.contactNo || 'N/A'}<br>
-            ID No: ${b.idNo || 'N/A'}<br>
-            Stay: ${formatDateTime(b.checkIn)} to ${formatDateTime(b.checkOut)}
+            Check-In: ${formatDateTime(b.checkIn)}<br>
+            Check-Out: ${formatDateTime(b.checkOut)}<br>
+            Status: <span class="${statusColorClass}">${statusText}</span>
           </div>
           <div class="flex justify-between items-center text-[9px] pt-1 border-t border-slate-700/60">
             <span class="text-emerald-400 font-semibold">Total: ₹${b.totalAmount}</span>
