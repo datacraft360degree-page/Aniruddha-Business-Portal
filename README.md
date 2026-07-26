@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -1098,63 +1099,8 @@
 
     // State Directory
     let state = {
-      yearlyCounters: { [defaultAppYear]: 2 },
-      bookings: [
-        {
-          id: "bk_1",
-          bookingCode: `BKG-${defaultAppYear}-0000001`,
-          invoiceNo: `INV-${defaultAppYear}-0000001`,
-          name: "Kapil",
-          address: "Kolkata",
-          city: "Kolkata",
-          state: "West Bengal",
-          country: "India",
-          zipCode: "700001",
-          idNo: "ABC25780001",
-          idProofBase64: "",
-          idProofFileName: "",
-          contactNo: "1234567890",
-          roomNo: 2,
-          agentInfo: "A2 1234567890",
-          capacity: "2 Person",
-          checkIn: getLiveCheckIn(),
-          checkOut: getLiveCheckOut(),
-          noOfDays: 2,
-          perDayPrice: 1200,
-          foodOrders: [
-            { foodDesc: "2x Breakfast, Tea", foodDateTime: getLiveFoodTime(), foodCharge: 300 }
-          ],
-          totalAmount: 2700,
-          advanced: 1000,
-          totalDue: 1700
-        },
-        {
-          id: "bk_2",
-          bookingCode: `BKG-${defaultAppYear}-0000002`,
-          invoiceNo: `INV-${defaultAppYear}-0000002`,
-          name: "Aniruddha",
-          address: "Mumbai",
-          city: "Mumbai",
-          state: "Maharashtra",
-          country: "India",
-          zipCode: "400001",
-          idNo: "XYZ99887766",
-          idProofBase64: "",
-          idProofFileName: "",
-          contactNo: "9876543210",
-          roomNo: 4,
-          agentInfo: "A1 1234567890",
-          capacity: "4 Person",
-          checkIn: getLiveCheckIn(),
-          checkOut: getLiveCheckOut(),
-          noOfDays: 3,
-          perDayPrice: 1500,
-          foodOrders: [],
-          totalAmount: 4500,
-          advanced: 2000,
-          totalDue: 2500
-        }
-      ],
+      yearlyCounters: { [defaultAppYear]: 0 },
+      bookings: [],
       master: [
         { agentName: "A1", phone: "1234567890", roomNo: 1, capacity: 4 },
         { agentName: "A2", phone: "1234567890", roomNo: 2, capacity: 2 },
@@ -2715,3 +2661,5 @@
   </script>
 </body>
 </html>
+
+
