@@ -337,7 +337,7 @@
                 <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full inline-block"></span> Closed Booking
               </span>
               <span class="flex items-center gap-1 font-semibold text-slate-700">
-                <span class="w-2 h-2 bg-rose-600 rounded-full inline-block"></span> Inactive Booking
+                <span class="w-2 h-2 bg-rose-600 rounded-full inline-block"></span> Inactive/Cancelled Booking
               </span>
             </div>
           </div>
@@ -642,6 +642,27 @@
                 </div>
               </div>
             </div>
+
+            <!-- Extended Check Out Checkbox & Fields -->
+            <div class="sm:col-span-3 pt-2 border-t border-slate-200/60">
+              <div class="flex items-center gap-2 mb-1">
+                <input type="checkbox" id="cust-has-extended-checkout" onchange="toggleExtendedCheckoutFields(this.checked)" class="w-3.5 h-3.5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer">
+                <label for="cust-has-extended-checkout" class="font-bold text-slate-700 cursor-pointer flex items-center gap-1 select-none text-[11px]">
+                  <i class="fa-solid fa-clock-rotate-left text-indigo-600"></i> Extended Check-out Date & Time
+                </label>
+              </div>
+
+              <div id="extended-checkout-container" class="hidden bg-indigo-50/70 p-2 rounded-md border border-indigo-200/80 mt-1">
+                <label class="block font-bold text-indigo-900 mb-1 flex items-center gap-1">
+                  <i class="fa-solid fa-calendar-plus text-indigo-600"></i> New Check-out Date & Time
+                </label>
+                <div class="flex gap-1.5">
+                  <input type="date" id="cust-ext-checkout-date" onchange="handleStayDatesChange()" class="w-2/3 bg-white border border-indigo-300 rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-semibold text-indigo-900">
+                  <input type="time" id="cust-ext-checkout-time" value="12:00" onchange="handleStayDatesChange()" class="w-1/3 bg-white border border-indigo-300 rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-semibold text-indigo-900">
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
 
@@ -704,7 +725,7 @@
   <div id="invoice-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
     <div class="bg-white rounded-lg shadow-xl border border-slate-200 max-w-xl w-full p-6 space-y-4 relative" id="printable-invoice">
       
-      <!-- Read-Only Notice Bar (Shown for Closed/Inactive Bookings) -->
+      <!-- Read-Only Notice Bar (Shown for Closed/Inactive/Cancelled Bookings) -->
       <div id="inv-readonly-notice" class="hidden bg-slate-800 text-amber-300 text-[10px] font-bold px-3 py-1.5 rounded-md flex items-center justify-between border border-amber-400/40">
         <span class="flex items-center gap-1.5">
           <i class="fa-solid fa-lock text-amber-400"></i> Read-Only View Mode (Editing Disabled)
@@ -738,7 +759,10 @@
           <h4 class="font-bold text-slate-400 uppercase text-[9px] tracking-wider mb-0.5">Reservation Info</h4>
           <p class="text-slate-800 font-semibold" id="inv-room">Room No: -</p>
           <p class="text-slate-600" id="inv-checkin">Check-in: -</p>
-          <p class="text-slate-600" id="inv-checkout">Check-out: -</p>
+          <div id="inv-checkout-container" class="space-y-0.5">
+            <p class="text-slate-600 font-medium" id="inv-checkout">Check-out: -</p>
+            <p class="text-indigo-700 font-bold hidden" id="inv-ext-checkout"></p>
+          </div>
         </div>
       </div>
 
@@ -875,6 +899,24 @@
       } else {
         alert("Please allow popups to view attached PDF document.");
       }
+    }
+
+    function toggleExtendedCheckoutFields(checked) {
+      const container = document.getElementById('extended-checkout-container');
+      if (!container) return;
+      if (checked) {
+        container.classList.remove('hidden');
+        const normalOutDate = document.getElementById('cust-checkout-date').value;
+        const normalOutTime = document.getElementById('cust-checkout-time').value;
+        const extOutDate = document.getElementById('cust-ext-checkout-date');
+        const extOutTime = document.getElementById('cust-ext-checkout-time');
+        
+        if (extOutDate && !extOutDate.value) extOutDate.value = normalOutDate;
+        if (extOutTime && !extOutTime.value) extOutTime.value = normalOutTime || "12:00";
+      } else {
+        container.classList.add('hidden');
+      }
+      calculateModalBilling();
     }
 
     let isLoggedIn = false;
@@ -1117,6 +1159,7 @@
       return state.roomsCapacity.some(m => parseInt(m.roomNo) === parseInt(roomNo));
     }
 
+    /* EXPORT TO EXCEL - Separated Columns for Initial & Extended Check-Out */
     function exportToExcel() {
       if (!state.bookings || state.bookings.length === 0) {
         alert("No booking records available to export!");
@@ -1127,7 +1170,8 @@
 
       const exportData = state.bookings.map(b => {
         const cIn = new Date(b.checkIn).getTime();
-        const cOut = new Date(b.checkOut).getTime();
+        const effectiveCheckout = (b.hasExtendedCheckout && b.extendedCheckOut) ? b.extendedCheckOut : b.checkOut;
+        const cOut = new Date(effectiveCheckout).getTime();
 
         let statusStr = "Upcoming";
         if (b.inactive) {
@@ -1152,6 +1196,7 @@
           "Guest Name": b.name || "-",
           "Contact No": b.contactNo || "-",
           "ID Number": b.idNo || "-",
+          "Attached ID": b.idProofBase64 ? "Yes" : "No",
           "Address": b.address || "-",
           "City": b.city || "-",
           "State": b.state || "-",
@@ -1162,6 +1207,7 @@
           "Agent Info": b.agentInfo || "-",
           "Check-In": formatDateTime(b.checkIn),
           "Check-Out": formatDateTime(b.checkOut),
+          "Extended Check-Out": (b.hasExtendedCheckout && b.extendedCheckOut) ? formatDateTime(b.extendedCheckOut) : "N/A",
           "Stay Days": b.noOfDays || 0,
           "Price / Day": b.perDayPrice || 0,
           "Food Orders": foodSummary || "None",
@@ -1190,7 +1236,6 @@
       renderBookingsTable();
     }
 
-    /* POINT 2: MASTER DATA BOOKING SEARCH SHOWS ONLY NON-DELETED BOOKINGS */
     function searchMasterBookingById() {
       const inputElem = document.getElementById('master-booking-search-input');
       if (!inputElem) return;
@@ -1206,7 +1251,6 @@
         return;
       }
 
-      // Filter out deleted/inactive bookings from the Master Search list
       const matchedBookings = state.bookings.filter(item => 
         !item.inactive && (item.bookingCode || '').toUpperCase().includes(query)
       );
@@ -1217,13 +1261,14 @@
       }
 
       matchedBookings.forEach(b => {
+        const effectiveOut = (b.hasExtendedCheckout && b.extendedCheckOut) ? b.extendedCheckOut : b.checkOut;
         const tr = document.createElement('tr');
         tr.className = "bg-white hover:bg-slate-50 transition border-b border-slate-100";
         tr.innerHTML = `
           <td class="py-2 px-2 font-mono font-bold text-indigo-700">${b.bookingCode}</td>
           <td class="py-2 px-2 font-bold text-slate-800">${b.name}</td>
           <td class="py-2 px-2"><span class="bg-indigo-50 text-indigo-700 font-bold px-1.5 py-0.2 rounded text-[10px]">Room ${b.roomNo}</span></td>
-          <td class="py-2 px-2 text-[10px] text-slate-600">${formatDateTime(b.checkIn)} to ${formatDateTime(b.checkOut)}</td>
+          <td class="py-2 px-2 text-[10px] text-slate-600">${formatDateTime(b.checkIn)} to ${formatDateTime(effectiveOut)}</td>
           <td class="py-2 px-2 font-semibold text-slate-800">₹${b.totalAmount}</td>
           <td class="py-2 px-2 font-bold text-rose-600">₹${b.totalDue}</td>
           <td class="py-2 px-2 text-center">
@@ -1384,22 +1429,18 @@
       initDashboard();
     }
 
-    /* POINT 3: ALERT MESSAGE LOGIC IMPLEMENTATION */
     function checkUpcomingCheckoutsWithDue() {
       const now = new Date().getTime();
       const twoHoursMs = 2 * 60 * 60 * 1000;
 
       const alertBookings = state.bookings.filter(b => {
-        if (!b.checkOut || !isRoomInMaster(b.roomNo) || b.inactive) return false;
+        const effectiveCheckout = (b.hasExtendedCheckout && b.extendedCheckOut) ? b.extendedCheckOut : b.checkOut;
+        if (!effectiveCheckout || !isRoomInMaster(b.roomNo) || b.inactive) return false;
         
-        const checkOutTime = new Date(b.checkOut).getTime();
+        const checkOutTime = new Date(effectiveCheckout).getTime();
         const diff = checkOutTime - now;
         
-        // Logic 1: Any booking that has due, notify until due clear
         const hasDue = (b.totalDue || 0) > 0;
-
-        // Logic 2: Notify before 2 hours whenever any booking check out date and time is nearby
-        // (diff > 0 ensures it triggers in the 2-hour window leading up to checkout)
         const isNearbyCheckOut = (diff >= 0 && diff <= twoHoursMs);
 
         return (hasDue || isNearbyCheckOut);
@@ -1437,7 +1478,8 @@
       }
 
       alertList.forEach((b, i) => {
-        const timeFormatted = formatDateTime(b.checkOut);
+        const effectiveOut = (b.hasExtendedCheckout && b.extendedCheckOut) ? b.extendedCheckOut : b.checkOut;
+        const timeFormatted = formatDateTime(effectiveOut);
         const hasDue = (b.totalDue || 0) > 0;
 
         const card = document.createElement('div');
@@ -1651,14 +1693,15 @@
       document.getElementById('dash-due').innerText = `₹${totalDue.toLocaleString('en-IN')}`;
     }
 
-    // PRINT INVOICE WITH DYNAMIC READ-ONLY MODE LOGIC
+    /* PRINT INVOICE - Extended Check-Out details are hidden unless the date was extended */
     function printInvoice(bookingId) {
       const bIndex = state.bookings.findIndex(item => item.id === bookingId);
       if (bIndex === -1) return;
 
       const b = state.bookings[bIndex];
       const now = new Date().getTime();
-      const checkOutTime = new Date(b.checkOut).getTime();
+      const effectiveCheckout = (b.hasExtendedCheckout && b.extendedCheckOut) ? b.extendedCheckOut : b.checkOut;
+      const checkOutTime = new Date(effectiveCheckout).getTime();
 
       const isClosed = now > checkOutTime;
       const isInactive = b.inactive;
@@ -1669,12 +1712,10 @@
       const invBadge = document.getElementById('inv-badge');
       const invIdContainer = document.getElementById('inv-id-container');
 
-      // Check if entry is Inactive or Master Removed -> Disable print button, keep Read-Only modal view
       if (isInactive || !isMasterValid) {
         readOnlyNotice.classList.remove('hidden');
-        if (invPrintBtn) invPrintBtn.classList.add('hidden'); // No Print Option
+        if (invPrintBtn) invPrintBtn.classList.add('hidden'); 
       } else if (isClosed) {
-        // Closed Booking -> Print option available, but system read-only mode banner displayed
         readOnlyNotice.classList.remove('hidden');
         if (invPrintBtn) {
           invPrintBtn.classList.remove('hidden');
@@ -1720,7 +1761,19 @@
 
       document.getElementById('inv-room').innerText = `Room No: ${b.roomNo} (${b.capacity || 1} Person)`;
       document.getElementById('inv-checkin').innerText = `Check-in: ${formatDateTime(b.checkIn)}`;
+      
+      // Initial Check-Out Date
       document.getElementById('inv-checkout').innerText = `Check-out: ${formatDateTime(b.checkOut)}`;
+
+      // Hide extended check-out detail completely if the date was not extended
+      const extCheckoutElem = document.getElementById('inv-ext-checkout');
+      if (b.hasExtendedCheckout && b.extendedCheckOut) {
+        extCheckoutElem.innerHTML = `Extended Check-out: ${formatDateTime(b.extendedCheckOut)} <span class="text-[9px] text-indigo-700 bg-indigo-100 border border-indigo-300 px-1 py-0.2 rounded font-bold ml-1">Extended</span>`;
+        extCheckoutElem.classList.remove('hidden');
+      } else {
+        extCheckoutElem.innerText = '';
+        extCheckoutElem.classList.add('hidden');
+      }
 
       const tbody = document.getElementById('inv-items-tbody');
       tbody.innerHTML = '';
@@ -1728,7 +1781,7 @@
       const roomTotal = (b.noOfDays || 0) * (b.perDayPrice || 0) * (b.capacity || 1);
       const roomTr = document.createElement('tr');
       roomTr.innerHTML = `
-        <td class="p-2 font-semibold text-slate-800">Room ${b.roomNo} Accommodation (${b.capacity || 1} Persons)</td>
+        <td class="p-2 font-semibold text-slate-800">Room ${b.roomNo} Accommodation (${b.capacity || 1} Persons) ${b.hasExtendedCheckout ? '<span class="text-[9px] text-indigo-600 block font-normal">(Includes extended stay duration)</span>' : ''}</td>
         <td class="p-2 text-center">${b.noOfDays} Days</td>
         <td class="p-2 text-right">₹${(b.perDayPrice || 0).toLocaleString('en-IN')}</td>
         <td class="p-2 text-right font-semibold text-slate-800">₹${roomTotal.toLocaleString('en-IN')}</td>
@@ -1758,7 +1811,6 @@
       document.getElementById('inv-sum-advance').innerText = `₹${initialAdv.toLocaleString('en-IN')}`;
       document.getElementById('inv-sum-due').innerText = `₹${(b.totalDue || 0).toLocaleString('en-IN')}`;
 
-      // SHOW CLEAR DUE ROW ONLY IF FILLED
       const clearDueRow = document.getElementById('inv-clear-due-row');
       if (clearDueAmt > 0) {
         document.getElementById('inv-sum-clear-due').innerText = `₹${clearDueAmt.toLocaleString('en-IN')}`;
@@ -1842,7 +1894,6 @@
       }
     }
 
-    /* UPDATED: CLOSED BOOKING MODAL LOGIC WITH 3 DAYS LIMIT & EDITABLE BILLING SUMMARY */
     function openBookingModal(bookingId = null) {
       let isClosedAndWithin3Days = false;
 
@@ -1851,7 +1902,8 @@
         
         if (b) {
           const now = new Date().getTime();
-          const checkOutTime = new Date(b.checkOut).getTime();
+          const effectiveCheckout = (b.hasExtendedCheckout && b.extendedCheckOut) ? b.extendedCheckOut : b.checkOut;
+          const checkOutTime = new Date(effectiveCheckout).getTime();
           const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
 
           if (b.inactive) {
@@ -1864,15 +1916,12 @@
             return;
           }
 
-          // If booking is closed
           if (now > checkOutTime) {
-            // After 3 days from check out date: Non-editable, Print View only
             if (now > (checkOutTime + threeDaysMs)) {
               alert("This booking closed more than 3 days ago. It is non-editable and can only be viewed or printed.");
               printInvoice(bookingId);
               return;
             } else {
-              // Within 3 days from check out date: Guest Info, Room Selection & Food disabled, Billing Summary editable
               isClosedAndWithin3Days = true;
             }
           }
@@ -1891,11 +1940,9 @@
 
       populateAgentDropdown();
 
-      // Apply/Reset Form Field Editability Restrictions based on closed status
       setSectionEditability('sec-guest-info', !isClosedAndWithin3Days);
       setSectionEditability('sec-room-dates', !isClosedAndWithin3Days);
       
-      // Control Extra Food Section
       const addFoodBtn = document.getElementById('btn-add-food-order');
       if (addFoodBtn) {
         addFoodBtn.disabled = isClosedAndWithin3Days;
@@ -1945,6 +1992,15 @@
             document.getElementById('cust-checkout-time').value = outTime || '11:00';
           }
 
+          const extChk = document.getElementById('cust-has-extended-checkout');
+          extChk.checked = !!b.hasExtendedCheckout;
+          toggleExtendedCheckoutFields(extChk.checked);
+          if (b.hasExtendedCheckout && b.extendedCheckOut) {
+            const [eDate, eTime] = b.extendedCheckOut.split('T');
+            document.getElementById('cust-ext-checkout-date').value = eDate || '';
+            document.getElementById('cust-ext-checkout-time').value = eTime || '12:00';
+          }
+
           if (b.foodOrders && b.foodOrders.length > 0) {
             b.foodOrders.forEach(fo => {
               let fDate = '', fTime = '';
@@ -1978,6 +2034,9 @@
 
         document.getElementById('cust-checkin-time').value = "12:00";
         document.getElementById('cust-checkout-time').value = "11:00";
+        document.getElementById('cust-has-extended-checkout').checked = false;
+        toggleExtendedCheckoutFields(false);
+
         document.getElementById('cust-price').value = 1200;
         
         const advanceElem = document.getElementById('cust-advance');
@@ -1990,7 +2049,6 @@
       document.getElementById('booking-modal').classList.remove('hidden');
     }
 
-    // Helper to toggle section editability and visual styles
     function setSectionEditability(sectionId, isEditable) {
       const container = document.getElementById(sectionId);
       if (!container) return;
@@ -2058,9 +2116,18 @@
     function calculateModalBilling() {
       const inDate = document.getElementById('cust-checkin-date').value;
       const inTime = document.getElementById('cust-checkin-time').value || '00:00';
-      const outDate = document.getElementById('cust-checkout-date').value;
-      const outTime = document.getElementById('cust-checkout-time').value || '00:00';
       
+      const hasExtCheckout = document.getElementById('cust-has-extended-checkout')?.checked;
+      let outDate = document.getElementById('cust-checkout-date').value;
+      let outTime = document.getElementById('cust-checkout-time').value || '00:00';
+
+      if (hasExtCheckout) {
+        const extDate = document.getElementById('cust-ext-checkout-date')?.value;
+        const extTime = document.getElementById('cust-ext-checkout-time')?.value;
+        if (extDate) outDate = extDate;
+        if (extTime) outTime = extTime;
+      }
+
       let days = 0;
       if (inDate && outDate) {
         const d1 = new Date(`${inDate}T${inTime}`);
@@ -2125,6 +2192,17 @@
       const checkIn = `${inDate}T${inTime}`;
       const checkOut = `${outDate}T${outTime}`;
 
+      const hasExtendedCheckout = document.getElementById('cust-has-extended-checkout')?.checked || false;
+      let extendedCheckOut = null;
+
+      if (hasExtendedCheckout) {
+        const extDate = document.getElementById('cust-ext-checkout-date').value;
+        const extTime = document.getElementById('cust-ext-checkout-time').value || '00:00';
+        if (extDate) {
+          extendedCheckOut = `${extDate}T${extTime}`;
+        }
+      }
+
       const foodOrdersList = [];
       document.querySelectorAll('.food-order-row').forEach(row => {
         const desc = row.querySelector('.cust-food-desc').value || '';
@@ -2147,8 +2225,9 @@
         }
       });
 
+      const effectiveCheckout = (hasExtendedCheckout && extendedCheckOut) ? extendedCheckOut : checkOut;
       const newIn = new Date(checkIn).getTime();
-      const newOut = new Date(checkOut).getTime();
+      const newOut = new Date(effectiveCheckout).getTime();
 
       if (newIn >= newOut) {
         alert("Check-Out date & time must be strictly after Check-In date & time.");
@@ -2161,13 +2240,15 @@
         if (parseInt(b.roomNo) !== roomNo) return false;
 
         const existingIn = new Date(b.checkIn).getTime();
-        const existingOut = new Date(b.checkOut).getTime();
+        const existingOutCheckout = (b.hasExtendedCheckout && b.extendedCheckOut) ? b.extendedCheckOut : b.checkOut;
+        const existingOut = new Date(existingOutCheckout).getTime();
 
         return (newIn < existingOut && newOut > existingIn);
       });
 
       if (conflict) {
-        const confOutFormatted = formatDateTime(conflict.checkOut);
+        const confOutVal = (conflict.hasExtendedCheckout && conflict.extendedCheckOut) ? conflict.extendedCheckOut : conflict.checkOut;
+        const confOutFormatted = formatDateTime(confOutVal);
         alert(`❌ Booking Conflict Alert!\n\nRoom ${roomNo} is already occupied by ${conflict.name} until ${confOutFormatted}.\n\nPlease select a check-in time after ${confOutFormatted} or assign a different room.`);
         return;
       }
@@ -2214,6 +2295,8 @@
         capacity: parseInt(document.getElementById('cust-capacity').value) || 1,
         checkIn: checkIn,
         checkOut: checkOut,
+        hasExtendedCheckout: hasExtendedCheckout,
+        extendedCheckOut: extendedCheckOut,
         noOfDays: parseInt(document.getElementById('cust-days').value) || 0,
         perDayPrice: parseFloat(document.getElementById('cust-price').value) || 0,
         foodOrders: foodOrdersList,
@@ -2245,7 +2328,6 @@
       openMasterDeleteModal('booking', id);
     }
 
-    /* POINT 1: RENDER BOOKING TABLE ACTION CONTROLS EDITABILITY BY 3 DAYS POST CHECKOUT */
     function renderBookingsTable(dateFilter = "") {
       const tbody = document.getElementById('bookings-tbody');
       tbody.innerHTML = '';
@@ -2256,13 +2338,14 @@
         listToRender = listToRender.filter(b => {
           if (!b.checkIn || !b.checkOut) return false;
           const bIn = b.checkIn.split('T')[0];
-          const bOut = b.checkOut.split('T')[0];
+          const bOutVal = (b.hasExtendedCheckout && b.extendedCheckOut) ? b.extendedCheckOut : b.checkOut;
+          const bOut = bOutVal.split('T')[0];
           return (dateFilter >= bIn && dateFilter <= bOut);
         });
       }
 
       const now = new Date().getTime();
-      const threeDaysMs = 3 * 24 * 60 * 60 * 1000; // 3 Days Window Limit
+      const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
 
       const getStatusPriority = (b) => {
         const isMasterValid = isRoomInMaster(b.roomNo);
@@ -2271,7 +2354,8 @@
         }
 
         const cIn = new Date(b.checkIn).getTime();
-        const cOut = new Date(b.checkOut).getTime();
+        const effectiveCheckout = (b.hasExtendedCheckout && b.extendedCheckOut) ? b.extendedCheckOut : b.checkOut;
+        const cOut = new Date(effectiveCheckout).getTime();
 
         if (now >= cIn && now <= cOut) {
           return 1; 
@@ -2301,10 +2385,12 @@
       listToRender.forEach((b) => {
         const isMasterValid = isRoomInMaster(b.roomNo);
         const checkInFmt = formatDateTime(b.checkIn);
-        const checkOutFmt = formatDateTime(b.checkOut);
+        
+        const effectiveOut = (b.hasExtendedCheckout && b.extendedCheckOut) ? b.extendedCheckOut : b.checkOut;
+        const checkOutFmt = formatDateTime(effectiveOut);
 
         const checkInTime = new Date(b.checkIn).getTime();
-        const checkOutTime = new Date(b.checkOut).getTime();
+        const checkOutTime = new Date(effectiveOut).getTime();
 
         const isClosed = now > checkOutTime;
         const isExpiredOver3Days = isClosed && (now > (checkOutTime + threeDaysMs));
@@ -2344,7 +2430,6 @@
         let actionButtonsHtml = "";
 
         if (isExpiredOver3Days || isInactive || !isMasterValid) {
-          // Closed > 3 Days OR Inactive / Removed: Non-editable, Print View only
           actionButtonsHtml = `
             <div class="flex items-center justify-center space-x-1">
               <button onclick="${printOnClick}" class="bg-slate-700 hover:bg-slate-800 text-white px-2.5 py-1 rounded-md text-[11px] font-bold transition shadow-sm border border-slate-900" title="View Entry in Read-Only / Print View Mode">
@@ -2353,7 +2438,6 @@
             </div>
           `;
         } else {
-          // Editable Window (Live, Upcoming, or Closed within 3 Days)
           actionButtonsHtml = `
             <div class="flex items-center justify-center space-x-1">
               <button onclick="openBookingModal('${b.id}')" class="text-indigo-600 hover:text-indigo-800 p-1 text-sm" title="Edit Booking Details">
@@ -2393,7 +2477,7 @@
           <td class="py-2 px-2 ${!isMasterValid ? 'text-rose-900' : 'text-slate-600'} text-[10px]">${b.agentInfo || '-'}</td>
           <td class="py-2 px-2 text-[10px]">
             <div class="font-semibold ${!isMasterValid ? 'text-rose-950' : 'text-slate-700'}">${checkInFmt}</div>
-            <div class="${!isMasterValid ? 'text-rose-900' : 'text-slate-500'} text-[9px]">to ${checkOutFmt}</div>
+            <div class="${!isMasterValid ? 'text-rose-900' : 'text-slate-500'} text-[9px]">to ${checkOutFmt} ${b.hasExtendedCheckout ? '<span class="text-indigo-600 font-bold">(Ext)</span>' : ''}</div>
           </td>
           <td class="py-2 px-2">
             <div class="font-bold ${!isMasterValid ? 'text-rose-950' : 'text-slate-800'}">₹${b.perDayPrice}/day (${b.noOfDays}d)</div>
@@ -2412,7 +2496,6 @@
       });
     }
 
-    // Render Room Capacity Table in Master Tab
     function renderRoomCapacityTable() {
       const tbody = document.getElementById('room-capacity-tbody');
       tbody.innerHTML = '';
@@ -2563,7 +2646,8 @@
             if (!isRoomInMaster(b.roomNo)) return false;
 
             const bIn = b.checkIn.split('T')[0];
-            const bOut = b.checkOut.split('T')[0];
+            const bOutVal = (b.hasExtendedCheckout && b.extendedCheckOut) ? b.extendedCheckOut : b.checkOut;
+            const bOut = bOutVal.split('T')[0];
 
             return (dateStr >= bIn && dateStr <= bOut);
           });
@@ -2617,7 +2701,8 @@
         };
 
         const cInMs = new Date(b.checkIn).getTime();
-        const cOutMs = new Date(b.checkOut).getTime();
+        const effectiveCheckout = (b.hasExtendedCheckout && b.extendedCheckOut) ? b.extendedCheckOut : b.checkOut;
+        const cOutMs = new Date(effectiveCheckout).getTime();
 
         let statusText = "Upcoming";
         let statusColorClass = "text-blue-400 font-bold";
@@ -2637,7 +2722,7 @@
           </div>
           <div class="text-[9px] text-slate-300">
             Check-In: ${formatDateTime(b.checkIn)}<br>
-            Check-Out: ${formatDateTime(b.checkOut)}<br>
+            Check-Out: ${formatDateTime(effectiveCheckout)}<br>
             Status: <span class="${statusColorClass}">${statusText}</span>
           </div>
           <div class="flex justify-between items-center text-[9px] pt-1 border-t border-slate-700/60">
@@ -2672,3 +2757,4 @@
   </script>
 </body>
 </html>
+
