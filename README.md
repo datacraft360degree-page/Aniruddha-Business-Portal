@@ -552,7 +552,7 @@
         <input type="hidden" id="modal-booking-id">
 
         <!-- GUEST DETAILS -->
-        <div class="bg-slate-50 p-2.5 rounded-md border border-slate-200 space-y-2">
+        <div id="sec-guest-info" class="bg-slate-50 p-2.5 rounded-md border border-slate-200 space-y-2 transition-all">
           <h4 class="text-[9px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
             <i class="fa-solid fa-user-tag text-indigo-500"></i> Guest Information
           </h4>
@@ -605,7 +605,7 @@
         </div>
 
         <!-- Room & Stay Schedule Box -->
-        <div class="bg-slate-50 p-2.5 rounded-md border border-slate-200 space-y-2">
+        <div id="sec-room-dates" class="bg-slate-50 p-2.5 rounded-md border border-slate-200 space-y-2 transition-all">
           <h4 class="text-[9px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
             <i class="fa-solid fa-bed text-indigo-500"></i> Room Selection & Stay Dates
           </h4>
@@ -646,7 +646,7 @@
         </div>
 
         <!-- EXTRA FOOD SECTION WITH DATE & TIME -->
-        <div class="bg-amber-50/70 p-2.5 rounded-md border border-amber-200 space-y-2">
+        <div id="sec-extra-food" class="bg-amber-50/70 p-2.5 rounded-md border border-amber-200 space-y-2 transition-all">
           <div class="flex justify-between items-center">
             <h4 class="text-[9px] font-bold uppercase tracking-wider text-amber-800 flex items-center gap-1">
               <i class="fa-solid fa-utensils text-amber-600"></i> Extra Food / Drink Orders List
@@ -660,7 +660,7 @@
         </div>
 
         <!-- Billing Calculation Box -->
-        <div class="bg-indigo-50/50 p-2.5 rounded-md border border-indigo-100 space-y-2">
+        <div id="sec-billing-summary" class="bg-indigo-50/50 p-2.5 rounded-md border border-indigo-100 space-y-2 transition-all">
           <h4 class="text-[9px] font-bold uppercase tracking-wider text-indigo-700 flex items-center gap-1">
             <i class="fa-solid fa-calculator text-indigo-600"></i> Billing Summary
           </h4>
@@ -1774,33 +1774,36 @@
       document.getElementById('invoice-modal').classList.add('hidden');
     }
 
-    function addFoodOrderItem(desc = '', plates = 1, itemPrice = 0, charge = 0, dateStr = '', timeStr = '') {
+    function addFoodOrderItem(desc = '', plates = 1, itemPrice = 0, charge = 0, dateStr = '', timeStr = '', disabled = false) {
       const container = document.getElementById('food-orders-container');
       const itemRow = document.createElement('div');
       itemRow.className = "food-order-row grid grid-cols-1 sm:grid-cols-12 gap-1.5 items-end bg-white p-2 rounded border border-amber-200/80 shadow-xs";
       
+      const disabledAttr = disabled ? 'disabled' : '';
+      const bgClass = disabled ? 'bg-slate-100 cursor-not-allowed text-slate-500' : 'bg-white';
+
       itemRow.innerHTML = `
         <div class="sm:col-span-3">
           <label class="block font-semibold text-slate-600 mb-0.5">Item Name</label>
-          <input type="text" value="${desc}" placeholder="e.g. Thali / Tea" class="cust-food-desc w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500">
+          <input type="text" value="${desc}" ${disabledAttr} placeholder="e.g. Thali / Tea" class="cust-food-desc w-full ${bgClass} border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500">
         </div>
 
         <div class="sm:col-span-4">
           <label class="block font-semibold text-slate-600 mb-0.5"><i class="fa-regular fa-clock text-amber-600 mr-1"></i> Date & Time</label>
           <div class="flex gap-1">
-            <input type="date" value="${dateStr}" class="cust-food-date w-3/5 bg-white border border-slate-300 rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium text-[10px]">
-            <input type="time" value="${timeStr}" class="cust-food-time w-2/5 bg-white border border-slate-300 rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium text-[10px]">
+            <input type="date" value="${dateStr}" ${disabledAttr} class="cust-food-date w-3/5 ${bgClass} border border-slate-300 rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium text-[10px]">
+            <input type="time" value="${timeStr}" ${disabledAttr} class="cust-food-time w-2/5 ${bgClass} border border-slate-300 rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium text-[10px]">
           </div>
         </div>
 
         <div class="sm:col-span-2">
           <label class="block font-semibold text-slate-600 mb-0.5">Price/Plate (₹)</label>
-          <input type="number" value="${itemPrice}" min="0" oninput="calculateFoodRowTotal(this)" class="cust-food-price w-full bg-white border border-slate-300 rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500">
+          <input type="number" value="${itemPrice}" min="0" ${disabledAttr} oninput="calculateFoodRowTotal(this)" class="cust-food-price w-full ${bgClass} border border-slate-300 rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500">
         </div>
         
         <div class="sm:col-span-1">
           <label class="block font-semibold text-slate-600 mb-0.5">Plates</label>
-          <input type="number" value="${plates}" min="1" oninput="calculateFoodRowTotal(this)" class="cust-food-plates w-full bg-white border border-slate-300 rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500 font-bold">
+          <input type="number" value="${plates}" min="1" ${disabledAttr} oninput="calculateFoodRowTotal(this)" class="cust-food-plates w-full ${bgClass} border border-slate-300 rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500 font-bold">
         </div>
 
         <div class="sm:col-span-1">
@@ -1809,7 +1812,7 @@
         </div>
 
         <div class="sm:col-span-1 flex justify-end">
-          <button type="button" onclick="removeFoodOrderItem(this)" class="btn-remove-food-item text-rose-500 hover:text-rose-700 p-1.5" title="Remove Order">
+          <button type="button" onclick="removeFoodOrderItem(this)" ${disabledAttr} class="btn-remove-food-item text-rose-500 hover:text-rose-700 p-1.5 ${disabled ? 'hidden' : ''}" title="Remove Order">
             <i class="fa-solid fa-trash-can"></i>
           </button>
         </div>
@@ -1839,8 +1842,10 @@
       }
     }
 
-    /* POINT 1: OPEN MODAL VERIFICATION WITH 3 DAYS LIMIT */
+    /* UPDATED: CLOSED BOOKING MODAL LOGIC WITH 3 DAYS LIMIT & EDITABLE BILLING SUMMARY */
     function openBookingModal(bookingId = null) {
+      let isClosedAndWithin3Days = false;
+
       if (bookingId) {
         const b = state.bookings.find(item => item.id === bookingId);
         
@@ -1854,15 +1859,22 @@
             return;
           }
 
-          // Booking is editable till 3 days from check out date, after that non-editable
-          if (now > (checkOutTime + threeDaysMs)) {
-            alert("This booking closed more than 3 days ago. It is non-editable and can only be viewed or printed.");
-            return;
-          }
-
           if (!isRoomInMaster(b.roomNo)) {
             alert("This booking details were deleted from Master Data and cannot be opened or edited.");
             return;
+          }
+
+          // If booking is closed
+          if (now > checkOutTime) {
+            // After 3 days from check out date: Non-editable, Print View only
+            if (now > (checkOutTime + threeDaysMs)) {
+              alert("This booking closed more than 3 days ago. It is non-editable and can only be viewed or printed.");
+              printInvoice(bookingId);
+              return;
+            } else {
+              // Within 3 days from check out date: Guest Info, Room Selection & Food disabled, Billing Summary editable
+              isClosedAndWithin3Days = true;
+            }
           }
         }
       }
@@ -1879,10 +1891,28 @@
 
       populateAgentDropdown();
 
+      // Apply/Reset Form Field Editability Restrictions based on closed status
+      setSectionEditability('sec-guest-info', !isClosedAndWithin3Days);
+      setSectionEditability('sec-room-dates', !isClosedAndWithin3Days);
+      
+      // Control Extra Food Section
+      const addFoodBtn = document.getElementById('btn-add-food-order');
+      if (addFoodBtn) {
+        addFoodBtn.disabled = isClosedAndWithin3Days;
+        if (isClosedAndWithin3Days) {
+          addFoodBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        } else {
+          addFoodBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+      }
+
       if (bookingId) {
         const b = state.bookings.find(item => item.id === bookingId);
         if (b) {
-          document.getElementById('modal-title').innerText = 'Edit Booking Details';
+          document.getElementById('modal-title').innerText = isClosedAndWithin3Days 
+            ? 'Closed Booking - Billing Summary Only' 
+            : 'Edit Booking Details';
+          
           document.getElementById('modal-booking-id').value = b.id;
           document.getElementById('cust-name').value = formatTitleCase(b.name);
           document.getElementById('cust-address').value = formatTitleCase(b.address || '');
@@ -1923,7 +1953,7 @@
                 fDate = parts[0] || '';
                 fTime = parts[1] || '';
               }
-              addFoodOrderItem(fo.foodDesc || '', fo.plates || 1, fo.itemPrice || 0, fo.foodCharge || 0, fDate, fTime);
+              addFoodOrderItem(fo.foodDesc || '', fo.plates || 1, fo.itemPrice || 0, fo.foodCharge || 0, fDate, fTime, isClosedAndWithin3Days);
             });
           }
 
@@ -1958,6 +1988,28 @@
       }
 
       document.getElementById('booking-modal').classList.remove('hidden');
+    }
+
+    // Helper to toggle section editability and visual styles
+    function setSectionEditability(sectionId, isEditable) {
+      const container = document.getElementById(sectionId);
+      if (!container) return;
+
+      const inputs = container.querySelectorAll('input, select, button');
+      inputs.forEach(el => {
+        el.disabled = !isEditable;
+        if (!isEditable) {
+          el.classList.add('bg-slate-100', 'cursor-not-allowed', 'text-slate-500');
+        } else {
+          el.classList.remove('bg-slate-100', 'cursor-not-allowed', 'text-slate-500');
+        }
+      });
+
+      if (!isEditable) {
+        container.classList.add('opacity-75', 'bg-slate-100/60');
+      } else {
+        container.classList.remove('opacity-75', 'bg-slate-100/60');
+      }
     }
 
     function closeBookingModal() {
