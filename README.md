@@ -10,20 +10,25 @@
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* Compact Scrollbar */
+    /* Samsung One UI Smooth Styling & Compact Scrollbar */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: #F2F4F7;
+    }
+    
     ::-webkit-scrollbar {
       width: 5px;
       height: 5px;
     }
     ::-webkit-scrollbar-track {
-      background: #f1f5f9;
+      background: #F2F4F7;
     }
     ::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 3px;
+      background: #CBD5E1;
+      border-radius: 10px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: #94a3b8;
+      background: #94A3B8;
     }
 
     /* Print-specific Styles */
@@ -47,7 +52,7 @@
       }
     }
 
-    /* Excel Comment Box Arrow */
+    /* One UI Comment Box Arrow */
     .excel-comment-box::before {
       content: '';
       position: absolute;
@@ -55,20 +60,20 @@
       left: 16px;
       border-width: 0 8px 8px 8px;
       border-style: solid;
-      border-color: transparent transparent #0f172a transparent;
+      border-color: transparent transparent #1E293B transparent;
     }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col relative antialiased text-xs" onclick="closeCommentBox()">
+<body class="text-slate-800 font-sans min-h-screen flex flex-col relative antialiased text-xs" onclick="closeCommentBox()">
 
   <!-- LOGIN MODAL OVERLAY -->
-  <div id="login-overlay" class="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-sm w-full p-6 space-y-4 text-left">
+  <div id="login-overlay" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-sm w-full p-6 space-y-4 text-left">
       <div class="text-center space-y-1">
-        <div class="bg-indigo-100 text-indigo-700 w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl shadow-inner">
+        <div class="bg-blue-50 text-blue-600 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto text-xl shadow-sm">
           <i class="fa-solid fa-lock"></i>
         </div>
-        <h2 class="text-base font-bold text-slate-800">Homestay Business Portal</h2>
+        <h2 class="text-base font-bold text-slate-900 mt-2">Homestay Business Portal</h2>
         <p class="text-[11px] text-slate-500">Please enter your credentials to access the system</p>
       </div>
 
@@ -76,28 +81,28 @@
         <div>
           <label class="block text-[11px] font-semibold text-slate-700 mb-1">User ID</label>
           <div class="relative">
-            <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center text-slate-400 text-xs">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 text-xs">
               <i class="fa-solid fa-user"></i>
             </span>
-            <input type="text" id="login-userid" required placeholder="Enter User ID" class="w-full bg-slate-50 border border-slate-300 rounded-md pl-8 pr-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs">
+            <input type="text" id="login-userid" required placeholder="Enter User ID" class="w-full bg-slate-100 border border-transparent focus:border-blue-500 rounded-2xl pl-9 pr-3 py-2 focus:outline-none focus:bg-white text-xs transition">
           </div>
         </div>
 
         <div>
           <label class="block text-[11px] font-semibold text-slate-700 mb-1">Password</label>
           <div class="relative">
-            <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center text-slate-400 text-xs">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 text-xs">
               <i class="fa-solid fa-key"></i>
             </span>
-            <input type="password" id="login-password" required placeholder="Enter Password" class="w-full bg-slate-50 border border-slate-300 rounded-md pl-8 pr-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs">
+            <input type="password" id="login-password" required placeholder="Enter Password" class="w-full bg-slate-100 border border-transparent focus:border-blue-500 rounded-2xl pl-9 pr-3 py-2 focus:outline-none focus:bg-white text-xs transition">
           </div>
         </div>
 
-        <div id="login-error" class="hidden bg-rose-50 border border-rose-200 text-rose-600 text-[10px] p-2 rounded text-center font-medium">
+        <div id="login-error" class="hidden bg-rose-50 border border-rose-100 text-rose-600 text-[10px] p-2 rounded-xl text-center font-medium">
           Invalid User ID or Password!
         </div>
 
-        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-md shadow transition text-xs flex items-center justify-center gap-1.5">
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-bold py-2.5 rounded-2xl shadow-sm transition text-xs flex items-center justify-center gap-1.5">
           <i class="fa-solid fa-right-to-bracket"></i> Login
         </button>
       </form>
@@ -105,13 +110,13 @@
   </div>
 
   <!-- MASTER DATA ACCESS PASSWORD MODAL -->
-  <div id="master-auth-modal" class="hidden fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 no-print">
-    <div class="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-xs w-full p-5 space-y-3 text-left">
+  <div id="master-auth-modal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4 no-print">
+    <div class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-xs w-full p-5 space-y-3 text-left">
       <div class="text-center space-y-1">
-        <div class="bg-rose-100 text-rose-600 w-10 h-10 rounded-full flex items-center justify-center mx-auto text-lg shadow-inner">
+        <div class="bg-rose-50 text-rose-600 w-10 h-10 rounded-2xl flex items-center justify-center mx-auto text-lg shadow-sm">
           <i class="fa-solid fa-shield-halved"></i>
         </div>
-        <h3 class="text-xs font-bold text-slate-800">Master Data Protected</h3>
+        <h3 class="text-xs font-bold text-slate-900 mt-1">Master Data Protected</h3>
         <p class="text-[10px] text-slate-500">Enter master password to access configuration and deletion tools.</p>
       </div>
 
@@ -119,22 +124,22 @@
         <div>
           <label class="block text-[10px] font-semibold text-slate-700 mb-1">Master Password</label>
           <div class="relative">
-            <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center text-slate-400 text-xs">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 text-xs">
               <i class="fa-solid fa-key"></i>
             </span>
-            <input type="password" id="master-password-input" required placeholder="Enter Master Password" class="w-full bg-slate-50 border border-slate-300 rounded-md pl-8 pr-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-rose-500 text-xs">
+            <input type="password" id="master-password-input" required placeholder="Enter Master Password" class="w-full bg-slate-100 border border-transparent focus:border-rose-500 rounded-2xl pl-9 pr-3 py-2 focus:outline-none focus:bg-white text-xs transition">
           </div>
         </div>
 
-        <div id="master-auth-error" class="hidden bg-rose-50 border border-rose-200 text-rose-600 text-[10px] p-1.5 rounded text-center font-medium">
+        <div id="master-auth-error" class="hidden bg-rose-50 border border-rose-100 text-rose-600 text-[10px] p-1.5 rounded-xl text-center font-medium">
           Incorrect Master Password!
         </div>
 
         <div class="flex space-x-2 pt-1">
-          <button type="button" onclick="closeMasterAuthModal()" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-1.5 rounded text-[11px] transition">
+          <button type="button" onclick="closeMasterAuthModal()" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2 rounded-xl text-[11px] transition">
             Cancel
           </button>
-          <button type="submit" class="w-1/2 bg-rose-600 hover:bg-rose-700 text-white font-bold py-1.5 rounded shadow transition text-[11px] flex items-center justify-center gap-1">
+          <button type="submit" class="w-1/2 bg-rose-600 hover:bg-rose-700 text-white font-bold py-2 rounded-xl shadow-sm transition text-[11px] flex items-center justify-center gap-1">
             <i class="fa-solid fa-unlock text-[10px]"></i> Unlock
           </button>
         </div>
@@ -143,20 +148,20 @@
   </div>
 
   <!-- MASTER DATA PERMANENT DELETION RECONFIRMATION POPUP MODAL -->
-  <div id="master-delete-confirm-modal" class="hidden fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 no-print">
-    <div class="bg-white rounded-xl shadow-2xl border border-rose-200 max-w-sm w-full p-5 space-y-3 text-center">
-      <div class="bg-rose-100 text-rose-600 w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl shadow-inner">
+  <div id="master-delete-confirm-modal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4 no-print">
+    <div class="bg-white rounded-3xl shadow-2xl border border-rose-100 max-w-sm w-full p-5 space-y-3 text-center">
+      <div class="bg-rose-50 text-rose-600 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto text-xl shadow-sm">
         <i class="fa-solid fa-triangle-exclamation"></i>
       </div>
       <div>
-        <h3 class="text-xs font-bold text-slate-800">Confirm Permanent Deletion</h3>
+        <h3 class="text-xs font-bold text-slate-900">Confirm Permanent Deletion</h3>
         <p id="master-delete-modal-msg" class="text-[11px] text-slate-600 mt-1">Are you sure you want to permanently delete this data from Master Tab? This action cannot be undone.</p>
       </div>
       <div class="flex space-x-2 pt-2">
-        <button type="button" onclick="closeMasterDeleteModal()" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-1.5 rounded text-[11px] transition">
+        <button type="button" onclick="closeMasterDeleteModal()" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2 rounded-xl text-[11px] transition">
           Cancel
         </button>
-        <button type="button" onclick="confirmMasterDeletion()" class="w-1/2 bg-rose-600 hover:bg-rose-700 text-white font-bold py-1.5 rounded shadow transition text-[11px] flex items-center justify-center gap-1">
+        <button type="button" onclick="confirmMasterDeletion()" class="w-1/2 bg-rose-600 hover:bg-rose-700 text-white font-bold py-2 rounded-xl shadow-sm transition text-[11px] flex items-center justify-center gap-1">
           <i class="fa-solid fa-trash-can text-[10px]"></i> Delete Permanently
         </button>
       </div>
@@ -164,26 +169,26 @@
   </div>
 
   <!-- SESSION AUTO LOGOUT WARNING MODAL -->
-  <div id="logout-warning-modal" class="hidden fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-lg shadow-xl border border-slate-200 max-w-xs w-full p-4 space-y-3 text-center">
-      <div class="bg-amber-100 text-amber-600 w-10 h-10 rounded-full flex items-center justify-center mx-auto text-lg">
+  <div id="logout-warning-modal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-xl border border-slate-100 max-w-xs w-full p-5 space-y-3 text-center">
+      <div class="bg-amber-50 text-amber-600 w-10 h-10 rounded-2xl flex items-center justify-center mx-auto text-lg">
         <i class="fa-solid fa-hourglass-half"></i>
       </div>
       <div>
-        <h3 class="text-xs font-bold text-slate-800">Inactivity Timeout Warning</h3>
+        <h3 class="text-xs font-bold text-slate-900">Inactivity Timeout Warning</h3>
         <p class="text-[10px] text-slate-500 mt-1">You will be logged out automatically in <strong id="logout-countdown-seconds" class="text-rose-600">60</strong> seconds due to inactivity.</p>
       </div>
-      <button onclick="resetInactivityTimer()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-1.5 rounded text-[11px] transition shadow">
+      <button onclick="resetInactivityTimer()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-xl text-[11px] transition shadow-sm">
         Stay Logged In
       </button>
     </div>
   </div>
 
   <!-- Excel Comment Box Popout -->
-  <div id="excel-comment-box" onclick="event.stopPropagation()" class="excel-comment-box hidden absolute z-50 bg-slate-900 text-white text-[11px] rounded-lg p-2.5 shadow-2xl border border-amber-400 space-y-2 w-64 transition-all duration-150">
-    <div class="font-bold text-amber-300 border-b border-slate-700 pb-1 flex justify-between items-center text-[10px]">
-      <span class="flex items-center gap-1">
-        <i class="fa-solid fa-comment-dots text-amber-400"></i>
+  <div id="excel-comment-box" onclick="event.stopPropagation()" class="excel-comment-box hidden absolute z-50 bg-slate-900 text-white text-[11px] rounded-2xl p-3 shadow-2xl border border-slate-800 space-y-2 w-64 transition-all duration-150">
+    <div class="font-bold text-blue-400 border-b border-slate-800 pb-1.5 flex justify-between items-center text-[10px]">
+      <span class="flex items-center gap-1.5">
+        <i class="fa-solid fa-comment-dots text-blue-400"></i>
         <span id="comm-date-header">Date Overview</span>
       </span>
       <button onclick="closeCommentBox()" class="text-slate-400 hover:text-white px-1 py-0.5 rounded text-[10px]">
@@ -193,42 +198,42 @@
     <div id="comm-booking-list" class="space-y-1.5 max-h-56 overflow-y-auto pr-0.5"></div>
   </div>
 
-  <!-- Compact Header Navigation -->
-  <header class="bg-indigo-700 text-white shadow sticky top-0 z-40 no-print">
-    <div class="max-w-7xl mx-auto px-3 py-2 flex flex-col md:flex-row justify-between items-center gap-2">
-      <div class="flex items-center space-x-2">
-        <div class="bg-indigo-600 p-1.5 rounded-md border border-indigo-500 shadow-inner">
-          <i class="fa-solid fa-hotel text-base text-indigo-100"></i>
+  <!-- Compact One UI Header Navigation -->
+  <header class="bg-white/80 backdrop-blur-md border-b border-slate-200/60 text-slate-900 sticky top-0 z-40 no-print">
+    <div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-col md:flex-row justify-between items-center gap-2.5">
+      <div class="flex items-center space-x-2.5">
+        <div class="bg-blue-600 p-2 rounded-2xl text-white shadow-sm">
+          <i class="fa-solid fa-hotel text-sm"></i>
         </div>
         <div>
-          <h1 class="text-sm font-bold tracking-wide leading-none">Homestay Business Portal 🏠</h1>
-          <p class="text-[10px] text-indigo-200">Management & Booking Control System</p>
+          <h1 class="text-sm font-bold tracking-tight leading-none text-slate-900">Homestay Business Portal 🏠</h1>
+          <p class="text-[10px] text-slate-500 mt-0.5">Management & Booking Control System</p>
         </div>
       </div>
       
-      <!-- Compact Tab Navigation -->
-      <nav class="flex space-x-1 bg-indigo-800/80 p-0.5 rounded-md text-[11px] font-medium border border-indigo-600/50">
-        <button onclick="switchTab('dashboard')" id="btn-dashboard" class="tab-btn px-2.5 py-1 rounded transition-all active-tab">Dashboard</button>
-        <button onclick="switchTab('booking')" id="btn-booking" class="tab-btn px-2.5 py-1 rounded transition-all text-indigo-100 hover:bg-indigo-600/50">Booking Details</button>
-        <button onclick="switchTab('master')" id="btn-master" class="tab-btn px-2.5 py-1 rounded transition-all text-indigo-100 hover:bg-indigo-600/50 flex items-center gap-1">
-          <i class="fa-solid fa-lock text-[9px] text-amber-300"></i> Master Data
+      <!-- One UI Pill Navigation -->
+      <nav class="flex space-x-1 bg-slate-100 p-1 rounded-full text-[11px] font-medium">
+        <button onclick="switchTab('dashboard')" id="btn-dashboard" class="tab-btn px-3 py-1 rounded-full transition-all active-tab bg-white text-blue-600 shadow-sm font-bold">Dashboard</button>
+        <button onclick="switchTab('booking')" id="btn-booking" class="tab-btn px-3 py-1 rounded-full transition-all text-slate-600 hover:text-slate-900">Booking Details</button>
+        <button onclick="switchTab('master')" id="btn-master" class="tab-btn px-3 py-1 rounded-full transition-all text-slate-600 hover:text-slate-900 flex items-center gap-1">
+          <i class="fa-solid fa-lock text-[9px] text-amber-500"></i> Master Data
         </button>
-        <button onclick="switchTab('calendar')" id="btn-calendar" class="tab-btn px-2.5 py-1 rounded transition-all text-indigo-100 hover:bg-indigo-600/50">Calendar</button>
+        <button onclick="switchTab('calendar')" id="btn-calendar" class="tab-btn px-3 py-1 rounded-full transition-all text-slate-600 hover:text-slate-900">Calendar</button>
       </nav>
 
       <!-- Action Buttons -->
       <div class="flex items-center space-x-1.5">
-        <button onclick="openAlertModal()" title="View Alerts" class="relative bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1 rounded text-[11px] font-semibold flex items-center gap-1 transition">
+        <button onclick="openAlertModal()" title="View Alerts" class="relative bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 px-3 py-1.5 rounded-full text-[11px] font-semibold flex items-center gap-1 transition">
           <i class="fa-solid fa-bell text-[10px]"></i> Alerts
-          <span id="alert-badge" class="hidden absolute -top-1.5 -right-1.5 bg-rose-600 text-white text-[9px] font-black px-1.5 py-0.2 rounded-full border border-white animate-bounce">0</span>
+          <span id="alert-badge" class="hidden absolute -top-1 -right-1 bg-rose-600 text-white text-[9px] font-black px-1.5 py-0.2 rounded-full border border-white animate-bounce">0</span>
         </button>
-        <button onclick="saveChanges()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-2.5 py-1 rounded text-[11px] font-semibold flex items-center gap-1 transition">
-          <i class="fa-solid fa-floppy-disk text-[10px]"></i> Save changes
+        <button onclick="saveChanges()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-full text-[11px] font-semibold flex items-center gap-1 transition">
+          <i class="fa-solid fa-floppy-disk text-[10px]"></i> Save
         </button>
-        <button onclick="exportToExcel()" class="bg-indigo-600 hover:bg-indigo-800 text-white px-2.5 py-1 rounded text-[11px] font-semibold flex items-center gap-1 transition">
+        <button onclick="exportToExcel()" class="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-full text-[11px] font-semibold flex items-center gap-1 transition">
           <i class="fa-solid fa-file-excel text-[10px]"></i> Export
         </button>
-        <button onclick="logoutUser()" title="Logout" class="bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1 rounded text-[11px] font-semibold flex items-center gap-1 transition">
+        <button onclick="logoutUser()" title="Logout" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-3 py-1.5 rounded-full text-[11px] font-semibold flex items-center gap-1 transition">
           <i class="fa-solid fa-right-from-bracket text-[10px]"></i> Logout
         </button>
       </div>
@@ -236,107 +241,107 @@
   </header>
 
   <!-- Notification Toast -->
-  <div id="toast" class="hidden fixed bottom-4 right-4 bg-slate-900 text-white px-3 py-2 rounded-md shadow-lg z-50 flex items-center gap-2 no-print border border-slate-700 text-[11px]">
-    <i class="fa-solid fa-circle-check text-emerald-400 text-sm"></i>
+  <div id="toast" class="hidden fixed bottom-6 right-6 bg-slate-900/90 backdrop-blur-md text-white px-4 py-2.5 rounded-2xl shadow-xl z-50 flex items-center gap-2.5 no-print border border-slate-800 text-[11px]">
+    <i class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
     <span id="toast-message" class="font-medium">Changes Auto save successfully!</span>
   </div>
 
   <!-- Main Content Area -->
-  <main class="max-w-7xl mx-auto px-3 py-3 flex-1 w-full no-print space-y-3">
+  <main class="max-w-7xl mx-auto px-4 py-4 flex-1 w-full no-print space-y-4">
 
     <!-- DASHBOARD TAB -->
-    <section id="tab-dashboard" class="tab-content space-y-3">
-      <div class="bg-gradient-to-r from-indigo-700 via-indigo-600 to-blue-600 rounded-lg p-3 text-white shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+    <section id="tab-dashboard" class="tab-content space-y-4">
+      <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-5 text-white shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
           <h2 class="text-base font-bold tracking-tight">Hi Aniruddha, Welcome to dashboard 🏠</h2>
-          <p class="text-indigo-100 text-[10px] mt-0.5">Quickly view, schedule, and manage room allocations and orders.</p>
+          <p class="text-blue-100 text-[10px] mt-0.5">Quickly view, schedule, and manage room allocations and orders.</p>
         </div>
-        <div class="flex items-center bg-indigo-900/60 p-1.5 rounded-lg border border-indigo-400/40 space-x-2">
-          <label for="dash-year-select" class="text-[10px] font-bold text-indigo-100 uppercase flex items-center gap-1">
+        <div class="flex items-center bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-2xl border border-white/20 space-x-2">
+          <label for="dash-year-select" class="text-[10px] font-bold text-blue-50 uppercase flex items-center gap-1">
             <i class="fa-solid fa-filter text-amber-300"></i> Filter Year:
           </label>
-          <select id="dash-year-select" onchange="handleDashboardYearChange(this.value)" class="bg-white text-indigo-900 text-[11px] font-bold rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer shadow">
+          <select id="dash-year-select" onchange="handleDashboardYearChange(this.value)" class="bg-white text-blue-900 text-[11px] font-bold rounded-xl px-2.5 py-1 focus:outline-none cursor-pointer shadow-sm">
           </select>
         </div>
       </div>
 
       <!-- Summary Filter Banner Indicator -->
-      <div class="flex items-center justify-between bg-white px-3 py-1.5 rounded-md border border-slate-200 shadow-xs">
-        <span class="text-[11px] font-semibold text-slate-600 flex items-center gap-1.5">
-          <i class="fa-solid fa-chart-line text-indigo-600"></i>
-          Showing Summary For: <strong id="dash-filter-label" class="text-indigo-700 font-bold">Consolidated (All Years)</strong>
+      <div class="flex items-center justify-between bg-white px-4 py-2 rounded-2xl border border-slate-200/60 shadow-sm">
+        <span class="text-[11px] font-semibold text-slate-600 flex items-center gap-2">
+          <i class="fa-solid fa-chart-line text-blue-600"></i>
+          Showing Summary For: <strong id="dash-filter-label" class="text-blue-600 font-bold">Consolidated (All Years)</strong>
         </span>
-        <button onclick="handleDashboardYearChange('CURRENT')" class="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2 py-0.5 rounded transition border border-slate-300">
+        <button onclick="handleDashboardYearChange('CURRENT')" class="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3 py-1 rounded-full transition border border-slate-200">
           Reset to Current Year
         </button>
       </div>
 
-      <!-- Compact Summary Cards -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
-        <div class="bg-white p-2.5 rounded-lg shadow-sm border border-slate-200 flex items-center justify-between">
+      <!-- One UI Rounded Cards -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-200/60 flex items-center justify-between">
           <div>
             <p class="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Total Bookings</p>
-            <p id="dash-total-bookings" class="text-lg font-black text-slate-800">0</p>
+            <p id="dash-total-bookings" class="text-xl font-black text-slate-900 mt-0.5">0</p>
           </div>
-          <div class="p-2 bg-blue-50 text-blue-600 rounded-md"><i class="fa-solid fa-bookmark text-sm"></i></div>
+          <div class="p-3 bg-blue-50 text-blue-600 rounded-2xl"><i class="fa-solid fa-bookmark text-base"></i></div>
         </div>
-        <div class="bg-white p-2.5 rounded-lg shadow-sm border border-slate-200 flex items-center justify-between">
+        <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-200/60 flex items-center justify-between">
           <div>
             <p class="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Booking Amount</p>
-            <p id="dash-total-amount" class="text-lg font-black text-slate-800">₹0</p>
+            <p id="dash-total-amount" class="text-xl font-black text-slate-900 mt-0.5">₹0</p>
           </div>
-          <div class="p-2 bg-indigo-50 text-indigo-600 rounded-md"><i class="fa-solid fa-receipt text-sm"></i></div>
+          <div class="p-3 bg-indigo-50 text-indigo-600 rounded-2xl"><i class="fa-solid fa-receipt text-base"></i></div>
         </div>
-        <div class="bg-white p-2.5 rounded-lg shadow-sm border border-slate-200 flex items-center justify-between">
+        <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-200/60 flex items-center justify-between">
           <div>
             <p class="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Advance Received</p>
-            <p id="dash-advanced" class="text-lg font-black text-emerald-600">₹0</p>
+            <p id="dash-advanced" class="text-xl font-black text-emerald-600 mt-0.5">₹0</p>
           </div>
-          <div class="p-2 bg-emerald-50 text-emerald-600 rounded-md"><i class="fa-solid fa-wallet text-sm"></i></div>
+          <div class="p-3 bg-emerald-50 text-emerald-600 rounded-2xl"><i class="fa-solid fa-wallet text-base"></i></div>
         </div>
-        <div class="bg-white p-2.5 rounded-lg shadow-sm border border-slate-200 flex items-center justify-between">
+        <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-200/60 flex items-center justify-between">
           <div>
             <p class="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Total Due Amount</p>
-            <p id="dash-due" class="text-lg font-black text-rose-600">₹0</p>
+            <p id="dash-due" class="text-xl font-black text-rose-600 mt-0.5">₹0</p>
           </div>
-          <div class="p-2 bg-rose-50 text-rose-600 rounded-md"><i class="fa-solid fa-hand-holding-dollar text-sm"></i></div>
+          <div class="p-3 bg-rose-50 text-rose-600 rounded-2xl"><i class="fa-solid fa-hand-holding-dollar text-base"></i></div>
         </div>
       </div>
 
       <!-- Active years Directory Table Hidden -->
-      <div class="hidden bg-white rounded-lg shadow-sm border border-slate-200 p-3">
-        <div class="mb-2 flex justify-between items-center">
-          <h3 class="text-xs font-bold text-slate-800 flex items-center gap-1">
-            <i class="fa-solid fa-calendar-days text-indigo-600"></i> Active Years Directory (2026 – 2085)
+      <div class="hidden bg-white rounded-3xl shadow-sm border border-slate-200/60 p-4">
+        <div class="mb-3 flex justify-between items-center">
+          <h3 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+            <i class="fa-solid fa-calendar-days text-blue-600"></i> Active Years Directory (2026 – 2085)
           </h3>
           <span class="text-[10px] text-slate-400 font-medium">Click any year to filter dashboard & open year calendar</span>
         </div>
-        <div id="years-grid" class="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-12 gap-1.5"></div>
+        <div id="years-grid" class="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-12 gap-2"></div>
       </div>
     </section>
 
     <!-- BOOKING DETAILS TAB -->
-    <section id="tab-booking" class="tab-content hidden space-y-3">
-      <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-3">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-3 pb-2 border-b border-slate-100">
+    <section id="tab-booking" class="tab-content hidden space-y-4">
+      <div class="bg-white rounded-3xl shadow-sm border border-slate-200/60 p-4">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4 pb-3 border-b border-slate-100">
           <div>
-            <h2 class="text-xs font-bold text-slate-800 flex items-center gap-1">
-              <i class="fa-solid fa-address-card text-indigo-600"></i> Guest Information & Reservation Directory
+            <h2 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+              <i class="fa-solid fa-address-card text-blue-600"></i> Guest Information & Reservation Directory
             </h2>
-            <div class="flex items-center gap-3 mt-1.5 text-[10px]">
-              <span class="flex items-center gap-1 font-semibold text-amber-800">
+            <div class="flex items-center gap-3 mt-2 text-[10px]">
+              <span class="flex items-center gap-1.5 font-semibold text-amber-800">
                 <span class="relative flex h-2.5 w-2.5">
                   <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
                   <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
                 </span> Live Booking
               </span>
-              <span class="flex items-center gap-1 font-semibold text-blue-800">
+              <span class="flex items-center gap-1.5 font-semibold text-blue-800">
                 <span class="w-2.5 h-2.5 bg-blue-500 rounded-full inline-block"></span> Upcoming Booking
               </span>
-              <span class="flex items-center gap-1 font-semibold text-emerald-800">
+              <span class="flex items-center gap-1.5 font-semibold text-emerald-800">
                 <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full inline-block"></span> Closed Booking
               </span>
-              <span class="flex items-center gap-1 font-semibold text-slate-700">
+              <span class="flex items-center gap-1.5 font-semibold text-slate-700">
                 <span class="w-2 h-2 bg-rose-600 rounded-full inline-block"></span> Inactive Booking
               </span>
             </div>
@@ -344,17 +349,17 @@
           
           <div class="flex items-center space-x-2 w-full md:w-auto">
             <!-- Search by Date -->
-            <div class="flex items-center bg-slate-50 border border-slate-300 rounded p-1 space-x-1.5">
+            <div class="flex items-center bg-slate-100 border border-slate-200 rounded-2xl px-2 py-1 space-x-1.5">
               <label for="booking-date-search" class="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-1 pl-1">
-                <i class="fa-solid fa-calendar-day text-indigo-600"></i> Search Date:
+                <i class="fa-solid fa-calendar-day text-blue-600"></i> Search Date:
               </label>
-              <input type="date" id="booking-date-search" onchange="searchBookingByDate()" class="bg-white text-[11px] border border-slate-300 rounded px-2 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-bold text-indigo-700 cursor-pointer">
+              <input type="date" id="booking-date-search" onchange="searchBookingByDate()" class="bg-white text-[11px] border border-slate-200 rounded-xl px-2 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-blue-600 cursor-pointer">
               <button onclick="clearDateSearchBooking()" class="text-slate-400 hover:text-slate-600 px-1 text-[10px]" title="Reset Filter">
                 <i class="fa-solid fa-rotate-left"></i> Reset
               </button>
             </div>
 
-            <button onclick="openBookingModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 rounded text-[11px] font-semibold flex items-center gap-1 transition whitespace-nowrap">
+            <button onclick="openBookingModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-1.5 rounded-full text-[11px] font-semibold flex items-center gap-1.5 transition shadow-sm whitespace-nowrap">
               <i class="fa-solid fa-plus text-[10px]"></i> Add Booking
             </button>
           </div>
@@ -364,20 +369,20 @@
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                <th class="py-2 px-2">Booking ID</th>
-                <th class="py-2 px-2">Guest Name</th>
-                <th class="py-2 px-2">Contact No</th>
-                <th class="py-2 px-2">ID No</th>
-                <th class="py-2 px-2">Attached ID</th>
-                <th class="py-2 px-2">Room</th>
-                <th class="py-2 px-2">Capacity</th>
-                <th class="py-2 px-2">Agent Info</th>
-                <th class="py-2 px-2 min-w-[150px]">Stay Window</th>
-                <th class="py-2 px-2">Tariff & Extras</th>
-                <th class="py-2 px-2">Payment/Adv</th>
-                <th class="py-2 px-2">Due</th>
-                <th class="py-2 px-2 text-center">Actions</th>
+              <tr class="bg-slate-50 border-b border-slate-200/80 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                <th class="py-2.5 px-3">Booking ID</th>
+                <th class="py-2.5 px-3">Guest Name</th>
+                <th class="py-2.5 px-3">Contact No</th>
+                <th class="py-2.5 px-3">ID No</th>
+                <th class="py-2.5 px-3">Attached ID</th>
+                <th class="py-2.5 px-3">Room</th>
+                <th class="py-2.5 px-3">Capacity</th>
+                <th class="py-2.5 px-3">Agent Info</th>
+                <th class="py-2.5 px-3 min-w-[150px]">Stay Window</th>
+                <th class="py-2.5 px-3">Tariff & Extras</th>
+                <th class="py-2.5 px-3">Payment/Adv</th>
+                <th class="py-2.5 px-3">Due</th>
+                <th class="py-2.5 px-3 text-center">Actions</th>
               </tr>
             </thead>
             <tbody id="bookings-tbody" class="divide-y divide-slate-100 text-[11px]"></tbody>
@@ -387,18 +392,18 @@
     </section>
 
     <!-- MASTER DATA TAB -->
-    <section id="tab-master" class="tab-content hidden space-y-3">
+    <section id="tab-master" class="tab-content hidden space-y-4">
       
       <!-- Room Capacity Table (Defaults to 5 Rooms: 1, 2, 3, 4, 5) -->
-      <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-3">
+      <div class="bg-white rounded-3xl shadow-sm border border-slate-200/60 p-4">
         <div class="flex justify-between items-center mb-3 pb-2 border-b border-slate-100">
           <div>
-            <h2 class="text-xs font-bold text-slate-800 flex items-center gap-1">
-              <i class="fa-solid fa-door-open text-indigo-600"></i> Room Capacity Configuration
+            <h2 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+              <i class="fa-solid fa-door-open text-blue-600"></i> Room Capacity Configuration
             </h2>
-            <p class="text-[10px] text-slate-500">Default rooms 1 to 5. Click Add Room to append new rooms anytime.</p>
+            <p class="text-[10px] text-slate-500 mt-0.5">Default rooms 1 to 5. Click Add Room to append new rooms anytime.</p>
           </div>
-          <button type="button" onclick="addRoomCapacityRow()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 rounded text-[11px] font-medium flex items-center gap-1 transition shadow-sm cursor-pointer">
+          <button type="button" onclick="addRoomCapacityRow()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-full text-[11px] font-medium flex items-center gap-1.5 transition shadow-sm cursor-pointer">
             <i class="fa-solid fa-plus text-[10px]"></i> Add Room
           </button>
         </div>
@@ -406,10 +411,10 @@
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                <th class="py-2 px-2">Room No</th>
-                <th class="py-2 px-2">Room Capacity (Person)</th>
-                <th class="py-2 px-2 text-center">Actions</th>
+              <tr class="bg-slate-50 border-b border-slate-200/80 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                <th class="py-2.5 px-3">Room No</th>
+                <th class="py-2.5 px-3">Room Capacity (Person)</th>
+                <th class="py-2.5 px-3 text-center">Actions</th>
               </tr>
             </thead>
             <tbody id="room-capacity-tbody" class="divide-y divide-slate-100 text-[11px]"></tbody>
@@ -418,15 +423,15 @@
       </div>
 
       <!-- Agent Information Table -->
-      <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-3">
+      <div class="bg-white rounded-3xl shadow-sm border border-slate-200/60 p-4">
         <div class="flex justify-between items-center mb-3 pb-2 border-b border-slate-100">
           <div>
-            <h2 class="text-xs font-bold text-slate-800 flex items-center gap-1">
-              <i class="fa-solid fa-users-gear text-indigo-600"></i> Master Agent Directory
+            <h2 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+              <i class="fa-solid fa-users-gear text-blue-600"></i> Master Agent Directory
             </h2>
-            <p class="text-[10px] text-slate-500">Manage Agents linked with room allocations.</p>
+            <p class="text-[10px] text-slate-500 mt-0.5">Manage Agents linked with room allocations.</p>
           </div>
-          <button type="button" onclick="addAgentRow()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 rounded text-[11px] font-medium flex items-center gap-1 transition shadow-sm cursor-pointer">
+          <button type="button" onclick="addAgentRow()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-full text-[11px] font-medium flex items-center gap-1.5 transition shadow-sm cursor-pointer">
             <i class="fa-solid fa-plus text-[10px]"></i> Add Agent Entry
           </button>
         </div>
@@ -434,11 +439,11 @@
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                <th class="py-2 px-2">Agent Name</th>
-                <th class="py-2 px-2">Agent Contact</th>
-                <th class="py-2 px-2">Linked Room No</th>
-                <th class="py-2 px-2 text-center">Actions</th>
+              <tr class="bg-slate-50 border-b border-slate-200/80 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                <th class="py-2.5 px-3">Agent Name</th>
+                <th class="py-2.5 px-3">Agent Contact</th>
+                <th class="py-2.5 px-3">Linked Room No</th>
+                <th class="py-2.5 px-3 text-center">Actions</th>
               </tr>
             </thead>
             <tbody id="agent-tbody" class="divide-y divide-slate-100 text-[11px]"></tbody>
@@ -447,20 +452,20 @@
       </div>
 
       <!-- BOOKING ID TYPING SEARCH & DELETION CONTROL -->
-      <div class="bg-white rounded-lg shadow-sm border border-rose-200/80 p-3 space-y-2.5">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-100 pb-2">
+      <div class="bg-white rounded-3xl shadow-sm border border-rose-200/80 p-4 space-y-3">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-100 pb-2.5">
           <div>
-            <h2 class="text-xs font-bold text-slate-800 flex items-center gap-1">
-              <i class="fa-solid fa-trash-can text-rose-600"></i>Booking Deletion Manager
+            <h2 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+              <i class="fa-solid fa-trash-can text-rose-600"></i> Booking Deletion Manager
             </h2>
-            <p class="text-[10px] text-slate-500">Type a Booking ID directly to safely locate and remove it from the system.</p>
+            <p class="text-[10px] text-slate-500 mt-0.5">Type a Booking ID directly to safely locate and remove it from the system.</p>
           </div>
           
-          <div class="flex items-center bg-slate-50 border border-slate-300 rounded p-1 space-x-1.5">
+          <div class="flex items-center bg-slate-100 border border-slate-200 rounded-2xl px-2 py-1 space-x-1.5">
             <label for="master-booking-search-input" class="text-[10px] font-bold text-slate-600 uppercase flex items-center gap-1 pl-1">
-              <i class="fa-solid fa-magnifying-glass text-indigo-600"></i> Type Booking ID:
+              <i class="fa-solid fa-magnifying-glass text-blue-600"></i> Type Booking ID:
             </label>
-            <input type="text" id="master-booking-search-input" oninput="searchMasterBookingById()" placeholder="e.g. BKG-2026-0000001" class="bg-white text-[11px] border border-slate-300 rounded px-2 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono font-bold text-indigo-700 uppercase w-48">
+            <input type="text" id="master-booking-search-input" oninput="searchMasterBookingById()" placeholder="e.g. BKG-2026-0000001" class="bg-white text-[11px] border border-slate-200 rounded-xl px-2 py-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono font-bold text-blue-600 uppercase w-48">
             <button onclick="clearMasterBookingSearch()" class="text-slate-400 hover:text-slate-600 px-1 text-[10px]" title="Clear Search">
               <i class="fa-solid fa-xmark"></i>
             </button>
@@ -471,13 +476,13 @@
           <table class="w-full text-left border-collapse">
             <thead>
               <tr class="bg-rose-50/60 border-b border-rose-100 text-[10px] font-bold text-rose-800 uppercase tracking-wider">
-                <th class="py-2 px-2">Booking ID</th>
-                <th class="py-2 px-2">Guest Name</th>
-                <th class="py-2 px-2">Room No</th>
-                <th class="py-2 px-2">Stay Window</th>
-                <th class="py-2 px-2">Total Amount</th>
-                <th class="py-2 px-2">Due Amount</th>
-                <th class="py-2 px-2 text-center">Delete Linked Booking</th>
+                <th class="py-2.5 px-3">Booking ID</th>
+                <th class="py-2.5 px-3">Guest Name</th>
+                <th class="py-2.5 px-3">Room No</th>
+                <th class="py-2.5 px-3">Stay Window</th>
+                <th class="py-2.5 px-3">Total Amount</th>
+                <th class="py-2.5 px-3">Due Amount</th>
+                <th class="py-2.5 px-3 text-center">Delete Linked Booking</th>
               </tr>
             </thead>
             <tbody id="master-delete-tbody" class="divide-y divide-slate-100 text-[11px]">
@@ -491,33 +496,33 @@
     </section>
 
     <!-- CALENDAR TAB -->
-    <section id="tab-calendar" class="tab-content hidden space-y-3">
-      <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-3">
-        <div class="flex justify-between items-center mb-3">
+    <section id="tab-calendar" class="tab-content hidden space-y-4">
+      <div class="bg-white rounded-3xl shadow-sm border border-slate-200/60 p-4">
+        <div class="flex justify-between items-center mb-4">
           <div>
-            <h2 class="text-xs font-bold text-slate-800 flex items-center gap-1">
-              <i class="fa-regular fa-calendar-check text-indigo-600"></i> Year Overview Calendar
+            <h2 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+              <i class="fa-regular fa-calendar-check text-blue-600"></i> Year Overview Calendar
             </h2>
           </div>
           
-          <div class="flex items-center bg-indigo-900/60 p-1.5 rounded-lg border border-indigo-400/40 space-x-2">
-            <label for="cal-year-select" class="text-[10px] font-bold text-indigo-100 uppercase flex items-center gap-1">
-              <i class="fa-solid fa-filter text-amber-300"></i> Filter Year:
+          <div class="flex items-center bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-2xl space-x-2">
+            <label for="cal-year-select" class="text-[10px] font-bold text-slate-600 uppercase flex items-center gap-1">
+              <i class="fa-solid fa-filter text-blue-600"></i> Filter Year:
             </label>
-            <select id="cal-year-select" onchange="renderCalendar(parseInt(this.value))" class="bg-white text-indigo-900 text-[11px] font-bold rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-amber-400 cursor-pointer shadow"></select>
+            <select id="cal-year-select" onchange="renderCalendar(parseInt(this.value))" class="bg-white text-blue-900 text-[11px] font-bold rounded-xl px-2.5 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-sm"></select>
           </div>
         </div>
 
-        <div id="calendar-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5"></div>
+        <div id="calendar-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"></div>
       </div>
     </section>
 
   </main>
 
   <!-- POPUP MODAL: CHECK-OUT ALERT LIST -->
-  <div id="alert-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 no-print">
-    <div class="bg-white rounded-lg shadow-xl border border-slate-200 max-w-lg w-full flex flex-col max-h-[85vh] overflow-hidden">
-      <div class="bg-amber-500 p-3 text-white flex justify-between items-center">
+  <div id="alert-modal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4 no-print">
+    <div class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-lg w-full flex flex-col max-h-[85vh] overflow-hidden">
+      <div class="bg-amber-500 p-4 text-white flex justify-between items-center">
         <div class="flex items-center space-x-2">
           <i class="fa-solid fa-bell text-base"></i>
           <h3 class="text-xs font-bold">Check-out Alert</h3>
@@ -527,75 +532,75 @@
         </button>
       </div>
 
-      <div id="alert-list-container" class="p-3 overflow-y-auto space-y-2 flex-1 text-[11px]"></div>
+      <div id="alert-list-container" class="p-4 overflow-y-auto space-y-2 flex-1 text-[11px]"></div>
 
-      <div class="bg-slate-50 border-t border-slate-200 p-2.5 flex justify-between items-center text-[11px]">
+      <div class="bg-slate-50 border-t border-slate-100 p-3 flex justify-between items-center text-[11px]">
         <span id="alert-list-count-text" class="text-slate-500 font-medium">0 active warnings found</span>
-        <button onclick="closeAlertModal()" class="px-3 py-1 bg-slate-800 text-white rounded font-semibold text-[10px]">Dismiss</button>
+        <button onclick="closeAlertModal()" class="px-4 py-1.5 bg-slate-900 text-white rounded-xl font-semibold text-[10px]">Dismiss</button>
       </div>
     </div>
   </div>
 
   <!-- COMPACT ADD / EDIT BOOKING MODAL -->
-  <div id="booking-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-2 overflow-y-auto no-print">
-    <div class="bg-white rounded-lg shadow-xl border border-slate-200 max-w-xl w-full p-4 space-y-2.5 my-4">
-      <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+  <div id="booking-modal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-3 overflow-y-auto no-print">
+    <div class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-xl w-full p-5 space-y-3 my-4">
+      <div class="flex justify-between items-center pb-2.5 border-b border-slate-100">
         <div>
-          <h3 id="modal-title" class="text-xs font-bold text-slate-800 flex items-center gap-1">
-            <i class="fa-solid fa-calendar-plus text-indigo-600"></i> Add New Booking
+          <h3 id="modal-title" class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+            <i class="fa-solid fa-calendar-plus text-blue-600"></i> Add New Booking
           </h3>
         </div>
         <button onclick="closeBookingModal()" class="text-slate-400 hover:text-slate-600 p-0.5 text-base"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
-      <form id="booking-form" onsubmit="handleSaveBooking(event)" class="space-y-2.5 text-[11px]">
+      <form id="booking-form" onsubmit="handleSaveBooking(event)" class="space-y-3 text-[11px]">
         <input type="hidden" id="modal-booking-id">
 
         <!-- GUEST DETAILS -->
-        <div id="sec-guest-info" class="bg-slate-50 p-2.5 rounded-md border border-slate-200 space-y-2 transition-all">
-          <h4 class="text-[9px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
-            <i class="fa-solid fa-user-tag text-indigo-500"></i> Guest Information
+        <div id="sec-guest-info" class="bg-slate-50 p-3 rounded-2xl border border-slate-200/60 space-y-2.5 transition-all">
+          <h4 class="text-[9px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+            <i class="fa-solid fa-user-tag text-blue-600"></i> Guest Information
           </h4>
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <div>
               <label class="block font-semibold text-slate-600 mb-0.5">Guest Name <span class="text-rose-500">*</span></label>
-              <input type="text" id="cust-name" required pattern="[A-Za-z\s]+" oninput="this.value = formatTitleCase(this.value.replace(/[^A-Za-z\s]/g, ''))" title="Please enter Guest Name using characters only" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+              <input type="text" id="cust-name" required pattern="[A-Za-z\s]+" oninput="this.value = formatTitleCase(this.value.replace(/[^A-Za-z\s]/g, ''))" title="Please enter Guest Name using characters only" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-blue-500">
             </div>
             <div>
               <label class="block font-semibold text-slate-600 mb-0.5">Address</label>
-              <input type="text" id="cust-address" oninput="this.value = formatTitleCase(this.value)" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+              <input type="text" id="cust-address" oninput="this.value = formatTitleCase(this.value)" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-blue-500">
             </div>
             <div>
               <label class="block font-semibold text-slate-600 mb-0.5">City</label>
-              <input type="text" id="cust-city" placeholder="City" oninput="this.value = formatTitleCase(this.value)" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+              <input type="text" id="cust-city" placeholder="City" oninput="this.value = formatTitleCase(this.value)" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-blue-500">
             </div>
             <div>
               <label class="block font-semibold text-slate-600 mb-0.5">State</label>
-              <input type="text" id="cust-state" oninput="this.value = formatTitleCase(this.value); handleStateChange(this.value)" placeholder="State" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+              <input type="text" id="cust-state" oninput="this.value = formatTitleCase(this.value); handleStateChange(this.value)" placeholder="State" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-blue-500">
             </div>
             <div>
               <label class="block font-semibold text-slate-600 mb-0.5">Country</label>
-              <input type="text" id="cust-country" placeholder="Country" oninput="this.value = formatTitleCase(this.value)" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+              <input type="text" id="cust-country" placeholder="Country" oninput="this.value = formatTitleCase(this.value)" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-blue-500">
             </div>
             <div>
               <label class="block font-semibold text-slate-600 mb-0.5">Pin/Zip Code</label>
-              <input type="text" id="cust-zip" placeholder="Pin/Zip Code" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+              <input type="text" id="cust-zip" placeholder="Pin/Zip Code" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-blue-500">
             </div>
             <div>
               <label class="block font-semibold text-slate-600 mb-0.5">ID Number</label>
-              <input type="text" id="cust-id" maxlength="16" pattern="[A-Za-z0-9\s]*" oninput="this.value = this.value.replace(/[^A-Za-z0-9\s]/g, '')" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+              <input type="text" id="cust-id" maxlength="16" pattern="[A-Za-z0-9\s]*" oninput="this.value = this.value.replace(/[^A-Za-z0-9\s]/g, '')" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-blue-500">
             </div>
             <div>
               <label class="block font-semibold text-slate-600 mb-0.5">Contact No</label>
-              <input type="text" id="cust-contact" maxlength="10" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+              <input type="text" id="cust-contact" maxlength="10" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-blue-500">
             </div>
             <div class="sm:col-span-2">
               <label class="block font-semibold text-slate-600 mb-0.5 flex justify-between items-center">
-                <span>Attached ID Proof <span class="text-[9px] text-indigo-500 font-normal">(PDF, 10KB - 900KB)</span></span>
+                <span>Attached ID Proof <span class="text-[9px] text-blue-600 font-normal">(PDF, 10KB - 900KB)</span></span>
                 <button type="button" id="cust-id-file-remove" onclick="removeAttachedIdProof()" class="hidden text-rose-500 hover:text-rose-700 text-[9px] font-bold">Remove</button>
               </label>
               <div class="flex items-center gap-1.5">
-                <input type="file" id="cust-id-file" accept="application/pdf" onchange="handleIdProofUpload(event)" class="w-full text-[10px] text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer bg-white border border-slate-300 rounded py-0.5">
+                <input type="file" id="cust-id-file" accept="application/pdf" onchange="handleIdProofUpload(event)" class="w-full text-[10px] text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-xl file:border-0 file:text-[10px] file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer bg-white border border-slate-200 rounded-xl py-1">
                 <input type="hidden" id="cust-id-file-base64">
                 <input type="hidden" id="cust-id-file-name">
               </div>
@@ -605,40 +610,40 @@
         </div>
 
         <!-- Room & Stay Schedule Box -->
-        <div id="sec-room-dates" class="bg-slate-50 p-2.5 rounded-md border border-slate-200 space-y-2 transition-all">
-          <h4 class="text-[9px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1">
-            <i class="fa-solid fa-bed text-indigo-500"></i> Room Selection & Stay Dates
+        <div id="sec-room-dates" class="bg-slate-50 p-3 rounded-2xl border border-slate-200/60 space-y-2.5 transition-all">
+          <h4 class="text-[9px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+            <i class="fa-solid fa-bed text-blue-600"></i> Room Selection & Stay Dates
           </h4>
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
             <div>
               <label class="block font-semibold text-slate-600 mb-0.5">Room No</label>
-              <select id="cust-room" onchange="autoCaptureRoomDetails()" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-bold text-indigo-700"></select>
+              <select id="cust-room" onchange="autoCaptureRoomDetails()" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-blue-500 font-bold text-blue-600"></select>
             </div>
             
             <div>
               <label class="block font-semibold text-slate-600 mb-0.5">Agent Info</label>
-              <select id="cust-agent" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-bold text-slate-700"></select>
+              <select id="cust-agent" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-blue-500 font-bold text-slate-700"></select>
             </div>
 
             <div>
               <label class="block font-semibold text-slate-600 mb-0.5">Capacity (Person)</label>
-              <input type="number" id="cust-capacity" min="1" value="1" oninput="calculateModalBilling()" class="w-full bg-white border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-bold text-slate-700">
+              <input type="number" id="cust-capacity" min="1" value="1" oninput="calculateModalBilling()" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-blue-500 font-bold text-slate-700">
             </div>
 
             <div class="sm:col-span-3 grid grid-cols-2 gap-2 pt-1 border-t border-slate-200/60">
               <div>
                 <label class="block font-semibold text-slate-600 mb-0.5"><i class="fa-solid fa-plane-arrival text-emerald-600 mr-1"></i> Check In</label>
                 <div class="flex gap-1">
-                  <input type="date" id="cust-checkin-date" onchange="handleStayDatesChange()" required class="w-2/3 bg-white border border-slate-300 rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium">
-                  <input type="time" id="cust-checkin-time" value="12:00" onchange="handleStayDatesChange()" required class="w-1/3 bg-white border border-slate-300 rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium">
+                  <input type="date" id="cust-checkin-date" onchange="handleStayDatesChange()" required class="w-2/3 bg-white border border-slate-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-blue-500 font-medium">
+                  <input type="time" id="cust-checkin-time" value="12:00" onchange="handleStayDatesChange()" required class="w-1/3 bg-white border border-slate-200 rounded-xl px-1.5 py-1.5 focus:outline-none focus:border-blue-500 font-medium">
                 </div>
               </div>
 
               <div>
                 <label class="block font-semibold text-slate-600 mb-0.5"><i class="fa-solid fa-plane-departure text-rose-500 mr-1"></i> Check Out</label>
                 <div class="flex gap-1">
-                  <input type="date" id="cust-checkout-date" onchange="handleStayDatesChange()" required class="w-2/3 bg-white border border-slate-300 rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium">
-                  <input type="time" id="cust-checkout-time" value="11:00" onchange="handleStayDatesChange()" required class="w-1/3 bg-white border border-slate-300 rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium">
+                  <input type="date" id="cust-checkout-date" onchange="handleStayDatesChange()" required class="w-2/3 bg-white border border-slate-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-blue-500 font-medium">
+                  <input type="time" id="cust-checkout-time" value="11:00" onchange="handleStayDatesChange()" required class="w-1/3 bg-white border border-slate-200 rounded-xl px-1.5 py-1.5 focus:outline-none focus:border-blue-500 font-medium">
                 </div>
               </div>
             </div>
@@ -646,19 +651,19 @@
             <!-- Extended Check Out Checkbox & Fields -->
             <div id="sec-extended-checkout-wrapper" class="sm:col-span-3 pt-2 border-t border-slate-200/60">
               <div class="flex items-center gap-2 mb-1">
-                <input type="checkbox" id="cust-has-extended-checkout" onchange="toggleExtendedCheckoutFields(this.checked)" class="w-3.5 h-3.5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer">
+                <input type="checkbox" id="cust-has-extended-checkout" onchange="toggleExtendedCheckoutFields(this.checked)" class="w-4 h-4 text-blue-600 rounded-md border-slate-300 focus:ring-blue-500 cursor-pointer">
                 <label for="cust-has-extended-checkout" id="lbl-has-extended-checkout" class="font-bold text-slate-700 cursor-pointer flex items-center gap-1 select-none text-[11px]">
-                  <i class="fa-solid fa-clock-rotate-left text-indigo-600"></i> Extended Check-out Date & Time <span id="ext-checkout-timer-notice" class="text-[9px] text-amber-700 font-normal ml-1 hidden">(Active for 1h post check-out)</span>
+                  <i class="fa-solid fa-clock-rotate-left text-blue-600"></i> Extended Check-out Date & Time <span id="ext-checkout-timer-notice" class="text-[9px] text-amber-700 font-normal ml-1 hidden">(Active for 1h post check-out)</span>
                 </label>
               </div>
 
-              <div id="extended-checkout-container" class="hidden bg-indigo-50/70 p-2 rounded-md border border-indigo-200/80 mt-1">
-                <label class="block font-bold text-indigo-900 mb-1 flex items-center gap-1">
-                  <i class="fa-solid fa-calendar-plus text-indigo-600"></i> New Check-out Date & Time
+              <div id="extended-checkout-container" class="hidden bg-blue-50/70 p-2.5 rounded-2xl border border-blue-200/80 mt-1.5">
+                <label class="block font-bold text-blue-900 mb-1 flex items-center gap-1">
+                  <i class="fa-solid fa-calendar-plus text-blue-600"></i> New Check-out Date & Time
                 </label>
                 <div class="flex gap-1.5">
-                  <input type="date" id="cust-ext-checkout-date" onchange="handleStayDatesChange()" class="w-2/3 bg-white border border-indigo-300 rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-semibold text-indigo-900">
-                  <input type="time" id="cust-ext-checkout-time" value="12:00" onchange="handleStayDatesChange()" class="w-1/3 bg-white border border-indigo-300 rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-semibold text-indigo-900">
+                  <input type="date" id="cust-ext-checkout-date" onchange="handleStayDatesChange()" class="w-2/3 bg-white border border-blue-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-blue-500 font-semibold text-blue-900">
+                  <input type="time" id="cust-ext-checkout-time" value="12:00" onchange="handleStayDatesChange()" class="w-1/3 bg-white border border-blue-200 rounded-xl px-1.5 py-1.5 focus:outline-none focus:border-blue-500 font-semibold text-blue-900">
                 </div>
               </div>
             </div>
@@ -667,12 +672,12 @@
         </div>
 
         <!-- EXTRA FOOD SECTION WITH DATE & TIME -->
-        <div id="sec-extra-food" class="bg-amber-50/70 p-2.5 rounded-md border border-amber-200 space-y-2 transition-all">
+        <div id="sec-extra-food" class="bg-amber-50/60 p-3 rounded-2xl border border-amber-200/80 space-y-2.5 transition-all">
           <div class="flex justify-between items-center">
-            <h4 class="text-[9px] font-bold uppercase tracking-wider text-amber-800 flex items-center gap-1">
+            <h4 class="text-[9px] font-bold uppercase tracking-wider text-amber-800 flex items-center gap-1.5">
               <i class="fa-solid fa-utensils text-amber-600"></i> Extra Food / Drink Orders List
             </h4>
-            <button type="button" id="btn-add-food-order" onclick="addFoodOrderItem()" class="bg-amber-600 hover:bg-amber-700 text-white px-2 py-0.5 rounded text-[10px] font-semibold flex items-center gap-1 transition">
+            <button type="button" id="btn-add-food-order" onclick="addFoodOrderItem()" class="bg-amber-600 hover:bg-amber-700 text-white px-2.5 py-1 rounded-full text-[10px] font-semibold flex items-center gap-1 transition shadow-sm">
               <i class="fa-solid fa-plus text-[9px]"></i> Add Food Order
             </button>
           </div>
@@ -681,73 +686,73 @@
         </div>
 
         <!-- Billing Calculation Box -->
-        <div id="sec-billing-summary" class="bg-indigo-50/50 p-2.5 rounded-md border border-indigo-100 space-y-2 transition-all">
-          <h4 class="text-[9px] font-bold uppercase tracking-wider text-indigo-700 flex items-center gap-1">
-            <i class="fa-solid fa-calculator text-indigo-600"></i> Billing Summary
+        <div id="sec-billing-summary" class="bg-blue-50/40 p-3 rounded-2xl border border-blue-100 space-y-2.5 transition-all">
+          <h4 class="text-[9px] font-bold uppercase tracking-wider text-blue-700 flex items-center gap-1.5">
+            <i class="fa-solid fa-calculator text-blue-600"></i> Billing Summary
           </h4>
-          <div class="grid grid-cols-2 sm:grid-cols-6 gap-1.5">
+          <div class="grid grid-cols-2 sm:grid-cols-6 gap-2">
             <div>
               <label class="block font-semibold text-slate-600 mb-0.5">Days</label>
-              <input type="number" id="cust-days" readonly class="w-full bg-slate-200/80 font-bold text-slate-700 border border-slate-300 rounded px-1.5 py-1 cursor-not-allowed">
+              <input type="number" id="cust-days" readonly class="w-full bg-slate-200/60 font-bold text-slate-700 border border-slate-200 rounded-xl px-2 py-1.5 cursor-not-allowed">
             </div>
             <div>
               <label class="block font-semibold text-slate-600 mb-0.5">Price/Day (₹)</label>
-              <input type="number" id="cust-price" value="1200" oninput="calculateModalBilling()" class="w-full bg-white font-bold text-slate-700 border border-slate-300 rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+              <input type="number" id="cust-price" value="1200" oninput="calculateModalBilling()" class="w-full bg-white font-bold text-slate-700 border border-slate-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-blue-500">
             </div>
             <div>
               <label class="block font-semibold text-slate-600 mb-0.5">Total (₹)</label>
-              <input type="number" id="cust-total" readonly class="w-full bg-slate-200/80 text-indigo-700 font-bold border border-slate-300 rounded px-1.5 py-1 cursor-not-allowed">
+              <input type="number" id="cust-total" readonly class="w-full bg-slate-200/60 text-blue-700 font-bold border border-slate-200 rounded-xl px-2 py-1.5 cursor-not-allowed">
             </div>
             <div>
               <label class="block font-semibold text-slate-600 mb-0.5">Advance (₹)</label>
-              <input type="number" id="cust-advance" value="0" oninput="calculateModalBilling()" class="w-full bg-white border border-slate-300 rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-semibold text-emerald-600">
+              <input type="number" id="cust-advance" value="0" oninput="calculateModalBilling()" class="w-full bg-white border border-slate-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-blue-500 font-semibold text-emerald-600">
             </div>
             <div>
               <label class="block font-semibold text-slate-600 mb-0.5">Due (₹)</label>
-              <input type="number" id="cust-due" readonly class="w-full bg-slate-200/80 text-rose-700 font-bold border border-slate-300 rounded px-1.5 py-1 cursor-not-allowed">
+              <input type="number" id="cust-due" readonly class="w-full bg-slate-200/60 text-rose-700 font-bold border border-slate-200 rounded-xl px-2 py-1.5 cursor-not-allowed">
             </div>
             <div>
               <label class="block font-semibold text-slate-600 mb-0.5 text-[10px] text-emerald-700">Clear Bill (₹)</label>
-              <input type="number" id="cust-clear-bill" value="0" placeholder="0" oninput="handleClearBillPayment(this.value)" class="w-full bg-emerald-50 border border-emerald-400 font-bold text-emerald-800 rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-emerald-500" title="Put payment amount to clear due bill">
+              <input type="number" id="cust-clear-bill" value="0" placeholder="0" oninput="handleClearBillPayment(this.value)" class="w-full bg-emerald-50 border border-emerald-300 font-bold text-emerald-800 rounded-xl px-2 py-1.5 focus:outline-none focus:border-emerald-500" title="Put payment amount to clear due bill">
             </div>
           </div>
         </div>
 
         <div class="flex justify-end space-x-2 pt-1">
-          <button type="button" onclick="closeBookingModal()" class="px-3 py-1 bg-slate-100 text-slate-700 rounded font-semibold transition">Cancel</button>
-          <button type="submit" id="btn-save-booking" class="px-4 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded font-semibold shadow transition">Save Booking</button>
+          <button type="button" onclick="closeBookingModal()" class="px-4 py-1.5 bg-slate-100 text-slate-700 rounded-xl font-semibold transition hover:bg-slate-200">Cancel</button>
+          <button type="submit" id="btn-save-booking" class="px-5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold shadow-sm transition">Save Booking</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- PRINTABLE INVOICE / BOOKING RECEIPT MODAL -->
-  <div id="invoice-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
-    <div class="bg-white rounded-lg shadow-xl border border-slate-200 max-w-xl w-full p-6 space-y-4 relative" id="printable-invoice">
+  <div id="invoice-modal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-xl w-full p-6 space-y-4 relative" id="printable-invoice">
       
       <!-- Read-Only Notice Bar (Shown for Closed/Inactive Bookings) -->
-      <div id="inv-readonly-notice" class="hidden bg-slate-800 text-amber-300 text-[10px] font-bold px-3 py-1.5 rounded-md flex items-center justify-between border border-amber-400/40">
+      <div id="inv-readonly-notice" class="hidden bg-slate-900 text-amber-300 text-[10px] font-bold px-3.5 py-2 rounded-2xl flex items-center justify-between border border-slate-800">
         <span class="flex items-center gap-1.5">
           <i class="fa-solid fa-lock text-amber-400"></i> Read-Only View Mode (Editing Disabled)
         </span>
-        <span class="text-[9px] text-slate-300 font-normal">System Protected</span>
+        <span class="text-[9px] text-slate-400 font-normal">System Protected</span>
       </div>
 
-      <div class="flex justify-between items-start border-b border-slate-200 pb-3">
+      <div class="flex justify-between items-start border-b border-slate-200/80 pb-4">
         <div>
-          <h2 class="text-lg font-black text-indigo-700 uppercase tracking-wide">Aniruddha Homestay</h2>
+          <h2 class="text-lg font-black text-blue-600 uppercase tracking-wide">Aniruddha Homestay</h2>
           <p class="text-[10px] text-slate-500 mt-0.5">Sittong, Village in West Bengal</p>
           <p class="text-[10px] text-slate-500">Phone: +91 9804396541 | Email: info@businessportal.com</p>
         </div>
         <div class="text-right">
-          <span id="inv-badge" class="inline-block bg-indigo-100 text-indigo-800 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase mb-0.5">e-Invoice</span>
+          <span id="inv-badge" class="inline-block bg-blue-50 text-blue-700 text-[9px] font-bold px-2.5 py-0.5 rounded-full uppercase mb-1">e-Invoice</span>
           <p id="inv-id-container" class="text-[10px] text-slate-500">Invoice ID: <strong id="inv-id" class="text-slate-800 font-mono">INV-2026-0000001</strong></p>
-          <p class="text-[10px] text-slate-500">Booking ID: <strong id="inv-booking-id" class="text-indigo-700 font-mono">BKG-2026-0000001</strong></p>
+          <p class="text-[10px] text-slate-500">Booking ID: <strong id="inv-booking-id" class="text-blue-600 font-mono">BKG-2026-0000001</strong></p>
           <p class="text-[10px] text-slate-500">Issued On: <strong id="inv-date" class="text-slate-800"></strong></p>
         </div>
       </div>
 
-      <div class="grid grid-cols-2 gap-4 bg-slate-50 p-3 rounded-lg border border-slate-100 text-[11px]">
+      <div class="grid grid-cols-2 gap-4 bg-slate-50 p-3.5 rounded-2xl border border-slate-100 text-[11px]">
         <div>
           <h4 class="font-bold text-slate-400 uppercase text-[9px] tracking-wider mb-0.5">Guest Information</h4>
           <p class="text-slate-800 font-semibold" id="inv-guest-name">-</p>
@@ -761,7 +766,7 @@
           <p class="text-slate-600" id="inv-checkin">Check-in: -</p>
           <div id="inv-checkout-container" class="space-y-0.5">
             <p class="text-slate-600 font-medium" id="inv-checkout">Check-out: -</p>
-            <p class="text-indigo-700 font-bold hidden" id="inv-ext-checkout"></p>
+            <p class="text-blue-600 font-bold hidden" id="inv-ext-checkout"></p>
           </div>
         </div>
       </div>
@@ -769,18 +774,18 @@
       <div class="overflow-x-auto">
         <table class="w-full text-left text-[11px]">
           <thead>
-            <tr class="bg-indigo-50 text-indigo-900 border-b border-indigo-100">
-              <th class="p-2">Description</th>
-              <th class="p-2 text-center">Qty / Duration</th>
-              <th class="p-2 text-right">Rate/Day/Person</th>
-              <th class="p-2 text-right">Total Amount</th>
+            <tr class="bg-blue-50/70 text-blue-900 border-b border-blue-100">
+              <th class="p-2.5">Description</th>
+              <th class="p-2.5 text-center">Qty / Duration</th>
+              <th class="p-2.5 text-right">Rate/Day/Person</th>
+              <th class="p-2.5 text-right">Total Amount</th>
             </tr>
           </thead>
           <tbody id="inv-items-tbody" class="divide-y divide-slate-100"></tbody>
         </table>
       </div>
 
-      <div class="flex justify-end pt-1 border-t border-slate-200">
+      <div class="flex justify-end pt-1 border-t border-slate-200/80">
         <div class="w-1/2 space-y-1 text-[11px]">
           <div class="flex justify-between text-slate-600">
             <span>Total Amount:</span>
@@ -802,7 +807,7 @@
         </div>
       </div>
 
-      <div class="pt-4 border-t border-slate-200 flex justify-between items-end text-[10px] text-slate-400">
+      <div class="pt-4 border-t border-slate-200/80 flex justify-between items-end text-[10px] text-slate-400">
         <div>
           <p class="font-bold text-slate-600">Thank you for staying with us!</p>
           <p>For inquiries, please contact hotel management.</p>
@@ -813,8 +818,8 @@
       </div>
 
       <div class="flex justify-end space-x-2 pt-2 no-print border-t border-slate-100">
-        <button type="button" onclick="closeInvoiceModal()" class="px-3 py-1 bg-slate-100 text-slate-700 rounded font-semibold transition">Close</button>
-        <button type="button" onclick="window.print()" id="inv-print-btn" class="px-4 py-1 bg-indigo-600 text-white rounded font-semibold shadow flex items-center gap-1 transition">
+        <button type="button" onclick="closeInvoiceModal()" class="px-4 py-1.5 bg-slate-100 text-slate-700 rounded-xl font-semibold transition hover:bg-slate-200">Close</button>
+        <button type="button" onclick="window.print()" id="inv-print-btn" class="px-4 py-1.5 bg-blue-600 text-white rounded-xl font-semibold shadow-sm flex items-center gap-1 transition">
           <i class="fa-solid fa-print"></i> Print Invoice
         </button>
       </div>
@@ -1337,14 +1342,14 @@
         const tr = document.createElement('tr');
         tr.className = "bg-white hover:bg-slate-50 transition border-b border-slate-100";
         tr.innerHTML = `
-          <td class="py-2 px-2 font-mono font-bold text-indigo-700">${b.bookingCode}</td>
-          <td class="py-2 px-2 font-bold text-slate-800">${b.name}</td>
-          <td class="py-2 px-2"><span class="bg-indigo-50 text-indigo-700 font-bold px-1.5 py-0.2 rounded text-[10px]">Room ${b.roomNo}</span></td>
-          <td class="py-2 px-2 text-[10px] text-slate-600">${formatDateTime(b.checkIn)} to ${formatDateTime(effectiveOutStr)}</td>
-          <td class="py-2 px-2 font-semibold text-slate-800">₹${b.totalAmount}</td>
-          <td class="py-2 px-2 font-bold text-rose-600">₹${b.totalDue}</td>
-          <td class="py-2 px-2 text-center">
-            <button onclick="deleteBooking('${b.id}')" class="bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1 rounded text-[10px] font-semibold flex items-center gap-1 mx-auto transition shadow-xs">
+          <td class="py-2.5 px-3 font-mono font-bold text-blue-600">${b.bookingCode}</td>
+          <td class="py-2.5 px-3 font-bold text-slate-800">${b.name}</td>
+          <td class="py-2.5 px-3"><span class="bg-blue-50 text-blue-700 font-bold px-2 py-0.5 rounded-full text-[10px]">Room ${b.roomNo}</span></td>
+          <td class="py-2.5 px-3 text-[10px] text-slate-600">${formatDateTime(b.checkIn)} to ${formatDateTime(effectiveOutStr)}</td>
+          <td class="py-2.5 px-3 font-semibold text-slate-800">₹${b.totalAmount}</td>
+          <td class="py-2.5 px-3 font-bold text-rose-600">₹${b.totalDue}</td>
+          <td class="py-2.5 px-3 text-center">
+            <button onclick="deleteBooking('${b.id}')" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1 rounded-full text-[10px] font-semibold flex items-center gap-1 mx-auto transition shadow-xs">
               <i class="fa-solid fa-trash-can text-[9px]"></i> Delete Linked Booking
             </button>
           </td>
@@ -1538,10 +1543,10 @@
       if (alertList.length === 0) {
         container.innerHTML = `
           <div class="text-center py-8 space-y-1">
-            <div class="bg-emerald-50 text-emerald-600 w-10 h-10 rounded-full flex items-center justify-center mx-auto text-base">
+            <div class="bg-emerald-50 text-emerald-600 w-10 h-10 rounded-2xl flex items-center justify-center mx-auto text-base">
               <i class="fa-solid fa-circle-check"></i>
             </div>
-            <p class="font-bold text-slate-700">No Check-out Alerts</p>
+            <p class="font-bold text-slate-800">No Check-out Alerts</p>
             <p class="text-slate-400 text-[10px]">No upcoming check-outs within 2 hours or pending dues found.</p>
           </div>
         `;
@@ -1554,27 +1559,27 @@
         const hasDue = (b.totalDue || 0) > 0;
 
         const card = document.createElement('div');
-        card.className = "bg-amber-50/60 border border-amber-200 rounded-md overflow-hidden shadow-sm";
+        card.className = "bg-amber-50/60 border border-amber-200/80 rounded-2xl overflow-hidden shadow-xs";
         
         let alertMessageText = "";
         let alertBadgeHtml = "";
 
         if (!hasDue) {
           alertMessageText = `Checkout: <strong>${timeFormatted}</strong> | Room ${b.roomNo} | Guest: <strong>${b.name}</strong>`;
-          alertBadgeHtml = `<span class="text-[11px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">No Due (Paid)</span>`;
+          alertBadgeHtml = `<span class="text-[11px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">No Due (Paid)</span>`;
         } else {
           alertMessageText = `Checkout: <strong>${timeFormatted}</strong> | Room ${b.roomNo} | Guest: <strong>${b.name}</strong> | Total: ₹${b.totalAmount} | Due: ₹${b.totalDue}`;
-          alertBadgeHtml = `<span class="text-[11px] font-black text-rose-600 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded">₹${b.totalDue.toLocaleString('en-IN')} Due</span>`;
+          alertBadgeHtml = `<span class="text-[11px] font-black text-rose-600 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-full">₹${b.totalDue.toLocaleString('en-IN')} Due</span>`;
         }
 
         card.innerHTML = `
-          <div class="p-2.5 flex justify-between items-center cursor-pointer hover:bg-amber-100/50 transition" onclick="toggleAlertDetails('alert-details-${i}')">
-            <div class="flex items-center space-x-2">
-              <span class="bg-amber-500 text-white p-1.5 rounded text-[10px] font-bold"><i class="fa-solid fa-clock"></i></span>
+          <div class="p-3 flex justify-between items-center cursor-pointer hover:bg-amber-100/50 transition" onclick="toggleAlertDetails('alert-details-${i}')">
+            <div class="flex items-center space-x-2.5">
+              <span class="bg-amber-500 text-white p-2 rounded-xl text-[10px] font-bold shadow-xs"><i class="fa-solid fa-clock"></i></span>
               <div>
-                <h4 class="font-bold text-slate-800 text-[11px] flex items-center gap-1.5">
-                  ${b.name} <span class="bg-indigo-100 text-indigo-800 text-[9px] px-1.5 py-0.2 rounded font-mono">${b.bookingCode || 'N/A'}</span>
-                  <span class="bg-slate-100 text-slate-700 text-[9px] px-1.5 py-0.2 rounded font-medium">Room ${b.roomNo}</span>
+                <h4 class="font-bold text-slate-900 text-[11px] flex items-center gap-1.5">
+                  ${b.name} <span class="bg-blue-50 text-blue-700 text-[9px] px-2 py-0.5 rounded-full font-mono">${b.bookingCode || 'N/A'}</span>
+                  <span class="bg-slate-100 text-slate-700 text-[9px] px-2 py-0.5 rounded-full font-medium">Room ${b.roomNo}</span>
                 </h4>
                 <p class="text-[10px] text-slate-600 mt-0.5">${alertMessageText}</p>
               </div>
@@ -1585,13 +1590,13 @@
             </div>
           </div>
 
-          <div id="alert-details-${i}" class="hidden bg-white border-t border-amber-200/60 p-2.5 space-y-2 text-[10px]">
+          <div id="alert-details-${i}" class="hidden bg-white border-t border-amber-200/60 p-3 space-y-2 text-[10px]">
             <div class="grid grid-cols-2 gap-1 text-slate-600">
               <div>Total Charges: <strong>₹${b.totalAmount}</strong></div>
               <div>Advance Paid: <strong class="text-emerald-600">₹${b.advanced}</strong></div>
             </div>
             <div class="flex justify-end pt-1 border-t border-slate-100">
-              <button onclick="closeAlertModal(); openBookingModal('${b.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 rounded font-bold text-[10px] flex items-center gap-1 transition">
+              <button onclick="closeAlertModal(); openBookingModal('${b.id}')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-full font-bold text-[10px] flex items-center gap-1 transition shadow-xs">
                 <i class="fa-solid fa-wallet"></i> View / Edit Booking
               </button>
             </div>
@@ -1682,13 +1687,13 @@
     function performSwitchTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
       document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active-tab', 'bg-indigo-600', 'text-white');
-        btn.classList.add('text-indigo-100', 'hover:bg-indigo-600/50');
+        btn.classList.remove('active-tab', 'bg-white', 'text-blue-600', 'shadow-sm', 'font-bold');
+        btn.classList.add('text-slate-600', 'hover:text-slate-900');
       });
 
       document.getElementById(`tab-${tabId}`).classList.remove('hidden');
       const activeBtn = document.getElementById(`btn-${tabId}`);
-      activeBtn.classList.add('active-tab', 'bg-indigo-600', 'text-white');
+      activeBtn.classList.add('active-tab', 'bg-white', 'text-blue-600', 'shadow-sm', 'font-bold');
       closeCommentBox();
 
       if (tabId === 'dashboard') {
@@ -1711,10 +1716,10 @@
         const isSelectedYear = state.dashSelectedYear !== 'ALL' && parseInt(state.dashSelectedYear) === y;
         const isCurrentRealYear = y === defaultAppYear;
 
-        item.className = `text-center py-1 px-1 rounded text-[10px] font-bold border cursor-pointer transition ${
+        item.className = `text-center py-1.5 px-1 rounded-2xl text-[10px] font-bold cursor-pointer transition ${
           isSelectedYear
-            ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' 
-            : (isCurrentRealYear ? 'bg-amber-100 text-amber-900 border-amber-400 font-extrabold hover:bg-amber-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-indigo-50 hover:text-indigo-600')
+            ? 'bg-blue-600 text-white shadow-xs' 
+            : (isCurrentRealYear ? 'bg-amber-100 text-amber-900 font-extrabold hover:bg-amber-200' : 'bg-slate-100 text-slate-600 hover:bg-blue-50 hover:text-blue-600')
         }`;
         
         item.innerText = y;
@@ -1790,7 +1795,7 @@
         if (invPrintBtn) {
           invPrintBtn.classList.remove('hidden');
           invPrintBtn.disabled = false;
-          invPrintBtn.className = "px-4 py-1 bg-indigo-600 text-white rounded font-semibold shadow flex items-center gap-1 transition hover:bg-indigo-700 cursor-pointer";
+          invPrintBtn.className = "px-4 py-1.5 bg-blue-600 text-white rounded-xl font-semibold shadow-sm flex items-center gap-1 transition hover:bg-blue-700 cursor-pointer";
           invPrintBtn.innerHTML = `<i class="fa-solid fa-print"></i> Print Invoice`;
         }
       } else {
@@ -1806,7 +1811,7 @@
         invIdContainer.classList.add('hidden');
         if (invPrintBtn) {
           invPrintBtn.disabled = true;
-          invPrintBtn.className = "px-4 py-1 bg-slate-300 text-slate-500 rounded font-semibold cursor-not-allowed flex items-center gap-1 border border-slate-400";
+          invPrintBtn.className = "px-4 py-1.5 bg-slate-200 text-slate-400 rounded-xl font-semibold cursor-not-allowed flex items-center gap-1 border border-slate-300";
           invPrintBtn.innerHTML = `<i class="fa-solid fa-lock"></i> Print Disabled (Clear Due)`;
         }
       } else if (!isClosed && !isInactive && isMasterValid) {
@@ -1815,7 +1820,7 @@
         document.getElementById('inv-id').innerText = b.invoiceNo;
         if (invPrintBtn) {
           invPrintBtn.disabled = false;
-          invPrintBtn.className = "px-4 py-1 bg-indigo-600 text-white rounded font-semibold shadow flex items-center gap-1 transition hover:bg-indigo-700 cursor-pointer";
+          invPrintBtn.className = "px-4 py-1.5 bg-blue-600 text-white rounded-xl font-semibold shadow-sm flex items-center gap-1 transition hover:bg-blue-700 cursor-pointer";
           invPrintBtn.innerHTML = `<i class="fa-solid fa-print"></i> Print Invoice`;
         }
       }
@@ -1838,7 +1843,7 @@
       // Hide extended check-out detail completely if the date was not extended
       const extCheckoutElem = document.getElementById('inv-ext-checkout');
       if (b.hasExtendedCheckout && b.extendedCheckOut) {
-        extCheckoutElem.innerHTML = `Extended Check-out: ${formatDateTime(b.extendedCheckOut)} <span class="text-[9px] text-indigo-700 bg-indigo-100 border border-indigo-300 px-1 py-0.2 rounded font-bold ml-1">Extended</span>`;
+        extCheckoutElem.innerHTML = `Extended Check-out: ${formatDateTime(b.extendedCheckOut)} <span class="text-[9px] text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.2 rounded-full font-bold ml-1">Extended</span>`;
         extCheckoutElem.classList.remove('hidden');
       } else {
         extCheckoutElem.innerText = '';
@@ -1851,10 +1856,10 @@
       const roomTotal = (b.noOfDays || 0) * (b.perDayPrice || 0) * (b.capacity || 1);
       const roomTr = document.createElement('tr');
       roomTr.innerHTML = `
-        <td class="p-2 font-semibold text-slate-800">Room ${b.roomNo} Accommodation (${b.capacity || 1} Persons) ${b.hasExtendedCheckout ? '<span class="text-[9px] text-indigo-600 block font-normal">(Includes extended stay duration)</span>' : ''}</td>
-        <td class="p-2 text-center">${b.noOfDays} Days</td>
-        <td class="p-2 text-right">₹${(b.perDayPrice || 0).toLocaleString('en-IN')}</td>
-        <td class="p-2 text-right font-semibold text-slate-800">₹${roomTotal.toLocaleString('en-IN')}</td>
+        <td class="p-2.5 font-semibold text-slate-800">Room ${b.roomNo} Accommodation (${b.capacity || 1} Persons) ${b.hasExtendedCheckout ? '<span class="text-[9px] text-blue-600 block font-normal">(Includes extended stay duration)</span>' : ''}</td>
+        <td class="p-2.5 text-center">${b.noOfDays} Days</td>
+        <td class="p-2.5 text-right">₹${(b.perDayPrice || 0).toLocaleString('en-IN')}</td>
+        <td class="p-2.5 text-right font-semibold text-slate-800">₹${roomTotal.toLocaleString('en-IN')}</td>
       `;
       tbody.appendChild(roomTr);
 
@@ -1864,10 +1869,10 @@
             const foodTr = document.createElement('tr');
             const foodDateTimeFmt = fo.foodDateTime ? ` (${formatDateTime(fo.foodDateTime)})` : '';
             foodTr.innerHTML = `
-              <td class="p-2 font-semibold text-slate-800">Extra Food <span class="text-[9px] text-slate-500 font-normal block">${fo.foodDesc || 'Food Item'}${foodDateTimeFmt}</span></td>
-              <td class="p-2 text-center">${fo.plates || 1} Plates</td>
-              <td class="p-2 text-right">₹${(fo.itemPrice || 0).toLocaleString('en-IN')}</td>
-              <td class="p-2 text-right font-semibold text-slate-800">₹${(fo.foodCharge || 0).toLocaleString('en-IN')}</td>
+              <td class="p-2.5 font-semibold text-slate-800">Extra Food <span class="text-[9px] text-slate-500 font-normal block">${fo.foodDesc || 'Food Item'}${foodDateTimeFmt}</span></td>
+              <td class="p-2.5 text-center">${fo.plates || 1} Plates</td>
+              <td class="p-2.5 text-right">₹${(fo.itemPrice || 0).toLocaleString('en-IN')}</td>
+              <td class="p-2.5 text-right font-semibold text-slate-800">₹${(fo.foodCharge || 0).toLocaleString('en-IN')}</td>
             `;
             tbody.appendChild(foodTr);
           }
@@ -1930,7 +1935,7 @@
 
       const container = document.getElementById('food-orders-container');
       const itemRow = document.createElement('div');
-      itemRow.className = "food-order-row grid grid-cols-1 sm:grid-cols-12 gap-1.5 items-end bg-white p-2 rounded border border-amber-200/80 shadow-xs";
+      itemRow.className = "food-order-row grid grid-cols-1 sm:grid-cols-12 gap-1.5 items-end bg-white p-2.5 rounded-2xl border border-amber-200/80 shadow-xs";
       
       const disabledAttr = disabled ? 'disabled' : '';
       const bgClass = disabled ? 'bg-slate-100 cursor-not-allowed text-slate-500' : 'bg-white';
@@ -1938,30 +1943,30 @@
       itemRow.innerHTML = `
         <div class="sm:col-span-3">
           <label class="block font-semibold text-slate-600 mb-0.5">Item Name</label>
-          <input type="text" value="${desc}" ${disabledAttr} placeholder="e.g. Thali / Tea" class="cust-food-desc w-full ${bgClass} border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500">
+          <input type="text" value="${desc}" ${disabledAttr} placeholder="e.g. Thali / Tea" class="cust-food-desc w-full ${bgClass} border border-slate-200 rounded-xl px-2.5 py-1 focus:outline-none focus:border-amber-500">
         </div>
 
         <div class="sm:col-span-3">
           <label class="block font-semibold text-slate-600 mb-0.5"><i class="fa-regular fa-clock text-amber-600 mr-1"></i> Date & Time</label>
           <div class="flex gap-1">
-            <input type="date" value="${dateStr}" ${disabledAttr} onchange="validateFoodRowDateTime(this)" class="cust-food-date w-3/5 ${bgClass} border border-slate-300 rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium text-[10px]">
-            <input type="time" value="${timeStr}" ${disabledAttr} onchange="validateFoodRowDateTime(this)" class="cust-food-time w-2/5 ${bgClass} border border-slate-300 rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium text-[10px]">
+            <input type="date" value="${dateStr}" ${disabledAttr} onchange="validateFoodRowDateTime(this)" class="cust-food-date w-3/5 ${bgClass} border border-slate-200 rounded-xl px-1.5 py-1 focus:outline-none focus:border-amber-500 font-medium text-[10px]">
+            <input type="time" value="${timeStr}" ${disabledAttr} onchange="validateFoodRowDateTime(this)" class="cust-food-time w-2/5 ${bgClass} border border-slate-200 rounded-xl px-1 py-1 focus:outline-none focus:border-amber-500 font-medium text-[10px]">
           </div>
         </div>
 
         <div class="sm:col-span-2">
           <label class="block font-semibold text-slate-600 mb-0.5">Price/Plate (₹)</label>
-          <input type="number" value="${itemPrice}" min="0" ${disabledAttr} oninput="calculateFoodRowTotal(this)" class="cust-food-price w-full ${bgClass} border border-slate-300 rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500">
+          <input type="number" value="${itemPrice}" min="0" ${disabledAttr} oninput="calculateFoodRowTotal(this)" class="cust-food-price w-full ${bgClass} border border-slate-200 rounded-xl px-2 py-1 focus:outline-none focus:border-amber-500">
         </div>
         
         <div class="sm:col-span-1">
           <label class="block font-semibold text-slate-600 mb-0.5">Plates</label>
-          <input type="number" value="${plates}" min="1" ${disabledAttr} oninput="calculateFoodRowTotal(this)" class="cust-food-plates w-full ${bgClass} border border-slate-300 rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500 font-bold">
+          <input type="number" value="${plates}" min="1" ${disabledAttr} oninput="calculateFoodRowTotal(this)" class="cust-food-plates w-full ${bgClass} border border-slate-200 rounded-xl px-2 py-1 focus:outline-none focus:border-amber-500 font-bold">
         </div>
 
         <div class="sm:col-span-2">
           <label class="block font-semibold text-slate-600 mb-0.5">Total (₹)</label>
-          <input type="number" value="${charge}" readonly class="cust-food-charge w-full bg-slate-100 font-bold text-amber-700 border border-slate-300 rounded px-1.5 py-1 cursor-not-allowed">
+          <input type="number" value="${charge}" readonly class="cust-food-charge w-full bg-slate-100 font-bold text-amber-700 border border-slate-200 rounded-xl px-2 py-1 cursor-not-allowed">
         </div>
 
         <div class="sm:col-span-1 flex justify-end">
@@ -2544,7 +2549,7 @@
         let statusDotHtml = "";
 
         if (!isMasterValid) {
-          statusBgClass = "bg-rose-200/90 hover:bg-rose-300/80 text-rose-900";
+          statusBgClass = "bg-rose-100/70 hover:bg-rose-200/60 text-rose-900";
         } else if (isInactive) {
           statusBgClass = "bg-slate-100 hover:bg-slate-200 text-slate-500 opacity-75";
         } else if (now < checkInTime) {
@@ -2569,14 +2574,14 @@
         }
 
         const printOnClick = `printInvoice('${b.id}')`;
-        const printBtnClass = "bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 rounded-md text-[11px] font-bold transition shadow-sm border border-indigo-700";
+        const printBtnClass = "bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-[11px] font-bold transition shadow-xs";
 
         let actionButtonsHtml = "";
 
         if (isExpiredOver3Days || isInactive || !isMasterValid) {
           actionButtonsHtml = `
             <div class="flex items-center justify-center space-x-1">
-              <button onclick="${printOnClick}" class="bg-slate-700 hover:bg-slate-800 text-white px-2.5 py-1 rounded-md text-[11px] font-bold transition shadow-sm border border-slate-900" title="View Entry in Read-Only / Print View Mode">
+              <button onclick="${printOnClick}" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-1 rounded-full text-[11px] font-bold transition shadow-xs" title="View Entry in Read-Only / Print View Mode">
                 <i class="fa-solid fa-eye text-[10px] mr-0.5"></i> Print View
               </button>
             </div>
@@ -2584,7 +2589,7 @@
         } else {
           actionButtonsHtml = `
             <div class="flex items-center justify-center space-x-1">
-              <button onclick="openBookingModal('${b.id}')" class="text-indigo-600 hover:text-indigo-800 p-1 text-sm" title="Edit Booking Details">
+              <button onclick="openBookingModal('${b.id}')" class="text-blue-600 hover:text-blue-800 p-1 text-sm" title="Edit Booking Details">
                 <i class="fa-solid fa-pen-to-square"></i>
               </button>              
               <button onclick="${printOnClick}" class="${printBtnClass}">Print</button>
@@ -2595,44 +2600,44 @@
         let idProofCellHtml = `<span class="text-slate-400 italic text-[10px]">None</span>`;
         if (b.idProofBase64) {
           idProofCellHtml = `
-            <button onclick="openPdfAttachment('${b.idProofBase64}')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 transition">
+            <button onclick="openPdfAttachment('${b.idProofBase64}')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 transition">
               <i class="fa-solid fa-file-pdf text-rose-600"></i> View PDF
             </button>
           `;
         }
 
         const tr = document.createElement('tr');
-        tr.className = `${statusBgClass} transition border-b border-slate-200/60`;
+        tr.className = `${statusBgClass} transition border-b border-slate-100`;
         tr.innerHTML = `
-          <td class="py-2 px-2">
+          <td class="py-2.5 px-3">
             <div class="flex items-center gap-1.5">
               ${statusDotHtml}
               ${b.inactive ? '<span class="w-2.5 h-2.5 bg-rose-600 rounded-full inline-block flex-shrink-0" title="Inactive Booking"></span>' : ''}
-              <span class="bg-indigo-50 border border-indigo-200 text-indigo-700 font-mono font-bold px-1.5 py-0.2 rounded text-[9px] block w-max">${b.bookingCode}</span>
+              <span class="bg-blue-50 border border-blue-200 text-blue-700 font-mono font-bold px-2 py-0.5 rounded-full text-[9px] block w-max">${b.bookingCode}</span>
             </div>
-            ${b.inactive ? '<span class="bg-slate-600 text-white font-bold px-1 py-0.1 rounded text-[8px] uppercase block mt-0.5 w-max">Inactive</span>' : (!isMasterValid ? '<span class="bg-rose-700 text-white font-bold px-1 py-0.1 rounded text-[8px] uppercase block mt-0.5 w-max">Master Removed</span>' : '')}
+            ${b.inactive ? '<span class="bg-slate-600 text-white font-bold px-1.5 py-0.2 rounded-full text-[8px] uppercase block mt-0.5 w-max">Inactive</span>' : (!isMasterValid ? '<span class="bg-rose-700 text-white font-bold px-1.5 py-0.2 rounded-full text-[8px] uppercase block mt-0.5 w-max">Master Removed</span>' : '')}
           </td>
-          <td class="py-2 px-2 font-bold ${!isMasterValid ? 'text-rose-950' : 'text-slate-800'}">${b.name}</td>
-          <td class="py-2 px-2 font-medium">${b.contactNo || '-'}</td>
-          <td class="py-2 px-2 font-mono text-[10px]">${b.idNo || '-'}</td>
-          <td class="py-2 px-2">${idProofCellHtml}</td>
-          <td class="py-2 px-2"><span class="bg-indigo-50 text-indigo-700 font-bold px-1.5 py-0.2 rounded text-[10px]">Room ${b.roomNo}</span></td>
-          <td class="py-2 px-2 font-bold text-slate-700">${b.capacity || 1} Person</td>
-          <td class="py-2 px-2 ${!isMasterValid ? 'text-rose-900' : 'text-slate-600'} text-[10px]">${b.agentInfo || '-'}</td>
-          <td class="py-2 px-2 text-[10px]">
+          <td class="py-2.5 px-3 font-bold ${!isMasterValid ? 'text-rose-950' : 'text-slate-800'}">${b.name}</td>
+          <td class="py-2.5 px-3 font-medium">${b.contactNo || '-'}</td>
+          <td class="py-2.5 px-3 font-mono text-[10px]">${b.idNo || '-'}</td>
+          <td class="py-2.5 px-3">${idProofCellHtml}</td>
+          <td class="py-2.5 px-3"><span class="bg-blue-50 text-blue-700 font-bold px-2 py-0.5 rounded-full text-[10px]">Room ${b.roomNo}</span></td>
+          <td class="py-2.5 px-3 font-bold text-slate-700">${b.capacity || 1} Person</td>
+          <td class="py-2.5 px-3 ${!isMasterValid ? 'text-rose-900' : 'text-slate-600'} text-[10px]">${b.agentInfo || '-'}</td>
+          <td class="py-2.5 px-3 text-[10px]">
             <div class="font-semibold ${!isMasterValid ? 'text-rose-950' : 'text-slate-700'}">${checkInFmt}</div>
-            <div class="${!isMasterValid ? 'text-rose-900' : 'text-slate-500'} text-[9px]">to ${checkOutFmt} ${b.hasExtendedCheckout ? '<span class="text-indigo-600 font-bold">(Ext)</span>' : ''}</div>
+            <div class="${!isMasterValid ? 'text-rose-900' : 'text-slate-500'} text-[9px]">to ${checkOutFmt} ${b.hasExtendedCheckout ? '<span class="text-blue-600 font-bold">(Ext)</span>' : ''}</div>
           </td>
-          <td class="py-2 px-2">
+          <td class="py-2.5 px-3">
             <div class="font-bold ${!isMasterValid ? 'text-rose-950' : 'text-slate-800'}">₹${b.perDayPrice}/day (${b.noOfDays}d)</div>
             ${foodSummaryHtml}
           </td>
-          <td class="py-2 px-2 font-bold ${!isMasterValid ? 'text-rose-950' : 'text-slate-800'}">
+          <td class="py-2.5 px-3 font-bold ${!isMasterValid ? 'text-rose-950' : 'text-slate-800'}">
             ₹${b.totalAmount}
             <span class="block text-[9px] text-emerald-600 font-medium">Adv: ₹${b.advanced}</span>
           </td>
-          <td class="py-2 px-2 font-bold ${b.totalDue > 0 ? 'text-rose-600' : 'text-emerald-600'}">₹${b.totalDue}</td>
-          <td class="py-2 px-2 text-center">
+          <td class="py-2.5 px-3 font-bold ${b.totalDue > 0 ? 'text-rose-600' : 'text-emerald-600'}">₹${b.totalDue}</td>
+          <td class="py-2.5 px-3 text-center">
             ${actionButtonsHtml}
           </td>
         `;
@@ -2653,13 +2658,13 @@
         const tr = document.createElement('tr');
         tr.className = "bg-white hover:bg-slate-50 transition border-b border-slate-100";
         tr.innerHTML = `
-          <td class="py-2 px-2">
-            <input type="number" value="${r.roomNo}" min="1" oninput="state.roomsCapacity[${idx}].roomNo = parseInt(this.value) || 1" onchange="populateRoomDropdown(); renderBookingsTable(); saveChanges(false, true)" class="w-24 bg-transparent font-bold text-indigo-700 focus:bg-white focus:border focus:border-indigo-300 rounded px-1 py-0.5">
+          <td class="py-2.5 px-3">
+            <input type="number" value="${r.roomNo}" min="1" oninput="state.roomsCapacity[${idx}].roomNo = parseInt(this.value) || 1" onchange="populateRoomDropdown(); renderBookingsTable(); saveChanges(false, true)" class="w-24 bg-transparent font-bold text-blue-600 focus:bg-white focus:border focus:border-blue-300 rounded-xl px-2 py-1">
           </td>
-          <td class="py-2 px-2">
-            <input type="number" value="${r.capacity}" min="1" oninput="state.roomsCapacity[${idx}].capacity = parseInt(this.value) || 1" onchange="saveChanges(false, true)" class="w-24 bg-transparent font-semibold text-slate-800 focus:bg-white focus:border focus:border-indigo-300 rounded px-1 py-0.5">
+          <td class="py-2.5 px-3">
+            <input type="number" value="${r.capacity}" min="1" oninput="state.roomsCapacity[${idx}].capacity = parseInt(this.value) || 1" onchange="saveChanges(false, true)" class="w-24 bg-transparent font-semibold text-slate-800 focus:bg-white focus:border focus:border-blue-300 rounded-xl px-2 py-1">
           </td>
-          <td class="py-2 px-2 text-center">
+          <td class="py-2.5 px-3 text-center">
             <button type="button" onclick="removeRoomCapacityRow(${idx})" class="text-rose-500 hover:text-rose-700 p-1 text-xs" title="Delete Room Entry">
               <i class="fa-solid fa-trash-can"></i>
             </button>
@@ -2682,16 +2687,16 @@
         const tr = document.createElement('tr');
         tr.className = "bg-white hover:bg-slate-50 transition border-b border-slate-100";
         tr.innerHTML = `
-          <td class="py-2 px-2">
-            <input type="text" value="${a.agentName}" oninput="state.masterAgents[${idx}].agentName = formatTitleCase(this.value)" onchange="populateAgentDropdown(); saveChanges(false, true)" class="w-full bg-transparent font-semibold text-slate-800 focus:bg-white focus:border focus:border-indigo-300 rounded px-1 py-0.5">
+          <td class="py-2.5 px-3">
+            <input type="text" value="${a.agentName}" oninput="state.masterAgents[${idx}].agentName = formatTitleCase(this.value)" onchange="populateAgentDropdown(); saveChanges(false, true)" class="w-full bg-transparent font-semibold text-slate-800 focus:bg-white focus:border focus:border-blue-300 rounded-xl px-2 py-1">
           </td>
-          <td class="py-2 px-2">
-            <input type="text" value="${a.phone}" oninput="state.masterAgents[${idx}].phone = this.value" onchange="populateAgentDropdown(); saveChanges(false, true)" class="w-full bg-transparent text-slate-600 focus:bg-white focus:border focus:border-indigo-300 rounded px-1 py-0.5">
+          <td class="py-2.5 px-3">
+            <input type="text" value="${a.phone}" oninput="state.masterAgents[${idx}].phone = this.value" onchange="populateAgentDropdown(); saveChanges(false, true)" class="w-full bg-transparent text-slate-600 focus:bg-white focus:border focus:border-blue-300 rounded-xl px-2 py-1">
           </td>
-          <td class="py-2 px-2 font-bold text-indigo-600">
+          <td class="py-2.5 px-3 font-bold text-blue-600">
             ${a.roomNo || 'All Rooms'}
           </td>
-          <td class="py-2 px-2 text-center">
+          <td class="py-2.5 px-3 text-center">
             <button type="button" onclick="removeAgentRow(${idx})" class="text-rose-500 hover:text-rose-700 p-1 text-xs" title="Delete Agent Entry">
               <i class="fa-solid fa-trash-can"></i>
             </button>
@@ -2753,11 +2758,11 @@
 
       months.forEach((monthName, monthIndex) => {
         const monthBox = document.createElement('div');
-        monthBox.className = "bg-slate-50 rounded-lg p-2.5 border border-slate-200 shadow-xs flex flex-col justify-between";
+        monthBox.className = "bg-slate-50/80 rounded-3xl p-3 border border-slate-200/60 shadow-xs flex flex-col justify-between";
 
         const title = document.createElement('h4');
-        title.className = "font-bold text-slate-700 text-[11px] mb-1.5 pb-1 border-b border-slate-200 flex justify-between items-center";
-        title.innerHTML = `<span>${monthName}</span> <span class="text-[9px] text-indigo-600 font-mono font-normal">${year}</span>`;
+        title.className = "font-bold text-slate-800 text-[11px] mb-2 pb-1 border-b border-slate-200/60 flex justify-between items-center px-1";
+        title.innerHTML = `<span>${monthName}</span> <span class="text-[9px] text-blue-600 font-mono font-normal">${year}</span>`;
         monthBox.appendChild(title);
 
         const grid = document.createElement('div');
@@ -2799,14 +2804,14 @@
           const isBooked = matchingBookings.length > 0;
           const isToday = isCurrentYearAndMonth && todayObj.getDate() === day;
 
-          cell.className = `py-1 rounded text-[10px] font-bold cursor-pointer transition relative flex items-center justify-center ${
+          cell.className = `py-1 rounded-xl text-[10px] font-bold cursor-pointer transition relative flex items-center justify-center ${
             isToday 
-              ? 'ring-2 ring-indigo-600 ring-offset-1 z-10' 
+              ? 'ring-2 ring-blue-600 ring-offset-1 z-10' 
               : ''
           } ${
             isBooked 
               ? 'bg-amber-400 text-slate-900 hover:bg-amber-500 shadow-xs' 
-              : 'bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-100'
+              : 'bg-white text-slate-700 hover:bg-blue-50 hover:text-blue-600 border border-slate-100'
           }`;
 
           cell.innerText = day;
@@ -2838,7 +2843,7 @@
 
       bookings.forEach(b => {
         const item = document.createElement('div');
-        item.className = "bg-slate-800 p-2 rounded border border-slate-700 space-y-1 hover:border-amber-400 transition cursor-pointer";
+        item.className = "bg-slate-800 p-2.5 rounded-2xl border border-slate-700 space-y-1 hover:border-blue-400 transition cursor-pointer";
         item.onclick = () => {
           closeCommentBox();
           openBookingModal(b.id);
@@ -2861,8 +2866,8 @@
 
         item.innerHTML = `
           <div class="flex justify-between items-center">
-            <span class="font-bold text-amber-300 text-[11px]">${b.name}</span>
-            <span class="bg-indigo-900 text-indigo-200 px-1.5 py-0.2 rounded text-[9px] font-mono">Room ${b.roomNo}</span>
+            <span class="font-bold text-blue-400 text-[11px]">${b.name}</span>
+            <span class="bg-blue-900/60 text-blue-200 px-2 py-0.5 rounded-full text-[9px] font-mono">Room ${b.roomNo}</span>
           </div>
           <div class="text-[9px] text-slate-300">
             Check-In: ${formatDateTime(b.checkIn)}<br>
