@@ -726,43 +726,43 @@
     </div>
   </div>
 
-  <!-- PRINTABLE INVOICE / BOOKING RECEIPT MODAL -->
-  <div id="invoice-modal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-xl w-full p-6 space-y-4 relative" id="printable-invoice">
+   <!-- FIXED & PRINTABLE INVOICE / BOOKING RECEIPT MODAL -->
+  <div id="invoice-modal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+    <div class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-xl w-full p-5 sm:p-6 space-y-4 relative my-auto max-h-[92vh] overflow-y-auto" id="printable-invoice">
       
       <!-- Read-Only Notice Bar (Shown for Closed/Inactive Bookings) -->
-      <div id="inv-readonly-notice" class="hidden bg-slate-900 text-amber-300 text-[10px] font-bold px-3.5 py-2 rounded-2xl flex items-center justify-between border border-slate-800">
+      <div id="inv-readonly-notice" class="hidden bg-slate-900 text-amber-300 text-[10px] font-bold px-3.5 py-2 rounded-2xl flex items-center justify-between border border-slate-800 no-print">
         <span class="flex items-center gap-1.5">
           <i class="fa-solid fa-lock text-amber-400"></i> Read-Only View Mode (Editing Disabled)
         </span>
         <span class="text-[9px] text-slate-400 font-normal">System Protected</span>
       </div>
 
-      <div class="flex justify-between items-start border-b border-slate-200/80 pb-4">
+      <div class="flex justify-between items-start border-b border-slate-200 pb-3">
         <div>
-          <h2 class="text-lg font-black text-blue-600 uppercase tracking-wide">Aniruddha Homestay</h2>
+          <h2 class="text-base sm:text-lg font-black text-blue-600 uppercase tracking-wide">Aniruddha Homestay</h2>
           <p class="text-[10px] text-slate-500 mt-0.5">Sittong, Village in West Bengal</p>
           <p class="text-[10px] text-slate-500">Phone: +91 9804396541 | Email: info@businessportal.com</p>
         </div>
         <div class="text-right">
-          <span id="inv-badge" class="inline-block bg-blue-50 text-blue-700 text-[9px] font-bold px-2.5 py-0.5 rounded-full uppercase mb-1">e-Invoice</span>
+          <span id="inv-badge" class="inline-block bg-blue-50 text-blue-700 text-[9px] font-bold px-2.5 py-0.5 rounded-full uppercase mb-1 border border-blue-100">e-Invoice</span>
           <p id="inv-id-container" class="text-[10px] text-slate-500">Invoice ID: <strong id="inv-id" class="text-slate-800 font-mono">INV-2026-0000001</strong></p>
           <p class="text-[10px] text-slate-500">Booking ID: <strong id="inv-booking-id" class="text-blue-600 font-mono">BKG-2026-0000001</strong></p>
           <p class="text-[10px] text-slate-500">Issued On: <strong id="inv-date" class="text-slate-800"></strong></p>
         </div>
       </div>
 
-      <div class="grid grid-cols-2 gap-4 bg-slate-50 p-3.5 rounded-2xl border border-slate-100 text-[11px]">
-        <div>
-          <h4 class="font-bold text-slate-400 uppercase text-[9px] tracking-wider mb-0.5">Guest Information</h4>
-          <p class="text-slate-800 font-semibold" id="inv-guest-name">-</p>
-          <p class="text-slate-600" id="inv-guest-address">Address: -</p>
+      <div class="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-100 text-[10px] sm:text-[11px]">
+        <div class="space-y-0.5">
+          <h4 class="font-bold text-slate-400 uppercase text-[9px] tracking-wider mb-1">Guest Information</h4>
+          <p class="text-slate-800 font-bold" id="inv-guest-name">-</p>
+          <p class="text-slate-600 leading-tight" id="inv-guest-address">Address: -</p>
           <p class="text-slate-600" id="inv-guest-contact">Contact: -</p>
           <p class="text-slate-600" id="inv-guest-id">ID No: -</p>
         </div>
-        <div>
-          <h4 class="font-bold text-slate-400 uppercase text-[9px] tracking-wider mb-0.5">Reservation Info</h4>
-          <p class="text-slate-800 font-semibold" id="inv-room">Room No: -</p>
+        <div class="space-y-0.5">
+          <h4 class="font-bold text-slate-400 uppercase text-[9px] tracking-wider mb-1">Reservation Info</h4>
+          <p class="text-slate-800 font-bold" id="inv-room">Room No: -</p>
           <p class="text-slate-600" id="inv-checkin">Check-in: -</p>
           <div id="inv-checkout-container" class="space-y-0.5">
             <p class="text-slate-600 font-medium" id="inv-checkout">Check-out: -</p>
@@ -771,22 +771,22 @@
         </div>
       </div>
 
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-[11px]">
+      <div class="overflow-x-auto border border-slate-100 rounded-2xl">
+        <table class="w-full text-left text-[10px] sm:text-[11px]">
           <thead>
             <tr class="bg-blue-50/70 text-blue-900 border-b border-blue-100">
-              <th class="p-2.5">Description</th>
-              <th class="p-2.5 text-center">Qty / Duration</th>
-              <th class="p-2.5 text-right">Rate/Day/Person</th>
-              <th class="p-2.5 text-right">Total Amount</th>
+              <th class="p-2 sm:p-2.5 font-bold">Description</th>
+              <th class="p-2 sm:p-2.5 text-center font-bold">Qty / Duration</th>
+              <th class="p-2 sm:p-2.5 text-right font-bold">Rate/Day</th>
+              <th class="p-2 sm:p-2.5 text-right font-bold">Total Amount</th>
             </tr>
           </thead>
           <tbody id="inv-items-tbody" class="divide-y divide-slate-100"></tbody>
         </table>
       </div>
 
-      <div class="flex justify-end pt-1 border-t border-slate-200/80">
-        <div class="w-1/2 space-y-1 text-[11px]">
+      <div class="flex justify-end pt-1">
+        <div class="w-1/2 space-y-1 text-[10px] sm:text-[11px]">
           <div class="flex justify-between text-slate-600">
             <span>Total Amount:</span>
             <strong id="inv-sum-total" class="text-slate-800">₹0</strong>
