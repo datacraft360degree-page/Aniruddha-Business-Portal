@@ -542,8 +542,8 @@
   </div>
 
   <!-- COMPACT ADD / EDIT BOOKING MODAL -->
-  <div id="booking-modal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-3 overflow-y-auto no-print">
-    <div class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-xl w-full p-5 space-y-3 my-4">
+ <div id="booking-modal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-3 overflow-y-auto no-print">
+    <div class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-3xl w-full p-5 space-y-3 my-4 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center pb-2.5 border-b border-slate-100">
         <div>
           <h3 id="modal-title" class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
