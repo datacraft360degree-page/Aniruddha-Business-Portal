@@ -855,6 +855,67 @@
       return initialOut + ONE_HOUR_MS;
     }
 
+    /* HELPER: CALCULATE EXTRA FOOD VALID TIME WINDOW (15 MIN POST CHECK-IN TO 30 MIN PRE CHECK-OUT / EXT CHECK-OUT) */
+    function getModalFoodWindow() {
+      const inDate = document.getElementById('cust-checkin-date')?.value;
+      const inTime = document.getElementById('cust-checkin-time')?.value || '12:00';
+      const hasExtCheckout = document.getElementById('cust-has-extended-checkout')?.checked;
+      
+      let outDate = document.getElementById('cust-checkout-date')?.value;
+      let outTime = document.getElementById('cust-checkout-time')?.value || '11:00';
+
+      if (hasExtCheckout) {
+        const extDate = document.getElementById('cust-ext-checkout-date')?.value;
+        const extTime = document.getElementById('cust-ext-checkout-time')?.value;
+        if (extDate) outDate = extDate;
+        if (extTime) outTime = extTime;
+      }
+
+      if (!inDate || !outDate) return null;
+
+      const checkInDt = new Date(`${inDate}T${inTime}`);
+      const checkOutDt = new Date(`${outDate}T${outTime}`);
+
+      if (isNaN(checkInDt.getTime()) || isNaN(checkOutDt.getTime())) return null;
+
+      const minFoodDt = new Date(checkInDt.getTime() + 15 * 60 * 1000);  // 15 Minutes after Check-In
+      const maxFoodDt = new Date(checkOutDt.getTime() - 30 * 60 * 1000); // 30 Minutes before Check-Out / Extended Check-Out
+
+      return { checkInDt, checkOutDt, minFoodDt, maxFoodDt };
+    }
+
+    function validateFoodRowDateTime(inputElem) {
+      const row = inputElem.closest('.food-order-row');
+      if (!row) return;
+
+      const fDate = row.querySelector('.cust-food-date').value;
+      const fTime = row.querySelector('.cust-food-time').value || '00:00';
+
+      if (!fDate) return;
+
+      const foodWin = getModalFoodWindow();
+      if (!foodWin) return;
+
+      const selectedDt = new Date(`${fDate}T${fTime}`);
+
+      if (selectedDt < foodWin.minFoodDt || selectedDt > foodWin.maxFoodDt) {
+        const minStr = formatDateTime(foodWin.minFoodDt.toISOString());
+        const maxStr = formatDateTime(foodWin.maxFoodDt.toISOString());
+        alert(`⚠️ Extra Food Order time must be after 15 mins of Check-In (${minStr}) and at least 30 mins before Check-Out (${maxStr})!`);
+        
+        // Adjust back to nearest valid window boundary
+        const targetDt = selectedDt < foodWin.minFoodDt ? foodWin.minFoodDt : foodWin.maxFoodDt;
+        const yyyy = targetDt.getFullYear();
+        const mm = String(targetDt.getMonth() + 1).padStart(2, '0');
+        const dd = String(targetDt.getDate()).padStart(2, '0');
+        const hh = String(targetDt.getHours()).padStart(2, '0');
+        const min = String(targetDt.getMinutes()).padStart(2, '0');
+
+        row.querySelector('.cust-food-date').value = `${yyyy}-${mm}-${dd}`;
+        row.querySelector('.cust-food-time').value = `${hh}:${min}`;
+      }
+    }
+
     function handleIdProofUpload(e) {
       const fileInput = e.target;
       const file = fileInput.files[0];
@@ -1836,6 +1897,37 @@
     }
 
     function addFoodOrderItem(desc = '', plates = 1, itemPrice = 0, charge = 0, dateStr = '', timeStr = '', disabled = false) {
+      const foodWin = getModalFoodWindow();
+
+      if (!foodWin && !disabled) {
+        alert("⚠️ Please enter valid Check-In and Check-Out date & time first before adding extra food!");
+        return;
+      }
+
+      if (foodWin && foodWin.minFoodDt >= foodWin.maxFoodDt && !disabled) {
+        alert("⚠️ Invalid stay window! The duration between Check-In (+15m) and Check-Out (-30m) is too short to order food.");
+        return;
+      }
+
+      // Auto default to valid window time if date/time not specified
+      if (!dateStr || !timeStr) {
+        if (foodWin) {
+          const now = new Date();
+          let defaultDt = now;
+          if (now < foodWin.minFoodDt || now > foodWin.maxFoodDt) {
+            defaultDt = foodWin.minFoodDt;
+          }
+          const yyyy = defaultDt.getFullYear();
+          const mm = String(defaultDt.getMonth() + 1).padStart(2, '0');
+          const dd = String(defaultDt.getDate()).padStart(2, '0');
+          const hh = String(defaultDt.getHours()).padStart(2, '0');
+          const min = String(defaultDt.getMinutes()).padStart(2, '0');
+
+          if (!dateStr) dateStr = `${yyyy}-${mm}-${dd}`;
+          if (!timeStr) timeStr = `${hh}:${min}`;
+        }
+      }
+
       const container = document.getElementById('food-orders-container');
       const itemRow = document.createElement('div');
       itemRow.className = "food-order-row grid grid-cols-1 sm:grid-cols-12 gap-1.5 items-end bg-white p-2 rounded border border-amber-200/80 shadow-xs";
@@ -1849,11 +1941,11 @@
           <input type="text" value="${desc}" ${disabledAttr} placeholder="e.g. Thali / Tea" class="cust-food-desc w-full ${bgClass} border border-slate-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500">
         </div>
 
-        <div class="sm:col-span-4">
+        <div class="sm:col-span-3">
           <label class="block font-semibold text-slate-600 mb-0.5"><i class="fa-regular fa-clock text-amber-600 mr-1"></i> Date & Time</label>
           <div class="flex gap-1">
-            <input type="date" value="${dateStr}" ${disabledAttr} class="cust-food-date w-3/5 ${bgClass} border border-slate-300 rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium text-[10px]">
-            <input type="time" value="${timeStr}" ${disabledAttr} class="cust-food-time w-2/5 ${bgClass} border border-slate-300 rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium text-[10px]">
+            <input type="date" value="${dateStr}" ${disabledAttr} onchange="validateFoodRowDateTime(this)" class="cust-food-date w-3/5 ${bgClass} border border-slate-300 rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium text-[10px]">
+            <input type="time" value="${timeStr}" ${disabledAttr} onchange="validateFoodRowDateTime(this)" class="cust-food-time w-2/5 ${bgClass} border border-slate-300 rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium text-[10px]">
           </div>
         </div>
 
@@ -1867,7 +1959,7 @@
           <input type="number" value="${plates}" min="1" ${disabledAttr} oninput="calculateFoodRowTotal(this)" class="cust-food-plates w-full ${bgClass} border border-slate-300 rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-amber-500 font-bold">
         </div>
 
-        <div class="sm:col-span-1">
+        <div class="sm:col-span-2">
           <label class="block font-semibold text-slate-600 mb-0.5">Total (₹)</label>
           <input type="number" value="${charge}" readonly class="cust-food-charge w-full bg-slate-100 font-bold text-amber-700 border border-slate-300 rounded px-1.5 py-1 cursor-not-allowed">
         </div>
@@ -2240,7 +2332,10 @@
         }
       }
 
+      const foodWin = getModalFoodWindow();
       const foodOrdersList = [];
+      let foodValidationError = false;
+
       document.querySelectorAll('.food-order-row').forEach(row => {
         const desc = row.querySelector('.cust-food-desc').value || '';
         const itemPrice = parseFloat(row.querySelector('.cust-food-price').value) || 0;
@@ -2252,6 +2347,12 @@
         const foodDateTime = (fDate && fTime) ? `${fDate}T${fTime}` : (fDate ? `${fDate}T00:00` : '');
 
         if (desc || charge > 0) {
+          if (foodWin && foodDateTime) {
+            const fDt = new Date(foodDateTime);
+            if (fDt < foodWin.minFoodDt || fDt > foodWin.maxFoodDt) {
+              foodValidationError = true;
+            }
+          }
           foodOrdersList.push({
             foodDesc: desc,
             itemPrice: itemPrice,
@@ -2261,6 +2362,13 @@
           });
         }
       });
+
+      if (foodValidationError && foodWin) {
+        const minStr = formatDateTime(foodWin.minFoodDt.toISOString());
+        const maxStr = formatDateTime(foodWin.maxFoodDt.toISOString());
+        alert(`❌ Extra Food Order Validation Error!\n\nAll Extra Food order times must be strictly after 15 minutes of Check-In (${minStr}) and at least 30 minutes before Check-Out / Extended Check-Out (${maxStr}).`);
+        return;
+      }
 
       const effectiveCheckout = (hasExtendedCheckout && extendedCheckOut) ? extendedCheckOut : checkOut;
       const newIn = new Date(checkIn).getTime();
