@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -1190,6 +1191,7 @@
       renderBookingsTable();
     }
 
+    /* POINT 2: MASTER DATA BOOKING SEARCH SHOWS ONLY NON-DELETED BOOKINGS */
     function searchMasterBookingById() {
       const inputElem = document.getElementById('master-booking-search-input');
       if (!inputElem) return;
@@ -1205,12 +1207,13 @@
         return;
       }
 
+      // Filter out deleted/inactive bookings from the Master Search list
       const matchedBookings = state.bookings.filter(item => 
-        (item.bookingCode || '').toUpperCase().includes(query)
+        !item.inactive && (item.bookingCode || '').toUpperCase().includes(query)
       );
 
       if (matchedBookings.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-rose-500 font-semibold">No booking found matching "${query}".</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-rose-500 font-semibold">No active booking found matching "${query}".</td></tr>`;
         return;
       }
 
@@ -1382,6 +1385,7 @@
       initDashboard();
     }
 
+    /* POINT 3: ALERT MESSAGE LOGIC IMPLEMENTATION */
     function checkUpcomingCheckoutsWithDue() {
       const now = new Date().getTime();
       const twoHoursMs = 2 * 60 * 60 * 1000;
@@ -1391,10 +1395,15 @@
         
         const checkOutTime = new Date(b.checkOut).getTime();
         const diff = checkOutTime - now;
-        const isBeforeTwoHours = (diff <= twoHoursMs);
+        
+        // Logic 1: Any booking that has due, notify until due clear
         const hasDue = (b.totalDue || 0) > 0;
 
-        return (isBeforeTwoHours || hasDue);
+        // Logic 2: Notify before 2 hours whenever any booking check out date and time is nearby
+        // (diff > 0 ensures it triggers in the 2-hour window leading up to checkout)
+        const isNearbyCheckOut = (diff >= 0 && diff <= twoHoursMs);
+
+        return (hasDue || isNearbyCheckOut);
       });
 
       const badge = document.getElementById('alert-badge');
@@ -1831,6 +1840,7 @@
       }
     }
 
+    /* POINT 1: OPEN MODAL VERIFICATION WITH 3 DAYS LIMIT */
     function openBookingModal(bookingId = null) {
       if (bookingId) {
         const b = state.bookings.find(item => item.id === bookingId);
@@ -1838,16 +1848,19 @@
         if (b) {
           const now = new Date().getTime();
           const checkOutTime = new Date(b.checkOut).getTime();
-          const isClosed = now > checkOutTime;
+          const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
 
           if (b.inactive) {
             alert("This booking details are inactive and cannot be edited.");
             return;
           }
-          if (isClosed) {
-            alert("This booking is Closed and cannot be edited.");
+
+          // Booking is editable till 3 days from check out date, after that non-editable
+          if (now > (checkOutTime + threeDaysMs)) {
+            alert("This booking closed more than 3 days ago. It is non-editable and can only be viewed or printed.");
             return;
           }
+
           if (!isRoomInMaster(b.roomNo)) {
             alert("This booking details were deleted from Master Data and cannot be opened or edited.");
             return;
@@ -2181,7 +2194,7 @@
       openMasterDeleteModal('booking', id);
     }
 
-    // RENDER BOOKINGS TABLE WITH LOGIC FOR CLOSED AND INACTIVE ACTIONS
+    /* POINT 1: RENDER BOOKING TABLE ACTION CONTROLS EDITABILITY BY 3 DAYS POST CHECKOUT */
     function renderBookingsTable(dateFilter = "") {
       const tbody = document.getElementById('bookings-tbody');
       tbody.innerHTML = '';
@@ -2198,6 +2211,7 @@
       }
 
       const now = new Date().getTime();
+      const threeDaysMs = 3 * 24 * 60 * 60 * 1000; // 3 Days Window Limit
 
       const getStatusPriority = (b) => {
         const isMasterValid = isRoomInMaster(b.roomNo);
@@ -2242,6 +2256,7 @@
         const checkOutTime = new Date(b.checkOut).getTime();
 
         const isClosed = now > checkOutTime;
+        const isExpiredOver3Days = isClosed && (now > (checkOutTime + threeDaysMs));
         const isInactive = b.inactive;
 
         let statusBgClass = "hover:bg-slate-50";
@@ -2277,24 +2292,17 @@
 
         let actionButtonsHtml = "";
 
-        if (isClosed) {
-          // Closed Booking Logic: Print option available, but NO Edit button
+        if (isExpiredOver3Days || isInactive || !isMasterValid) {
+          // Closed > 3 Days OR Inactive / Removed: Non-editable, Print View only
           actionButtonsHtml = `
             <div class="flex items-center justify-center space-x-1">
-              <button onclick="${printOnClick}" class="${printBtnClass}">Print</button>
-            </div>
-          `;
-        } else if (isInactive || !isMasterValid) {
-          // Inactive Booking Logic: No Edit option, No Print option, only Print View (Read-Only Mode)
-          actionButtonsHtml = `
-            <div class="flex items-center justify-center space-x-1">
-              <button onclick="${printOnClick}" class="bg-slate-700 hover:bg-slate-800 text-white px-2.5 py-1 rounded-md text-[11px] font-bold transition shadow-sm border border-slate-900" title="View Entry in Read-Only Mode">
+              <button onclick="${printOnClick}" class="bg-slate-700 hover:bg-slate-800 text-white px-2.5 py-1 rounded-md text-[11px] font-bold transition shadow-sm border border-slate-900" title="View Entry in Read-Only / Print View Mode">
                 <i class="fa-solid fa-eye text-[10px] mr-0.5"></i> Print View
               </button>
             </div>
           `;
         } else {
-          // Live / Upcoming Bookings
+          // Editable Window (Live, Upcoming, or Closed within 3 Days)
           actionButtonsHtml = `
             <div class="flex items-center justify-center space-x-1">
               <button onclick="openBookingModal('${b.id}')" class="text-indigo-600 hover:text-indigo-800 p-1 text-sm" title="Edit Booking Details">
