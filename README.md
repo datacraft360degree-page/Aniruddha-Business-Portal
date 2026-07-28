@@ -856,8 +856,7 @@
       if (b.hasExtendedCheckout && b.extendedCheckOut) {
         return new Date(b.extendedCheckOut).getTime();
       }
-      const initialOut = new Date(b.checkOut).getTime();
-      return initialOut + ONE_HOUR_MS;
+      return new Date(b.checkOut).getTime();
     }
 
     /* HELPER: CALCULATE EXTRA FOOD VALID TIME WINDOW (15 MIN POST CHECK-IN TO 30 MIN PRE CHECK-OUT / EXT CHECK-OUT) */
@@ -1252,12 +1251,12 @@
         let statusStr = "Upcoming";
         if (b.inactive) {
           statusStr = "Inactive"; 
+        } else if (now > cOut) {
+          statusStr = "Closed";   
         } else if (now >= cIn && now <= cOut) {
           statusStr = "Live";     
         } else if (now < cIn) {
           statusStr = "Upcoming"; 
-        } else if (now > cOut) {
-          statusStr = "Closed";   
         }
 
         let foodSummary = "";
@@ -1507,7 +1506,6 @@
     }
 
     function checkUpcomingCheckoutsWithDue() {
-      // POINT 1: Alert will notify until due is cleared for live, upcoming, and closed booking IDs (goes beyond check-out date). No 2-hour before requirement.
       const alertBookings = state.bookings.filter(b => {
         if (!isRoomInMaster(b.roomNo) || b.inactive) return false;
         
@@ -1762,6 +1760,7 @@
       const now = new Date().getTime();
       const checkOutTime = getEffectiveCheckoutTime(b);
 
+      // Check-out time over automatically behaves as a closed booking
       const isClosed = now > checkOutTime;
       const isInactive = b.inactive;
       const hasDue = (b.totalDue || 0) > 0;
@@ -1788,7 +1787,7 @@
           invPrintBtn.innerHTML = `<i class="fa-solid fa-eye"></i> Read Only`;
         }
       }
-      // If booking ID is closed with clear due
+      // If booking ID is closed (or check-out time is over) with clear due
       else if (isClosed && !hasDue) {
         readOnlyNotice.classList.add('hidden');
         if (invBadge) invBadge.classList.remove('hidden');
@@ -1800,7 +1799,7 @@
           invPrintBtn.innerHTML = `<i class="fa-solid fa-print"></i> Print Invoice`;
         }
       }
-      // If booking ID is closed with due payment
+      // If booking ID is closed (or check-out time is over) with due payment
       else if (isClosed && hasDue) {
         readOnlyNotice.classList.remove('hidden');
         if (invBadge) invBadge.classList.add('hidden');
@@ -2026,7 +2025,7 @@
           const checkInTime = new Date(b.checkIn).getTime();
           const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
 
-          // POINT 2: Identify if booking is Live or Closed
+          // Once check-out time is over, booking is treated as Closed
           if (now >= checkInTime) {
             isLiveOrClosedBooking = true;
           }
@@ -2041,6 +2040,7 @@
             return;
           }
 
+          // Check-out time over = closed booking behavior
           if (now > effectiveCheckoutTime) {
             if (now > (effectiveCheckoutTime + threeDaysMs)) {
               alert("This booking closed more than 3 days ago. It is non-editable and can only be viewed or printed.");
@@ -2068,7 +2068,7 @@
       setSectionEditability('sec-guest-info', !isClosedAndWithin3Days);
       setSectionEditability('sec-room-dates', !isClosedAndWithin3Days);
 
-      // POINT 2: Lock check-in date/time fields if booking is Live or Closed
+      // Lock check-in date/time fields if booking is Live or Closed (including check-out time over)
       const checkInDateElem = document.getElementById('cust-checkin-date');
       const checkInTimeElem = document.getElementById('cust-checkin-time');
       if (checkInDateElem && checkInTimeElem) {
@@ -2147,20 +2147,19 @@
           }
 
           const initialCheckOutTime = new Date(b.checkOut).getTime();
-          const extActiveLimit = initialCheckOutTime + ONE_HOUR_MS;
           const timerNotice = document.getElementById('ext-checkout-timer-notice');
 
-          if (now > extActiveLimit && !b.hasExtendedCheckout) {
+          if (now > initialCheckOutTime && !b.hasExtendedCheckout) {
             extChkBox.disabled = true;
             if (timerNotice) {
-              timerNotice.innerText = "(Extended check-out expired after 1h)";
+              timerNotice.innerText = "(Check-out time expired)";
               timerNotice.classList.remove('hidden');
               timerNotice.classList.add('text-rose-600');
             }
           } else {
             extChkBox.disabled = isClosedAndWithin3Days;
             if (timerNotice) {
-              timerNotice.innerText = "(Active for 1h post check-out)";
+              timerNotice.innerText = "(Active post check-out)";
               timerNotice.classList.remove('hidden');
               timerNotice.classList.remove('text-rose-600');
             }
@@ -2543,12 +2542,12 @@
         const cIn = new Date(b.checkIn).getTime();
         const cOut = getEffectiveCheckoutTime(b);
 
-        if (now >= cIn && now <= cOut) {
-          return 1; 
-        } else if (now < cIn) {
-          return 2; 
-        } else {
+        if (now > cOut) {
           return 3; 
+        } else if (now >= cIn && now <= cOut) {
+          return 1; 
+        } else {
+          return 2; 
         }
       };
 
@@ -2578,6 +2577,7 @@
         const checkInTime = new Date(b.checkIn).getTime();
         const checkOutTime = getEffectiveCheckoutTime(b);
 
+        // Check-out time over = closed booking behavior
         const isClosed = now > checkOutTime;
         const isExpiredOver3Days = isClosed && (now > (checkOutTime + threeDaysMs));
         const isInactive = b.inactive;
@@ -2590,8 +2590,8 @@
           statusBgClass = "bg-rose-100/70 hover:bg-rose-200/60 text-rose-900";
         } else if (isInactive) {
           statusBgClass = "bg-slate-100 hover:bg-slate-200 text-slate-500 opacity-75";
-        } else if (now < checkInTime) {
-          statusDotHtml = `<span class="w-2.5 h-2.5 bg-blue-500 rounded-full inline-block flex-shrink-0" title="Upcoming Booking"></span>`;
+        } else if (isClosed) {
+          statusDotHtml = `<span class="w-2.5 h-2.5 bg-emerald-500 rounded-full inline-block flex-shrink-0" title="Closed Booking"></span>`;
         } else if (now >= checkInTime && now <= checkOutTime) {
           statusDotHtml = `
             <span class="relative flex h-2.5 w-2.5 flex-shrink-0" title="Live Booking">
@@ -2599,8 +2599,8 @@
               <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
             </span>
           `;
-        } else if (isClosed) {
-          statusDotHtml = `<span class="w-2.5 h-2.5 bg-emerald-500 rounded-full inline-block flex-shrink-0" title="Closed Booking"></span>`;
+        } else if (now < checkInTime) {
+          statusDotHtml = `<span class="w-2.5 h-2.5 bg-blue-500 rounded-full inline-block flex-shrink-0" title="Upcoming Booking"></span>`;
         }
 
         let foodSummaryHtml = '';
@@ -2624,7 +2624,7 @@
             </div>
           `;
         } 
-        // Closed post 3 days
+        // Closed post 3 days (or Check-out time over + 3 days)
         else if (isExpiredOver3Days) {
           actionButtonsHtml = `
             <div class="flex items-center justify-center space-x-1">
@@ -2634,7 +2634,7 @@
             </div>
           `;
         }
-        // Live, Upcoming, or Closed within 3 days
+        // Live, Upcoming, or Closed (including check-out time over) within 3 days
         else {
           let printBtnHtml = `<button onclick="${printOnClick}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-[11px] font-bold transition shadow-xs">Print</button>`;
           
@@ -2911,12 +2911,12 @@
         let statusText = "Upcoming";
         let statusColorClass = "text-blue-400 font-bold";
 
-        if (now >= cInMs && now <= cOutMs) {
-          statusText = "Live";
-          statusColorClass = "text-amber-400 font-bold";
-        } else if (now > cOutMs) {
+        if (now > cOutMs) {
           statusText = "Closed";
           statusColorClass = "text-emerald-400 font-bold";
+        } else if (now >= cInMs && now <= cOutMs) {
+          statusText = "Live";
+          statusColorClass = "text-amber-400 font-bold";
         }
 
         item.innerHTML = `
