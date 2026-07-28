@@ -1,5 +1,3 @@
-
-
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -2127,7 +2125,7 @@
         const b = state.bookings.find(item => item.id === bookingId);
         if (b) {
           document.getElementById('modal-title').innerText = isClosedAndWithin3Days 
-            ? 'Closed Booking - Billing Summary Only' 
+            ? 'Closed Booking' 
             : 'Edit Booking Details';
           
           document.getElementById('modal-booking-id').value = b.id;
