@@ -1,3 +1,5 @@
+
+
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -1508,18 +1510,21 @@
 
     function checkUpcomingCheckoutsWithDue() {
       const now = new Date().getTime();
-      const twoHoursMs = 2 * 60 * 60 * 1000;
 
       const alertBookings = state.bookings.filter(b => {
         if (!b.checkOut || !isRoomInMaster(b.roomNo) || b.inactive) return false;
         
         const checkOutTime = getEffectiveCheckoutTime(b);
-        const diff = checkOutTime - now;
-        
         const hasDue = (b.totalDue || 0) > 0;
-        const isNearbyCheckOut = (diff >= 0 && diff <= twoHoursMs);
+        const isClosed = now > checkOutTime;
+        const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
 
-        return (hasDue || isNearbyCheckOut);
+        // POINT 4: If booking ID closed with due payment then show in alert for post 3days only after checkout time over so user can edit or clear due.
+        if (isClosed && hasDue) {
+          return (now <= checkOutTime + threeDaysMs);
+        }
+
+        return false;
       });
 
       const badge = document.getElementById('alert-badge');
@@ -1780,48 +1785,80 @@
 
       const isClosed = now > checkOutTime;
       const isInactive = b.inactive;
-      const isMasterValid = isRoomInMaster(b.roomNo);
+      const hasDue = (b.totalDue || 0) > 0;
+      const today = formatDate(new Date());
 
       const readOnlyNotice = document.getElementById('inv-readonly-notice');
       const invPrintBtn = document.getElementById('inv-print-btn');
       const invBadge = document.getElementById('inv-badge');
       const invIdContainer = document.getElementById('inv-id-container');
 
-      if (isInactive || !isMasterValid) {
+      // Hide invoice number on modal display
+      if (invIdContainer) {
+        invIdContainer.querySelector('strong').innerText = b.invoiceNo || 'INV-2026-0000001';
+      }
+
+      // POINT 1: If booking ID is inactive -> View option enabled as read-only mode & E-invoice number hidden
+      if (isInactive) {
         readOnlyNotice.classList.remove('hidden');
-        if (invPrintBtn) invPrintBtn.classList.add('hidden'); 
-      } else if (isClosed) {
-        readOnlyNotice.classList.remove('hidden');
+        if (invBadge) invBadge.classList.add('hidden');
+        if (invIdContainer) invIdContainer.classList.add('hidden');
+        if (invPrintBtn) {
+          invPrintBtn.classList.remove('hidden');
+          invPrintBtn.disabled = true;
+          invPrintBtn.className = "px-4 py-1.5 bg-slate-200 text-slate-400 rounded-xl font-semibold cursor-not-allowed flex items-center gap-1 border border-slate-300";
+          invPrintBtn.innerHTML = `<i class="fa-solid fa-eye"></i> Read Only`;
+        }
+      }
+      // POINT 2: If booking ID is closed with clear due -> E-invoice & invoice number unhidden, print option enabled
+      else if (isClosed && !hasDue) {
+        readOnlyNotice.classList.add('hidden');
+        if (invBadge) invBadge.classList.remove('hidden');
+        if (invIdContainer) invIdContainer.classList.remove('hidden');
         if (invPrintBtn) {
           invPrintBtn.classList.remove('hidden');
           invPrintBtn.disabled = false;
           invPrintBtn.className = "px-4 py-1.5 bg-blue-600 text-white rounded-xl font-semibold shadow-sm flex items-center gap-1 transition hover:bg-blue-700 cursor-pointer";
           invPrintBtn.innerHTML = `<i class="fa-solid fa-print"></i> Print Invoice`;
         }
-      } else {
-        readOnlyNotice.classList.add('hidden');
-        if (invPrintBtn) invPrintBtn.classList.remove('hidden');
       }
-
-      const hasDue = b.totalDue > 0;
-      const today = formatDate(new Date());
-
-      if (hasDue && !isClosed && !isInactive && isMasterValid) {
-        invBadge.classList.add('hidden');
-        invIdContainer.classList.add('hidden');
+      // POINT 3: If booking ID is closed with due payment -> E-invoice number hidden, print option read-only mode
+      else if (isClosed && hasDue) {
+        readOnlyNotice.classList.remove('hidden');
+        if (invBadge) invBadge.classList.add('hidden');
+        if (invIdContainer) invIdContainer.classList.add('hidden');
         if (invPrintBtn) {
+          invPrintBtn.classList.remove('hidden');
           invPrintBtn.disabled = true;
           invPrintBtn.className = "px-4 py-1.5 bg-slate-200 text-slate-400 rounded-xl font-semibold cursor-not-allowed flex items-center gap-1 border border-slate-300";
-          invPrintBtn.innerHTML = `<i class="fa-solid fa-lock"></i> Print Disabled (Clear Due)`;
+          invPrintBtn.innerHTML = `<i class="fa-solid fa-lock"></i> Read Only (Due Pending)`;
         }
-      } else if (!isClosed && !isInactive && isMasterValid) {
-        invBadge.classList.remove('hidden');
-        invIdContainer.classList.remove('hidden');
-        document.getElementById('inv-id').innerText = b.invoiceNo;
-        if (invPrintBtn) {
-          invPrintBtn.disabled = false;
-          invPrintBtn.className = "px-4 py-1.5 bg-blue-600 text-white rounded-xl font-semibold shadow-sm flex items-center gap-1 transition hover:bg-blue-700 cursor-pointer";
-          invPrintBtn.innerHTML = `<i class="fa-solid fa-print"></i> Print Invoice`;
+      }
+      // POINT 5: Live or Upcoming bookings
+      else {
+        // Live/Upcoming with due payment -> E-invoice number hidden, print option read-only
+        if (hasDue) {
+          readOnlyNotice.classList.add('hidden');
+          if (invBadge) invBadge.classList.add('hidden');
+          if (invIdContainer) invIdContainer.classList.add('hidden');
+          if (invPrintBtn) {
+            invPrintBtn.classList.remove('hidden');
+            invPrintBtn.disabled = true;
+            invPrintBtn.className = "px-4 py-1.5 bg-slate-200 text-slate-400 rounded-xl font-semibold cursor-not-allowed flex items-center gap-1 border border-slate-300";
+            invPrintBtn.innerHTML = `<i class="fa-solid fa-lock"></i> Read Only (Clear Due)`;
+          }
+        } 
+        // Live/Upcoming with no due -> E-invoice number unhidden, print option enabled
+        else {
+          readOnlyNotice.classList.add('hidden');
+          if (invBadge) invBadge.classList.remove('hidden');
+          if (invIdContainer) invIdContainer.classList.remove('hidden');
+          if (invPrintBtn) {
+            invPrintBtn.classList.remove('hidden');
+            invPrintBtn.disabled = false;
+            invPrintBtn.className = "px-4 py-1.5 bg-blue-600 text-white rounded-xl font-semibold shadow-sm flex items-center gap-1 transition hover:bg-blue-700 cursor-pointer";
+            invPrintBtn.innerHTML = `<i class="fa-solid fa-print"></i> Print Invoice`;
+          }
         }
       }
 
@@ -2021,6 +2058,7 @@
             return;
           }
 
+          // POINT 4: Post 3 days after check-out over, we cannot edit closed booking
           if (now > effectiveCheckoutTime) {
             if (now > (effectiveCheckoutTime + threeDaysMs)) {
               alert("This booking closed more than 3 days ago. It is non-editable and can only be viewed or printed.");
@@ -2544,6 +2582,7 @@
         const isClosed = now > checkOutTime;
         const isExpiredOver3Days = isClosed && (now > (checkOutTime + threeDaysMs));
         const isInactive = b.inactive;
+        const hasDue = (b.totalDue || 0) > 0;
 
         let statusBgClass = "hover:bg-slate-50";
         let statusDotHtml = "";
@@ -2574,25 +2613,43 @@
         }
 
         const printOnClick = `printInvoice('${b.id}')`;
-        const printBtnClass = "bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-[11px] font-bold transition shadow-xs";
-
         let actionButtonsHtml = "";
 
-        if (isExpiredOver3Days || isInactive || !isMasterValid) {
+        // POINT 1: Inactive Booking
+        if (isInactive) {
           actionButtonsHtml = `
             <div class="flex items-center justify-center space-x-1">
-              <button onclick="${printOnClick}" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-1 rounded-full text-[11px] font-bold transition shadow-xs" title="View Entry in Read-Only / Print View Mode">
-                <i class="fa-solid fa-eye text-[10px] mr-0.5"></i> Print View
+              <button onclick="${printOnClick}" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-1 rounded-full text-[11px] font-bold transition shadow-xs" title="View Entry in Read-Only Mode">
+                <i class="fa-solid fa-eye text-[10px] mr-0.5"></i> Read Only
               </button>
             </div>
           `;
-        } else {
+        } 
+        // POINT 4: Closed post 3 days
+        else if (isExpiredOver3Days) {
+          actionButtonsHtml = `
+            <div class="flex items-center justify-center space-x-1">
+              <button onclick="${printOnClick}" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-1 rounded-full text-[11px] font-bold transition shadow-xs" title="Non-editable (Closed over 3 days)">
+                <i class="fa-solid fa-eye text-[10px] mr-0.5"></i> Read Only
+              </button>
+            </div>
+          `;
+        }
+        // Live, Upcoming, or Closed within 3 days
+        else {
+          let printBtnHtml = `<button onclick="${printOnClick}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-[11px] font-bold transition shadow-xs">Print</button>`;
+          
+          // POINT 3 & POINT 5: Read-only mode for print option if due exists
+          if (hasDue) {
+            printBtnHtml = `<button onclick="${printOnClick}" class="bg-slate-300 text-slate-600 cursor-not-allowed px-3 py-1 rounded-full text-[11px] font-bold shadow-xs" title="Print is in read-only mode until due is cleared">Read Only</button>`;
+          }
+
           actionButtonsHtml = `
             <div class="flex items-center justify-center space-x-1">
               <button onclick="openBookingModal('${b.id}')" class="text-blue-600 hover:text-blue-800 p-1 text-sm" title="Edit Booking Details">
                 <i class="fa-solid fa-pen-to-square"></i>
               </button>              
-              <button onclick="${printOnClick}" class="${printBtnClass}">Print</button>
+              ${printBtnHtml}
             </div>
           `;
         }
