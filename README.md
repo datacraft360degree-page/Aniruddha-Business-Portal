@@ -653,7 +653,7 @@
               <div class="flex items-center gap-2 mb-1">
                 <input type="checkbox" id="cust-has-extended-checkout" onchange="toggleExtendedCheckoutFields(this.checked)" class="w-4 h-4 text-blue-600 rounded-md border-slate-300 focus:ring-blue-500 cursor-pointer">
                 <label for="cust-has-extended-checkout" id="lbl-has-extended-checkout" class="font-bold text-slate-700 cursor-pointer flex items-center gap-1 select-none text-[11px]">
-                  <i class="fa-solid fa-clock-rotate-left text-blue-600"></i> Extended Check-out Date & Time <span id="ext-checkout-timer-notice" class="text-[9px] text-amber-700 font-normal ml-1 hidden">(Active for 1h post check-out)</span>
+                  <i class="fa-solid fa-clock-rotate-left text-blue-600"></i> Extended Check-out Date & Time <span id="ext-checkout-timer-notice" class="text-[9px] text-amber-700 font-normal ml-1 hidden">(Active post check-out)</span>
                 </label>
               </div>
 
@@ -1760,7 +1760,6 @@
       const now = new Date().getTime();
       const checkOutTime = getEffectiveCheckoutTime(b);
 
-      // Check-out time over automatically behaves as a closed booking
       const isClosed = now > checkOutTime;
       const isInactive = b.inactive;
       const hasDue = (b.totalDue || 0) > 0;
@@ -2025,7 +2024,7 @@
           const checkInTime = new Date(b.checkIn).getTime();
           const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
 
-          // Once check-out time is over, booking is treated as Closed
+          // Identify if booking is Live or Closed (including check-out time over)
           if (now >= checkInTime) {
             isLiveOrClosedBooking = true;
           }
@@ -2040,7 +2039,6 @@
             return;
           }
 
-          // Check-out time over = closed booking behavior
           if (now > effectiveCheckoutTime) {
             if (now > (effectiveCheckoutTime + threeDaysMs)) {
               alert("This booking closed more than 3 days ago. It is non-editable and can only be viewed or printed.");
@@ -2068,22 +2066,25 @@
       setSectionEditability('sec-guest-info', !isClosedAndWithin3Days);
       setSectionEditability('sec-room-dates', !isClosedAndWithin3Days);
 
-      // Lock check-in date/time fields if booking is Live or Closed (including check-out time over)
+      // Lock check-in and check-out date/time fields if booking is Live or Closed
       const checkInDateElem = document.getElementById('cust-checkin-date');
       const checkInTimeElem = document.getElementById('cust-checkin-time');
-      if (checkInDateElem && checkInTimeElem) {
-        if (isLiveOrClosedBooking) {
-          checkInDateElem.disabled = true;
-          checkInTimeElem.disabled = true;
-          checkInDateElem.classList.add('bg-slate-100', 'cursor-not-allowed', 'text-slate-500');
-          checkInTimeElem.classList.add('bg-slate-100', 'cursor-not-allowed', 'text-slate-500');
-        } else {
-          checkInDateElem.disabled = false;
-          checkInTimeElem.disabled = false;
-          checkInDateElem.classList.remove('bg-slate-100', 'cursor-not-allowed', 'text-slate-500');
-          checkInTimeElem.classList.remove('bg-slate-100', 'cursor-not-allowed', 'text-slate-500');
+      const checkOutDateElem = document.getElementById('cust-checkout-date');
+      const checkOutTimeElem = document.getElementById('cust-checkout-time');
+
+      const dateFields = [checkInDateElem, checkInTimeElem, checkOutDateElem, checkOutTimeElem];
+
+      dateFields.forEach(el => {
+        if (el) {
+          if (isLiveOrClosedBooking) {
+            el.disabled = true;
+            el.classList.add('bg-slate-100', 'cursor-not-allowed', 'text-slate-500');
+          } else {
+            el.disabled = false;
+            el.classList.remove('bg-slate-100', 'cursor-not-allowed', 'text-slate-500');
+          }
         }
-      }
+      });
       
       const addFoodBtn = document.getElementById('btn-add-food-order');
       if (addFoodBtn) {
@@ -2577,7 +2578,6 @@
         const checkInTime = new Date(b.checkIn).getTime();
         const checkOutTime = getEffectiveCheckoutTime(b);
 
-        // Check-out time over = closed booking behavior
         const isClosed = now > checkOutTime;
         const isExpiredOver3Days = isClosed && (now > (checkOutTime + threeDaysMs));
         const isInactive = b.inactive;
@@ -2624,7 +2624,7 @@
             </div>
           `;
         } 
-        // Closed post 3 days (or Check-out time over + 3 days)
+        // Closed post 3 days
         else if (isExpiredOver3Days) {
           actionButtonsHtml = `
             <div class="flex items-center justify-center space-x-1">
@@ -2634,7 +2634,7 @@
             </div>
           `;
         }
-        // Live, Upcoming, or Closed (including check-out time over) within 3 days
+        // Live, Upcoming, or Closed within 3 days
         else {
           let printBtnHtml = `<button onclick="${printOnClick}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-[11px] font-bold transition shadow-xs">Print</button>`;
           
