@@ -1,5 +1,3 @@
-
-
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -527,7 +525,7 @@
       <div class="bg-amber-500 p-4 text-white flex justify-between items-center">
         <div class="flex items-center space-x-2">
           <i class="fa-solid fa-bell text-base"></i>
-          <h3 class="text-xs font-bold">Check-out Alert</h3>
+          <h3 class="text-xs font-bold">Due Payment Alert</h3>
         </div>
         <button onclick="closeAlertModal()" class="text-amber-100 hover:text-white px-1 text-base">
           <i class="fa-solid fa-xmark"></i>
@@ -1509,22 +1507,12 @@
     }
 
     function checkUpcomingCheckoutsWithDue() {
-      const now = new Date().getTime();
-
+      // POINT 1: Alert will notify until due is cleared for live, upcoming, and closed booking IDs (goes beyond check-out date). No 2-hour before requirement.
       const alertBookings = state.bookings.filter(b => {
-        if (!b.checkOut || !isRoomInMaster(b.roomNo) || b.inactive) return false;
+        if (!isRoomInMaster(b.roomNo) || b.inactive) return false;
         
-        const checkOutTime = getEffectiveCheckoutTime(b);
         const hasDue = (b.totalDue || 0) > 0;
-        const isClosed = now > checkOutTime;
-        const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
-
-        // POINT 4: If booking ID closed with due payment then show in alert for post 3days only after checkout time over so user can edit or clear due.
-        if (isClosed && hasDue) {
-          return (now <= checkOutTime + threeDaysMs);
-        }
-
-        return false;
+        return hasDue;
       });
 
       const badge = document.getElementById('alert-badge');
@@ -1551,8 +1539,8 @@
             <div class="bg-emerald-50 text-emerald-600 w-10 h-10 rounded-2xl flex items-center justify-center mx-auto text-base">
               <i class="fa-solid fa-circle-check"></i>
             </div>
-            <p class="font-bold text-slate-800">No Check-out Alerts</p>
-            <p class="text-slate-400 text-[10px]">No upcoming check-outs within 2 hours or pending dues found.</p>
+            <p class="font-bold text-slate-800">No Due Payment Alerts</p>
+            <p class="text-slate-400 text-[10px]">All bookings have clear payments with no pending dues.</p>
           </div>
         `;
         return;
@@ -1561,21 +1549,12 @@
       alertList.forEach((b, i) => {
         const effectiveOut = (b.hasExtendedCheckout && b.extendedCheckOut) ? b.extendedCheckOut : b.checkOut;
         const timeFormatted = formatDateTime(effectiveOut);
-        const hasDue = (b.totalDue || 0) > 0;
 
         const card = document.createElement('div');
         card.className = "bg-amber-50/60 border border-amber-200/80 rounded-2xl overflow-hidden shadow-xs";
         
-        let alertMessageText = "";
-        let alertBadgeHtml = "";
-
-        if (!hasDue) {
-          alertMessageText = `Checkout: <strong>${timeFormatted}</strong> | Room ${b.roomNo} | Guest: <strong>${b.name}</strong>`;
-          alertBadgeHtml = `<span class="text-[11px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">No Due (Paid)</span>`;
-        } else {
-          alertMessageText = `Checkout: <strong>${timeFormatted}</strong> | Room ${b.roomNo} | Guest: <strong>${b.name}</strong> | Total: ₹${b.totalAmount} | Due: ₹${b.totalDue}`;
-          alertBadgeHtml = `<span class="text-[11px] font-black text-rose-600 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-full">₹${b.totalDue.toLocaleString('en-IN')} Due</span>`;
-        }
+        const alertMessageText = `Checkout: <strong>${timeFormatted}</strong> | Room ${b.roomNo} | Guest: <strong>${b.name}</strong> | Total: ₹${b.totalAmount} | Due: ₹${b.totalDue}`;
+        const alertBadgeHtml = `<span class="text-[11px] font-black text-rose-600 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-full">₹${b.totalDue.toLocaleString('en-IN')} Due</span>`;
 
         card.innerHTML = `
           <div class="p-3 flex justify-between items-center cursor-pointer hover:bg-amber-100/50 transition" onclick="toggleAlertDetails('alert-details-${i}')">
@@ -1793,12 +1772,11 @@
       const invBadge = document.getElementById('inv-badge');
       const invIdContainer = document.getElementById('inv-id-container');
 
-      // Hide invoice number on modal display
       if (invIdContainer) {
         invIdContainer.querySelector('strong').innerText = b.invoiceNo || 'INV-2026-0000001';
       }
 
-      // POINT 1: If booking ID is inactive -> View option enabled as read-only mode & E-invoice number hidden
+      // If booking ID is inactive
       if (isInactive) {
         readOnlyNotice.classList.remove('hidden');
         if (invBadge) invBadge.classList.add('hidden');
@@ -1810,7 +1788,7 @@
           invPrintBtn.innerHTML = `<i class="fa-solid fa-eye"></i> Read Only`;
         }
       }
-      // POINT 2: If booking ID is closed with clear due -> E-invoice & invoice number unhidden, print option enabled
+      // If booking ID is closed with clear due
       else if (isClosed && !hasDue) {
         readOnlyNotice.classList.add('hidden');
         if (invBadge) invBadge.classList.remove('hidden');
@@ -1822,7 +1800,7 @@
           invPrintBtn.innerHTML = `<i class="fa-solid fa-print"></i> Print Invoice`;
         }
       }
-      // POINT 3: If booking ID is closed with due payment -> E-invoice number hidden, print option read-only mode
+      // If booking ID is closed with due payment
       else if (isClosed && hasDue) {
         readOnlyNotice.classList.remove('hidden');
         if (invBadge) invBadge.classList.add('hidden');
@@ -1834,9 +1812,8 @@
           invPrintBtn.innerHTML = `<i class="fa-solid fa-lock"></i> Read Only (Due Pending)`;
         }
       }
-      // POINT 5: Live or Upcoming bookings
+      // Live or Upcoming bookings
       else {
-        // Live/Upcoming with due payment -> E-invoice number hidden, print option read-only
         if (hasDue) {
           readOnlyNotice.classList.add('hidden');
           if (invBadge) invBadge.classList.add('hidden');
@@ -1848,7 +1825,6 @@
             invPrintBtn.innerHTML = `<i class="fa-solid fa-lock"></i> Read Only (Clear Due)`;
           }
         } 
-        // Live/Upcoming with no due -> E-invoice number unhidden, print option enabled
         else {
           readOnlyNotice.classList.add('hidden');
           if (invBadge) invBadge.classList.remove('hidden');
@@ -2040,13 +2016,20 @@
     function openBookingModal(bookingId = null) {
       let isClosedAndWithin3Days = false;
       const now = new Date().getTime();
+      let isLiveOrClosedBooking = false;
 
       if (bookingId) {
         const b = state.bookings.find(item => item.id === bookingId);
         
         if (b) {
           const effectiveCheckoutTime = getEffectiveCheckoutTime(b);
+          const checkInTime = new Date(b.checkIn).getTime();
           const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
+
+          // POINT 2: Identify if booking is Live or Closed
+          if (now >= checkInTime) {
+            isLiveOrClosedBooking = true;
+          }
 
           if (b.inactive) {
             alert("This booking details are inactive and cannot be edited.");
@@ -2058,7 +2041,6 @@
             return;
           }
 
-          // POINT 4: Post 3 days after check-out over, we cannot edit closed booking
           if (now > effectiveCheckoutTime) {
             if (now > (effectiveCheckoutTime + threeDaysMs)) {
               alert("This booking closed more than 3 days ago. It is non-editable and can only be viewed or printed.");
@@ -2085,6 +2067,23 @@
 
       setSectionEditability('sec-guest-info', !isClosedAndWithin3Days);
       setSectionEditability('sec-room-dates', !isClosedAndWithin3Days);
+
+      // POINT 2: Lock check-in date/time fields if booking is Live or Closed
+      const checkInDateElem = document.getElementById('cust-checkin-date');
+      const checkInTimeElem = document.getElementById('cust-checkin-time');
+      if (checkInDateElem && checkInTimeElem) {
+        if (isLiveOrClosedBooking) {
+          checkInDateElem.disabled = true;
+          checkInTimeElem.disabled = true;
+          checkInDateElem.classList.add('bg-slate-100', 'cursor-not-allowed', 'text-slate-500');
+          checkInTimeElem.classList.add('bg-slate-100', 'cursor-not-allowed', 'text-slate-500');
+        } else {
+          checkInDateElem.disabled = false;
+          checkInTimeElem.disabled = false;
+          checkInDateElem.classList.remove('bg-slate-100', 'cursor-not-allowed', 'text-slate-500');
+          checkInTimeElem.classList.remove('bg-slate-100', 'cursor-not-allowed', 'text-slate-500');
+        }
+      }
       
       const addFoodBtn = document.getElementById('btn-add-food-order');
       if (addFoodBtn) {
@@ -2615,7 +2614,7 @@
         const printOnClick = `printInvoice('${b.id}')`;
         let actionButtonsHtml = "";
 
-        // POINT 1: Inactive Booking
+        // Inactive Booking
         if (isInactive) {
           actionButtonsHtml = `
             <div class="flex items-center justify-center space-x-1">
@@ -2625,7 +2624,7 @@
             </div>
           `;
         } 
-        // POINT 4: Closed post 3 days
+        // Closed post 3 days
         else if (isExpiredOver3Days) {
           actionButtonsHtml = `
             <div class="flex items-center justify-center space-x-1">
@@ -2639,7 +2638,6 @@
         else {
           let printBtnHtml = `<button onclick="${printOnClick}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-[11px] font-bold transition shadow-xs">Print</button>`;
           
-          // POINT 3 & POINT 5: Read-only mode for print option if due exists
           if (hasDue) {
             printBtnHtml = `<button onclick="${printOnClick}" class="bg-slate-300 text-slate-600 cursor-not-allowed px-3 py-1 rounded-full text-[11px] font-bold shadow-xs" title="Print is in read-only mode until due is cleared">Read Only</button>`;
           }
