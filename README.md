@@ -1,3 +1,5 @@
+
+
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -980,20 +982,24 @@
     function toggleExtendedCheckoutFields(checked) {
       const container = document.getElementById('extended-checkout-container');
       if (!container) return;
+      const normalOutDate = document.getElementById('cust-checkout-date').value;
+      const normalOutTime = document.getElementById('cust-checkout-time').value;
+      const extOutDate = document.getElementById('cust-ext-checkout-date');
+      const extOutTime = document.getElementById('cust-ext-checkout-time');
+
       if (checked) {
         container.classList.remove('hidden');
-        const normalOutDate = document.getElementById('cust-checkout-date').value;
-        const normalOutTime = document.getElementById('cust-checkout-time').value;
-        const extOutDate = document.getElementById('cust-ext-checkout-date');
-        const extOutTime = document.getElementById('cust-ext-checkout-time');
-        
-        if (extOutDate && !extOutDate.value) extOutDate.value = normalOutDate;
+        if (extOutDate) {
+          extOutDate.min = normalOutDate; // Extended check-out cannot be selected backward of first check-out date
+          if (!extOutDate.value || extOutDate.value < normalOutDate) {
+            extOutDate.value = normalOutDate;
+          }
+        }
         if (extOutTime && !extOutTime.value) extOutTime.value = normalOutTime || "12:00";
       } else {
         container.classList.add('hidden');
       }
       
-      // Preserve existing Check-in values strictly
       calculateModalBilling();
     }
 
@@ -1429,6 +1435,7 @@
     function setMinBookingDates() {
       const checkInInput = document.getElementById('cust-checkin-date');
       const checkOutInput = document.getElementById('cust-checkout-date');
+      const extDateInput = document.getElementById('cust-ext-checkout-date');
       const bookingModalId = document.getElementById('modal-booking-id')?.value;
       
       // Do not apply minimum date constraint for existing editing sessions
@@ -1439,6 +1446,10 @@
       } else {
         if (checkInInput) checkInInput.removeAttribute('min');
         if (checkOutInput) checkOutInput.removeAttribute('min');
+      }
+
+      if (checkOutInput && extDateInput) {
+        extDateInput.min = checkOutInput.value;
       }
     }
 
@@ -2116,7 +2127,7 @@
         const b = state.bookings.find(item => item.id === bookingId);
         if (b) {
           document.getElementById('modal-title').innerText = isClosedAndWithin3Days 
-            ? 'Closed Booking' 
+            ? 'Closed Booking - Billing Summary Only' 
             : 'Edit Booking Details';
           
           document.getElementById('modal-booking-id').value = b.id;
@@ -2149,6 +2160,7 @@
             const [outDate, outTime] = b.checkOut.split('T');
             document.getElementById('cust-checkout-date').value = outDate || '';
             document.getElementById('cust-checkout-time').value = outTime || '11:00';
+            if (extDateInput) extDateInput.min = outDate || '';
           }
 
           extChkBox.checked = !!b.hasExtendedCheckout;
@@ -2254,12 +2266,22 @@
 
     function handleStayDatesChange() {
       const bookingModalId = document.getElementById('modal-booking-id')?.value;
-      
+      const outDateInput = document.getElementById('cust-checkout-date');
+      const extDateInput = document.getElementById('cust-ext-checkout-date');
+
+      // Rule: Extended check-out date cannot be backward of first check-out date
+      if (outDateInput && extDateInput) {
+        extDateInput.min = outDateInput.value;
+        if (extDateInput.value && extDateInput.value < outDateInput.value) {
+          alert("⚠️ Extended Check-Out date cannot be prior to the initial Check-Out date!");
+          extDateInput.value = outDateInput.value;
+        }
+      }
+
       // Enforce date validation bounds only for new bookings
       if (!bookingModalId) {
         const today = new Date().toISOString().split('T')[0];
         const inDateInput = document.getElementById('cust-checkin-date');
-        const outDateInput = document.getElementById('cust-checkout-date');
 
         if (inDateInput.value && inDateInput.value < today) {
           alert("⚠️ Check-In date cannot be prior to the current date!");
@@ -2304,6 +2326,7 @@
       let outDate = document.getElementById('cust-checkout-date').value;
       let outTime = document.getElementById('cust-checkout-time').value || '00:00';
 
+      // Rule: Calculate days from check-in date to extended check-out time if extended check-out is active
       if (hasExtCheckout) {
         const extDate = document.getElementById('cust-ext-checkout-date')?.value;
         const extTime = document.getElementById('cust-ext-checkout-time')?.value;
