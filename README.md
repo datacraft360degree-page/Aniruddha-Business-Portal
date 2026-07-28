@@ -992,6 +992,8 @@
       } else {
         container.classList.add('hidden');
       }
+      
+      // Preserve existing Check-in values strictly
       calculateModalBilling();
     }
 
@@ -1425,11 +1427,19 @@
     }
 
     function setMinBookingDates() {
-      const today = new Date().toISOString().split('T')[0];
       const checkInInput = document.getElementById('cust-checkin-date');
       const checkOutInput = document.getElementById('cust-checkout-date');
-      if (checkInInput) checkInInput.min = today;
-      if (checkOutInput) checkOutInput.min = today;
+      const bookingModalId = document.getElementById('modal-booking-id')?.value;
+      
+      // Do not apply minimum date constraint for existing editing sessions
+      if (!bookingModalId) {
+        const today = new Date().toISOString().split('T')[0];
+        if (checkInInput) checkInInput.min = today;
+        if (checkOutInput) checkOutInput.min = today;
+      } else {
+        if (checkInInput) checkInInput.removeAttribute('min');
+        if (checkOutInput) checkOutInput.removeAttribute('min');
+      }
     }
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -2051,7 +2061,9 @@
         }
       }
 
+      document.getElementById('modal-booking-id').value = bookingId || '';
       setMinBookingDates();
+      
       const form = document.getElementById('booking-form');
       form.reset();
       removeAttachedIdProof();
@@ -2241,17 +2253,22 @@
     }
 
     function handleStayDatesChange() {
-      const today = new Date().toISOString().split('T')[0];
-      const inDateInput = document.getElementById('cust-checkin-date');
-      const outDateInput = document.getElementById('cust-checkout-date');
+      const bookingModalId = document.getElementById('modal-booking-id')?.value;
+      
+      // Enforce date validation bounds only for new bookings
+      if (!bookingModalId) {
+        const today = new Date().toISOString().split('T')[0];
+        const inDateInput = document.getElementById('cust-checkin-date');
+        const outDateInput = document.getElementById('cust-checkout-date');
 
-      if (inDateInput.value && inDateInput.value < today) {
-        alert("⚠️ Check-In date cannot be prior to the current date!");
-        inDateInput.value = today;
-      }
-      if (outDateInput.value && outDateInput.value < today) {
-        alert("⚠️ Check-Out date cannot be prior to the current date!");
-        outDateInput.value = today;
+        if (inDateInput.value && inDateInput.value < today) {
+          alert("⚠️ Check-In date cannot be prior to the current date!");
+          inDateInput.value = today;
+        }
+        if (outDateInput.value && outDateInput.value < today) {
+          alert("⚠️ Check-Out date cannot be prior to the current date!");
+          outDateInput.value = today;
+        }
       }
 
       calculateModalBilling();
