@@ -7,6 +7,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- SheetJS for Exporting to Excel -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- html2canvas for Generating JPEG Receipts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -590,9 +592,13 @@
               <label class="block font-semibold text-slate-600 mb-0.5">ID Number</label>
               <input type="text" id="cust-id" maxlength="16" pattern="[A-Za-z0-9\s]*" oninput="this.value = this.value.replace(/[^A-Za-z0-9\s]/g, '')" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-blue-500">
             </div>
+            <!-- EDITABLE COUNTRY CODE & GUEST CONTACT NUMBER -->
             <div>
               <label class="block font-semibold text-slate-600 mb-0.5">Contact No</label>
-              <input type="text" id="cust-contact" maxlength="10" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-blue-500">
+              <div class="flex gap-1">
+                <input type="text" id="cust-country-code" value="+91" placeholder="+91" class="w-1/3 bg-white border border-slate-200 rounded-xl px-1.5 py-1.5 focus:outline-none focus:border-blue-500 font-bold text-center text-blue-700">
+                <input type="text" id="cust-contact" maxlength="12" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')" placeholder="Mobile No" class="w-2/3 bg-white border border-slate-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-blue-500">
+              </div>
             </div>
             <div class="sm:col-span-2">
               <label class="block font-semibold text-slate-600 mb-0.5 flex justify-between items-center">
@@ -665,6 +671,16 @@
                   <input type="date" id="cust-ext-checkout-date" onchange="handleStayDatesChange()" class="w-2/3 bg-white border border-blue-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-blue-500 font-semibold text-blue-900">
                   <input type="time" id="cust-ext-checkout-time" value="12:00" onchange="handleStayDatesChange()" class="w-1/3 bg-white border border-blue-200 rounded-xl px-1.5 py-1.5 focus:outline-none focus:border-blue-500 font-semibold text-blue-900">
                 </div>
+              </div>
+            </div>
+
+            <!-- Meal Plan Inclusions Checkbox -->
+            <div class="sm:col-span-3 pt-2 border-t border-slate-200/60">
+              <div class="flex items-center gap-2">
+                <input type="checkbox" id="cust-include-meals" checked class="w-4 h-4 text-blue-600 rounded-md border-slate-300 focus:ring-blue-500 cursor-pointer">
+                <label for="cust-include-meals" class="font-bold text-slate-700 cursor-pointer flex items-center gap-1 select-none text-[11px]">
+                  <i class="fa-solid fa-utensils text-emerald-600"></i> Include Meal Description in Invoice (*Include Breakfast, Lunch, Evening snack & Dinner)
+                </label>
               </div>
             </div>
 
@@ -817,8 +833,12 @@
         </div>
       </div>
 
-      <div class="flex justify-end space-x-2 pt-2 no-print border-t border-slate-100">
+      <div class="flex flex-wrap justify-end space-x-2 gap-y-2 pt-2 no-print border-t border-slate-100">
         <button type="button" onclick="closeInvoiceModal()" class="px-4 py-1.5 bg-slate-100 text-slate-700 rounded-xl font-semibold transition hover:bg-slate-200">Close</button>
+        <!-- SEND VIA WHATSAPP BUTTON (VISIBLE ONLY FOR UPCOMING/LIVE BOOKINGS) -->
+        <button type="button" id="inv-whatsapp-btn" onclick="sendReceiptViaWhatsApp()" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold shadow-sm flex items-center gap-1.5 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+          <i class="fa-brands fa-whatsapp text-sm"></i> Send receipt via WhatsApp
+        </button>
         <button type="button" onclick="window.print()" id="inv-print-btn" class="px-4 py-1.5 bg-blue-600 text-white rounded-xl font-semibold shadow-sm flex items-center gap-1 transition">
           <i class="fa-solid fa-print"></i> Print Invoice
         </button>
@@ -828,6 +848,7 @@
 
   <script>
     const ONE_HOUR_MS = 1 * 60 * 60 * 1000; // 1 Hour Buffer in Milliseconds
+    let activeModalBooking = null; // Currently opened invoice booking reference
 
     window.addEventListener('beforeunload', function (e) {
       if (isLoggedIn) {
@@ -1224,7 +1245,7 @@
         { roomNo: 2, capacity: 2 },
         { roomNo: 3, capacity: 4 },
         { roomNo: 4, capacity: 4 },
-        { roomNo: 5, capacity: 4 }
+        { roomNo: 5, capacity: 5 }
       ],
       masterAgents: [
         { agentName: "Self", phone: "Direct", roomNo: "All Rooms" },
@@ -1267,15 +1288,21 @@
 
         let foodSummary = "";
         if (b.foodOrders && b.foodOrders.length > 0) {
-          foodSummary = b.foodOrders.map(f => `${f.foodDesc || 'Food'} (${f.plates || 1} Plates - ₹${f.foodCharge || 0})`).join(", ");
+          foodSummary = b.foodOrders.map(f => {
+            const pCount = f.plates || 1;
+            const pLabel = pCount === 1 ? 'Plate' : 'Plates';
+            return `${f.foodDesc || 'Food'} (${pCount} ${pLabel} - ₹${f.foodCharge || 0})`;
+          }).join(", ");
         }
+
+        const fullContactNo = `${b.countryCode || '+91'} ${b.contactNo || ''}`.trim();
 
         return {
           "Booking ID": b.bookingCode || "-",
           "Invoice ID": b.invoiceNo || "-",
           "Status": statusStr,
           "Guest Name": b.name || "-",
-          "Contact No": b.contactNo || "-",
+          "Contact No": fullContactNo || "-",
           "ID Number": b.idNo || "-",
           "Attached ID": b.idProofBase64 ? "Yes" : "No",
           "Address": b.address || "-",
@@ -1407,7 +1434,7 @@
                 { roomNo: 2, capacity: 2 },
                 { roomNo: 3, capacity: 4 },
                 { roomNo: 4, capacity: 4 },
-                { roomNo: 5, capacity: 4 }
+                { roomNo: 5, capacity: 5 }
               ];
             }
             if (!state.masterAgents) {
@@ -1770,24 +1797,101 @@
       document.getElementById('dash-due').innerText = `₹${totalDue.toLocaleString('en-IN')}`;
     }
 
-    /* PRINT INVOICE */
+    /* WHATSAPP RECEIPT SENDER WITH DIRECT WHATSAPP REDIRECTION & DRAFTED MESSAGE */
+    function sendReceiptViaWhatsApp() {
+      if (!activeModalBooking) {
+        alert("⚠️ Booking information not found!");
+        return;
+      }
+
+      const b = activeModalBooking;
+      const advPayment = b.initialAdv !== undefined ? b.initialAdv : b.advanced;
+
+      if (advPayment <= 0) {
+        alert("⚠️ WhatsApp receipt can only be sent if Advance Payment is greater than ₹0!");
+        return;
+      }
+
+      let rawCountryCode = b.countryCode ? b.countryCode.replace(/\D/g, '') : '91';
+      let phone = b.contactNo ? b.contactNo.replace(/\D/g, '') : '';
+      
+      if (!phone) {
+        alert("⚠️ Please provide a valid guest contact number to send WhatsApp receipt.");
+        return;
+      }
+
+      const fullPhoneNumber = rawCountryCode + phone;
+
+      const upiId = "kapil98.ram@okaxis";
+      const upiPayLink = `upi://pay?pa=${upiId}&pn=Aniruddha%20Homestay&am=${advPayment}&cu=INR&tn=Booking%20Advance%20${b.bookingCode}`;
+
+      const effectiveOut = (b.hasExtendedCheckout && b.extendedCheckOut) ? b.extendedCheckOut : b.checkOut;
+      const roomCap = parseInt(b.capacity) || 1;
+      const roomCapLabel = roomCap === 1 ? 'Person' : 'Persons';
+
+      const messageText = `*Aniruddha Homestay - Booking Receipt*\n\n` +
+        `Dear *${b.name}*,\n` +
+        `Thank you for booking with us! Here are your booking details:\n\n` +
+        `*Reservation Details:*\n` +
+        `• Booking ID: *${b.bookingCode}*\n` +
+        `• Room No: ${b.roomNo} (${roomCap} ${roomCapLabel})\n` +
+        `• Check-In: ${formatDateTime(b.checkIn)}\n` +
+        `• Check-Out: ${formatDateTime(effectiveOut)}\n\n` +
+        `*Billing Summary:*\n` +
+        `• Total Amount: ₹${b.totalAmount}\n` +
+        `• Advance Received: ₹${advPayment}\n` +
+        `• Balance Due: ₹${b.totalDue}\n\n` +
+        `*Pay via UPI:* You can complete payments using UPI ID: *${upiId}*\n` +
+        `Direct UPI Link: ${upiPayLink}\n\n` +
+        `We look forward to hosting you! 🏠`;
+
+      const encodedMessage = encodeURIComponent(messageText);
+      const whatsappUrl = `https://api.whatsapp.com/send?phone=${fullPhoneNumber}&text=${encodedMessage}`;
+
+      window.open(whatsappUrl, '_blank');
+    }
+
+    /* PRINT INVOICE & MANAGE WHATSAPP VISIBILITY */
     function printInvoice(bookingId) {
       const bIndex = state.bookings.findIndex(item => item.id === bookingId);
       if (bIndex === -1) return;
 
       const b = state.bookings[bIndex];
+      activeModalBooking = b; // Store global reference for WhatsApp sharing
+      
       const now = new Date().getTime();
       const checkOutTime = getEffectiveCheckoutTime(b);
 
       const isClosed = now > checkOutTime;
       const isInactive = b.inactive;
+      const isLiveOrUpcoming = !isInactive && !isClosed;
+
       const hasDue = (b.totalDue || 0) > 0;
       const today = formatDate(new Date());
 
       const readOnlyNotice = document.getElementById('inv-readonly-notice');
       const invPrintBtn = document.getElementById('inv-print-btn');
+      const waBtn = document.getElementById('inv-whatsapp-btn');
       const invBadge = document.getElementById('inv-badge');
       const invIdContainer = document.getElementById('inv-id-container');
+
+      const advPaid = b.initialAdv !== undefined ? b.initialAdv : b.advanced;
+
+      // WHATSAPP BUTTON VISIBILITY: ONLY VISIBLE FOR UPCOMING / LIVE BOOKINGS (NOT CLOSED OR INACTIVE)
+      if (waBtn) {
+        if (isLiveOrUpcoming) {
+          waBtn.classList.remove('hidden');
+          if (advPaid > 0) {
+            waBtn.disabled = false;
+            waBtn.title = "Send Receipt via WhatsApp";
+          } else {
+            waBtn.disabled = true;
+            waBtn.title = "WhatsApp Receipt requires Advance Payment > ₹0";
+          }
+        } else {
+          waBtn.classList.add('hidden'); // Hide for Closed or Inactive status
+        }
+      }
 
       if (invIdContainer) {
         invIdContainer.querySelector('strong').innerText = b.invoiceNo || 'INV-2026-0000001';
@@ -1861,10 +1965,15 @@
       const fullLocation = [b.address, b.city, b.state, b.country, b.zipCode].filter(Boolean).map(formatTitleCase).join(', ');
       document.getElementById('inv-guest-name').innerText = formatTitleCase(b.name) || 'N/A';
       document.getElementById('inv-guest-address').innerText = `Address: ${fullLocation || 'N/A'}`;
-      document.getElementById('inv-guest-contact').innerText = `Contact: ${b.contactNo || 'N/A'}`;
+      
+      const fullGuestPhone = `${b.countryCode || '+91'} ${b.contactNo || ''}`.trim();
+      document.getElementById('inv-guest-contact').innerText = `Contact: ${fullGuestPhone || 'N/A'}`;
       document.getElementById('inv-guest-id').innerText = `ID No: ${b.idNo || 'N/A'}`;
 
-      document.getElementById('inv-room').innerText = `Room No: ${b.roomNo} (${b.capacity || 1} Person)`;
+      const roomCap = parseInt(b.capacity) || 1;
+      const roomCapLabel = roomCap === 1 ? 'Person' : 'Persons';
+
+      document.getElementById('inv-room').innerText = `Room No: ${b.roomNo} (${roomCap} ${roomCapLabel})`;
       document.getElementById('inv-checkin').innerText = `Check-in: ${formatDateTime(b.checkIn)}`;
       
       // Initial Check-Out Date
@@ -1884,9 +1993,17 @@
       tbody.innerHTML = '';
 
       const roomTotal = (b.noOfDays || 0) * (b.perDayPrice || 0) * (b.capacity || 1);
+      
+      // Check meal inclusion setting (defaults to true if undefined)
+      const showMealsNote = b.includeMeals !== false;
+      const mealNotesStr = showMealsNote ? '<span class="text-[9px] text-slate-500 block font-normal">(*Include Breakfast,Lunch,Evening snack & Dinner)</span>' : '';
+
       const roomTr = document.createElement('tr');
       roomTr.innerHTML = `
-        <td class="p-2.5 font-semibold text-slate-800">Room ${b.roomNo} Accommodation (${b.capacity || 1} Persons) ${b.hasExtendedCheckout ? '<span class="text-[9px] text-blue-600 block font-normal">(Includes extended stay duration)</span>' : ''}</td>
+        <td class="p-2.5 font-semibold text-slate-800">
+          Room ${b.roomNo} Accommodation (${roomCap} ${roomCapLabel}) ${b.hasExtendedCheckout ? '<span class="text-[9px] text-blue-600 block font-normal">(Includes extended stay duration)</span>' : ''}
+          ${mealNotesStr}
+        </td>
         <td class="p-2.5 text-center">${b.noOfDays} Days</td>
         <td class="p-2.5 text-right">₹${(b.perDayPrice || 0).toLocaleString('en-IN')}</td>
         <td class="p-2.5 text-right font-semibold text-slate-800">₹${roomTotal.toLocaleString('en-IN')}</td>
@@ -1898,9 +2015,12 @@
           if (fo.foodCharge > 0) {
             const foodTr = document.createElement('tr');
             const foodDateTimeFmt = fo.foodDateTime ? ` (${formatDateTime(fo.foodDateTime)})` : '';
+            const plateCount = parseInt(fo.plates) || 1;
+            const plateLabel = plateCount === 1 ? 'Plate' : 'Plates';
+
             foodTr.innerHTML = `
               <td class="p-2.5 font-semibold text-slate-800">Extra Food <span class="text-[9px] text-slate-500 font-normal block">${fo.foodDesc || 'Food Item'}${foodDateTimeFmt}</span></td>
-              <td class="p-2.5 text-center">${fo.plates || 1} Plates</td>
+              <td class="p-2.5 text-center">${plateCount} ${plateLabel}</td>
               <td class="p-2.5 text-right">₹${(fo.itemPrice || 0).toLocaleString('en-IN')}</td>
               <td class="p-2.5 text-right font-semibold text-slate-800">₹${(fo.foodCharge || 0).toLocaleString('en-IN')}</td>
             `;
@@ -1928,6 +2048,7 @@
     }
 
     function closeInvoiceModal() {
+      activeModalBooking = null;
       document.getElementById('invoice-modal').classList.add('hidden');
     }
 
@@ -2120,6 +2241,7 @@
       const extChkBox = document.getElementById('cust-has-extended-checkout');
       const extDateInput = document.getElementById('cust-ext-checkout-date');
       const extTimeInput = document.getElementById('cust-ext-checkout-time');
+      const mealsChkBox = document.getElementById('cust-include-meals');
 
       if (bookingId) {
         const b = state.bookings.find(item => item.id === bookingId);
@@ -2136,6 +2258,7 @@
           document.getElementById('cust-country').value = formatTitleCase(b.country || '');
           document.getElementById('cust-zip').value = b.zipCode || '';
           document.getElementById('cust-id').value = b.idNo || '';
+          document.getElementById('cust-country-code').value = b.countryCode || '+91';
           document.getElementById('cust-contact').value = b.contactNo || '';
 
           if (b.idProofBase64) {
@@ -2167,6 +2290,10 @@
             const [eDate, eTime] = b.extendedCheckOut.split('T');
             extDateInput.value = eDate || '';
             extTimeInput.value = eTime || '12:00';
+          }
+
+          if (mealsChkBox) {
+            mealsChkBox.checked = b.includeMeals !== undefined ? !!b.includeMeals : true;
           }
 
           const initialCheckOutTime = new Date(b.checkOut).getTime();
@@ -2219,11 +2346,14 @@
         
         populateRoomDropdown(state.roomsCapacity.length > 0 ? state.roomsCapacity[0].roomNo : 1);
 
+        document.getElementById('cust-country-code').value = "+91";
         document.getElementById('cust-checkin-time').value = "12:00";
         document.getElementById('cust-checkout-time').value = "11:00";
         extChkBox.checked = false;
         extChkBox.disabled = false;
         toggleExtendedCheckoutFields(false);
+
+        if (mealsChkBox) mealsChkBox.checked = true;
 
         document.getElementById('cust-price').value = 1200;
         
@@ -2412,6 +2542,8 @@
         }
       }
 
+      const includeMeals = document.getElementById('cust-include-meals')?.checked ?? true;
+
       const foodWin = getModalFoodWindow();
       const foodOrdersList = [];
       let foodValidationError = false;
@@ -2501,6 +2633,8 @@
 
       const totalPaid = initialAdvAmt + clearedDueAmt;
       
+      const countryCodeVal = document.getElementById('cust-country-code').value.trim() || '+91';
+
       const newBooking = {
         id: id || `bk_${Date.now()}`,
         bookingCode: existingCode,
@@ -2512,6 +2646,7 @@
         country: formatTitleCase(document.getElementById('cust-country').value.trim()),
         zipCode: document.getElementById('cust-zip').value.trim(),
         idNo: document.getElementById('cust-id').value.trim(),
+        countryCode: countryCodeVal,
         contactNo: document.getElementById('cust-contact').value.trim(),
         idProofBase64: document.getElementById('cust-id-file-base64').value,
         idProofFileName: document.getElementById('cust-id-file-name').value,
@@ -2522,6 +2657,7 @@
         checkOut: checkOut,
         hasExtendedCheckout: hasExtendedCheckout,
         extendedCheckOut: extendedCheckOut,
+        includeMeals: includeMeals,
         noOfDays: parseInt(document.getElementById('cust-days').value) || 0,
         perDayPrice: parseFloat(document.getElementById('cust-price').value) || 0,
         foodOrders: foodOrdersList,
@@ -2699,6 +2835,10 @@
           `;
         }
 
+        const tableCap = parseInt(b.capacity) || 1;
+        const tableCapLabel = tableCap === 1 ? 'Person' : 'Persons';
+        const contactDisplay = `${b.countryCode || '+91'} ${b.contactNo || '-'}`.trim();
+
         const tr = document.createElement('tr');
         tr.className = `${statusBgClass} transition border-b border-slate-100`;
         tr.innerHTML = `
@@ -2711,11 +2851,11 @@
             ${b.inactive ? '<span class="bg-slate-600 text-white font-bold px-1.5 py-0.2 rounded-full text-[8px] uppercase block mt-0.5 w-max">Inactive</span>' : (!isMasterValid ? '<span class="bg-rose-700 text-white font-bold px-1.5 py-0.2 rounded-full text-[8px] uppercase block mt-0.5 w-max">Master Removed</span>' : '')}
           </td>
           <td class="py-2.5 px-3 font-bold ${!isMasterValid ? 'text-rose-950' : 'text-slate-800'}">${b.name}</td>
-          <td class="py-2.5 px-3 font-medium">${b.contactNo || '-'}</td>
+          <td class="py-2.5 px-3 font-medium whitespace-nowrap">${contactDisplay}</td>
           <td class="py-2.5 px-3 font-mono text-[10px]">${b.idNo || '-'}</td>
           <td class="py-2.5 px-3">${idProofCellHtml}</td>
           <td class="py-2.5 px-3"><span class="bg-blue-50 text-blue-700 font-bold px-2 py-0.5 rounded-full text-[10px]">Room ${b.roomNo}</span></td>
-          <td class="py-2.5 px-3 font-bold text-slate-700">${b.capacity || 1} Person</td>
+          <td class="py-2.5 px-3 font-bold text-slate-700">${tableCap} ${tableCapLabel}</td>
           <td class="py-2.5 px-3 ${!isMasterValid ? 'text-rose-900' : 'text-slate-600'} text-[10px]">${b.agentInfo || '-'}</td>
           <td class="py-2.5 px-3 text-[10px]">
             <div class="font-semibold ${!isMasterValid ? 'text-rose-950' : 'text-slate-700'}">${checkInFmt}</div>
@@ -2999,4 +3139,3 @@
   </script>
 </body>
 </html>
-
