@@ -1823,7 +1823,12 @@
       const fullPhoneNumber = rawCountryCode + phone;
 
       const upiId = "kapil98.ram@okaxis";
-      const upiPayLink = `upi://pay?pa=${upiId}&pn=Aniruddha%20Homestay&am=${advPayment}&cu=INR&tn=Booking%20Advance%20${b.bookingCode}`;
+      const payeeName = encodeURIComponent("Aniruddha Homestay");
+      const transactionNote = encodeURIComponent(`Booking Advance ${b.bookingCode}`);
+      const formattedAmount = Number(advPayment).toFixed(2);
+      
+      // Standardized NPCI compliant UPI Deep Link schema
+      const upiPayLink = `upi://pay?pa=${upiId}&pn=${payeeName}&am=${formattedAmount}&cu=INR&tn=${transactionNote}`;
 
       const effectiveOut = (b.hasExtendedCheckout && b.extendedCheckOut) ? b.extendedCheckOut : b.checkOut;
       const roomCap = parseInt(b.capacity) || 1;
