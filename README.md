@@ -1230,6 +1230,7 @@
       if (isNaN(dateObj.getTime())) return d;
       const day = String(dateObj.getDate()).padStart(2, '0');
       const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const year = dateObj.getFullYear();
       return `${day}-${month}-${year}`;
     }
 
@@ -1258,7 +1259,8 @@
     };
 
     function isRoomInMaster(roomNo) {
-      return state.roomsCapacity.some(m => parseInt(m.roomNo) === parseInt(roomNo));
+      if (!state.roomsCapacity) return true;
+      return state.roomsCapacity.some(m => String(m.roomNo) === String(roomNo));
     }
 
     /* EXPORT TO EXCEL */
@@ -1860,7 +1862,10 @@
     /* PRINT INVOICE & MANAGE WHATSAPP VISIBILITY */
     function printInvoice(bookingId) {
       const bIndex = state.bookings.findIndex(item => item.id === bookingId);
-      if (bIndex === -1) return;
+      if (bIndex === -1) {
+        alert("Booking details not found!");
+        return;
+      }
 
       const b = state.bookings[bIndex];
       activeModalBooking = b; // Store global reference for WhatsApp sharing
@@ -1965,7 +1970,7 @@
         }
       }
 
-      document.getElementById('inv-booking-id').innerText = b.bookingCode;
+      document.getElementById('inv-booking-id').innerText = b.bookingCode || 'N/A';
       document.getElementById('inv-date').innerText = today;
 
       const fullLocation = [b.address, b.city, b.state, b.country, b.zipCode].filter(Boolean).map(formatTitleCase).join(', ');
@@ -2010,7 +2015,7 @@
           Room ${b.roomNo} Accommodation (${roomCap} ${roomCapLabel}) ${b.hasExtendedCheckout ? '<span class="text-[9px] text-blue-600 block font-normal">(Includes extended stay duration)</span>' : ''}
           ${mealNotesStr}
         </td>
-        <td class="p-2.5 text-center">${b.noOfDays} Days</td>
+        <td class="p-2.5 text-center">${b.noOfDays || 0} Days</td>
         <td class="p-2.5 text-right">₹${(b.perDayPrice || 0).toLocaleString('en-IN')}</td>
         <td class="p-2.5 text-right font-semibold text-slate-800">₹${roomTotal.toLocaleString('en-IN')}</td>
       `;
@@ -2039,7 +2044,7 @@
       const clearDueAmt = b.clearedDue || 0;
 
       document.getElementById('inv-sum-total').innerText = `₹${(b.totalAmount || 0).toLocaleString('en-IN')}`;
-      document.getElementById('inv-sum-advance').innerText = `₹${initialAdv.toLocaleString('en-IN')}`;
+      document.getElementById('inv-sum-advance').innerText = `₹${(initialAdv || 0).toLocaleString('en-IN')}`;
       document.getElementById('inv-sum-due').innerText = `₹${(b.totalDue || 0).toLocaleString('en-IN')}`;
 
       const clearDueRow = document.getElementById('inv-clear-due-row');
