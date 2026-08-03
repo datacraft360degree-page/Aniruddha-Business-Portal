@@ -1230,7 +1230,6 @@
       if (isNaN(dateObj.getTime())) return d;
       const day = String(dateObj.getDate()).padStart(2, '0');
       const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-      const year = dateObj.getFullYear();
       return `${day}-${month}-${year}`;
     }
 
@@ -1825,7 +1824,9 @@
       const upiId = "kapil98.ram@okaxis";
       const payeeName = encodeURIComponent("Aniruddha Homestay");
       const transactionNote = encodeURIComponent(`Booking Advance ${b.bookingCode}`);
-      const formattedAmount = Number(advPayment).toFixed(2);
+      
+      // Formatting amount without trailing zeros for whole numbers (e.g. 10 instead of 10.00)
+      const formattedAmount = Number(advPayment) % 1 === 0 ? Number(advPayment).toString() : Number(advPayment).toFixed(2);
       
       // Standardized NPCI compliant UPI Deep Link schema
       const upiPayLink = `upi://pay?pa=${upiId}&pn=${payeeName}&am=${formattedAmount}&cu=INR&tn=${transactionNote}`;
