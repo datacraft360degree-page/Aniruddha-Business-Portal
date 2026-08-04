@@ -592,7 +592,7 @@
               <label class="block font-semibold text-slate-600 mb-0.5">ID Number</label>
               <input type="text" id="cust-id" maxlength="16" pattern="[A-Za-z0-9\s]*" oninput="this.value = this.value.replace(/[^A-Za-z0-9\s]/g, '')" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-blue-500">
             </div>
-            <!-- EDITABLE COUNTRY CODE & GUEST CONTACT NUMBER (LIMIT 10 DIGITS) -->
+            <!-- EDITABLE COUNTRY CODE & GUEST CONTACT NUMBER (OPTIONAL) -->
             <div>
               <label class="block font-semibold text-slate-600 mb-0.5">Contact No</label>
               <div class="flex gap-1">
@@ -752,7 +752,7 @@
             </div>
             <div>
               <label class="block font-semibold text-slate-600 mb-0.5">Advance (₹)</label>
-              <input type="number" id="cust-advance" value="0" oninput="calculateModalBilling()" class="w-full bg-white border border-slate-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-blue-500 font-semibold text-emerald-600">
+              <input type="number" id="cust-advance" value="0" oninput="calculateModalBilling()" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-blue-500 font-semibold text-emerald-600">
             </div>
             <div>
               <label class="block font-semibold text-slate-600 mb-0.5">Due (₹)</label>
@@ -792,8 +792,11 @@
           <p class="text-[10px] text-slate-500">Phone: +91 9804396541 | Email: info@businessportal.com</p>
         </div>
         <div class="text-right">
-          <span id="inv-badge" class="inline-block bg-blue-50 text-blue-700 text-[9px] font-bold px-2.5 py-0.5 rounded-full uppercase mb-1 border border-blue-100">e-Invoice</span>
-          <p id="inv-id-container" class="text-[10px] text-slate-500">Invoice ID: <strong id="inv-id" class="text-slate-800 font-mono">INV-2026-0000001</strong></p>
+          <!-- E-INVOICE NUMBER & BADGE CONTAINER (HIDDEN IF DUE NOT CLEAR) -->
+          <div id="e-invoice-section">
+            <span id="inv-badge" class="inline-block bg-blue-50 text-blue-700 text-[9px] font-bold px-2.5 py-0.5 rounded-full uppercase mb-1 border border-blue-100">e-Invoice</span>
+            <p id="inv-id-container" class="text-[10px] text-slate-500">Invoice ID: <strong id="inv-id" class="text-slate-800 font-mono">INV-2026-0000001</strong></p>
+          </div>
           <p class="text-[10px] text-slate-500">Booking ID: <strong id="inv-booking-id" class="text-blue-600 font-mono">BKG-2026-0000001</strong></p>
           <p class="text-[10px] text-slate-500">Issued On: <strong id="inv-date" class="text-slate-800"></strong></p>
         </div>
@@ -866,11 +869,12 @@
 
       <div class="flex flex-wrap justify-end space-x-2 gap-y-2 pt-2 no-print border-t border-slate-100">
         <button type="button" onclick="closeInvoiceModal()" class="px-4 py-1.5 bg-slate-100 text-slate-700 rounded-xl font-semibold transition hover:bg-slate-200">Close</button>
-        <!-- SEND VIA WHATSAPP BUTTON -->
-        <button type="button" id="inv-whatsapp-btn" onclick="sendReceiptViaWhatsApp()" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold shadow-sm flex items-center gap-1.5 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+        <!-- SEND VIA WHATSAPP BUTTON (ONLY AVAILABLE IN UPCOMING & LIVE) -->
+        <button type="button" id="inv-whatsapp-btn" onclick="sendReceiptViaWhatsApp()" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold shadow-sm flex items-center gap-1.5 transition cursor-pointer">
           <i class="fa-brands fa-whatsapp text-sm"></i> Send receipt via WhatsApp
         </button>
-        <button type="button" onclick="window.print()" id="inv-print-btn" class="px-4 py-1.5 bg-blue-600 text-white rounded-xl font-semibold shadow-sm flex items-center gap-1 transition">
+        <!-- STATIC PRINT BUTTON -->
+        <button type="button" onclick="window.print()" id="inv-print-btn" class="px-4 py-1.5 bg-blue-600 text-white rounded-xl font-semibold shadow-sm flex items-center gap-1 transition hover:bg-blue-700 cursor-pointer">
           <i class="fa-solid fa-print"></i> Print Invoice
         </button>
       </div>
@@ -1178,7 +1182,7 @@
         closeMasterAuthModal();
         performSwitchTab('master');
       } else {
-        document.getElementById('master-auth-error').classList.remove('hidden');
+        document.getElementById('master-auth-error').classList.add('hidden');
       }
     }
 
@@ -1832,7 +1836,7 @@
       document.getElementById('dash-due').innerText = `₹${totalDue.toLocaleString('en-IN')}`;
     }
 
-    /* WHATSAPP RECEIPT SENDER WITH ADVANCED AMOUNT & WITHOUT QR CODE */
+    /* WHATSAPP RECEIPT SENDER WITH VALIDATION & ERROR POPUP */
     function sendReceiptViaWhatsApp() {
       if (!activeModalBooking) {
         alert("⚠️ Booking information not found!");
@@ -1840,17 +1844,19 @@
       }
 
       const b = activeModalBooking;
-
       let rawCountryCode = b.countryCode ? b.countryCode.replace(/\D/g, '') : '91';
       let phone = b.contactNo ? b.contactNo.replace(/\D/g, '') : '';
       
+      let validationErrors = [];
       if (!phone || phone.length !== 10) {
-        alert("⚠️ Please provide a valid 10-digit guest contact number to send WhatsApp receipt.");
-        return;
+        validationErrors.push("• Guest contact number must be exactly 10 digits.");
+      }
+      if (!(parseFloat(b.advanced) > 0)) {
+        validationErrors.push("• Advanced payment must be greater than 0.");
       }
 
-      if (!(parseFloat(b.advanced) > 0)) {
-        alert("⚠️ Advanced payment must be greater than 0 to send WhatsApp receipt.");
+      if (validationErrors.length > 0) {
+        alert("⚠️ Cannot send via WhatsApp:\n\n" + validationErrors.join("\n"));
         return;
       }
 
@@ -1881,7 +1887,7 @@
       window.open(whatsappUrl, '_blank');
     }
 
-    /* PRINT INVOICE & MANAGE WHATSAPP VISIBILITY */
+    /* PRINT INVOICE & MANAGE WHATSAPP AVAILABILITY AND E-INVOICE VISIBILITY */
     function printInvoice(bookingId) {
       const bIndex = state.bookings.findIndex(item => item.id === bookingId);
       if (bIndex === -1) {
@@ -1892,35 +1898,49 @@
       const b = state.bookings[bIndex];
       activeModalBooking = b; // Store global reference for WhatsApp sharing
       
-      const now = new Date().getTime();
-      const checkOutTime = getEffectiveCheckoutTime(b);
-
-      const isClosed = now > checkOutTime;
-      const isInactive = b.inactive;
-      const isLiveOrUpcoming = !isInactive && !isClosed;
-
-      const hasDue = (b.totalDue || 0) > 0;
       const today = formatDate(new Date());
 
       const readOnlyNotice = document.getElementById('inv-readonly-notice');
       const invPrintBtn = document.getElementById('inv-print-btn');
       const waBtn = document.getElementById('inv-whatsapp-btn');
-      const invBadge = document.getElementById('inv-badge');
+      const eInvoiceSection = document.getElementById('e-invoice-section');
       const invIdContainer = document.getElementById('inv-id-container');
 
-      // WHATSAPP BUTTON ACTIVATION LOGIC:
-      // Activated only if advanced payment > 0 and 10-digit guest contact number provided (and status allows)
-      if (waBtn) {
-        const contactDigits = b.contactNo ? b.contactNo.replace(/\D/g, '') : '';
-        const hasValidContact = contactDigits.length === 10;
-        const hasAdvanced = (parseFloat(b.advanced) || 0) > 0;
+      const now = new Date().getTime();
+      const cIn = new Date(b.checkIn).getTime();
+      const cOut = getEffectiveCheckoutTime(b);
+      const isClosed = now > cOut;
+      const isInactive = b.inactive;
+      const isLive = now >= cIn && now <= cOut;
+      const isUpcoming = now < cIn;
 
-        if (isLiveOrUpcoming && hasValidContact && hasAdvanced) {
-          waBtn.classList.remove('hidden');
-          waBtn.disabled = false;
-          waBtn.title = "Send Receipt via WhatsApp";
+      // RULE 1: Send via WhatsApp button ONLY available in upcoming & live not for closed or inactive
+      if (waBtn) {
+        if (isClosed || isInactive) {
+          waBtn.classList.add('hidden');
         } else {
-          waBtn.classList.add('hidden'); // Hidden or disabled if conditions are not met
+          waBtn.classList.remove('hidden');
+          const contactDigits = b.contactNo ? b.contactNo.replace(/\D/g, '') : '';
+          const hasValidContact = contactDigits.length === 10;
+          const hasAdvanced = (parseFloat(b.advanced) || 0) > 0;
+
+          if (hasValidContact && hasAdvanced) {
+            waBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            waBtn.title = "Send Receipt via WhatsApp";
+          } else {
+            waBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            waBtn.title = "Inactive: Advance payment must be > 0 and contact number must be 10 digits.";
+          }
+        }
+      }
+
+      // RULE 2: If due not clear then hide E-invoice number from receipt/invoice only show booking id details, If due clear then unhide E-invoice number.
+      const hasDue = (b.totalDue || 0) > 0;
+      if (eInvoiceSection) {
+        if (hasDue) {
+          eInvoiceSection.classList.add('hidden');
+        } else {
+          eInvoiceSection.classList.remove('hidden');
         }
       }
 
@@ -1928,66 +1948,12 @@
         invIdContainer.querySelector('strong').innerText = b.invoiceNo || 'INV-2026-0000001';
       }
 
-      // If booking ID is inactive
-      if (isInactive) {
-        readOnlyNotice.classList.remove('hidden');
-        if (invBadge) invBadge.classList.add('hidden');
-        if (invIdContainer) invIdContainer.classList.add('hidden');
-        if (invPrintBtn) {
-          invPrintBtn.classList.remove('hidden');
-          invPrintBtn.disabled = true;
-          invPrintBtn.className = "px-4 py-1.5 bg-slate-200 text-slate-400 rounded-xl font-semibold cursor-not-allowed flex items-center gap-1 border border-slate-300";
-          invPrintBtn.innerHTML = `<i class="fa-solid fa-eye"></i> Read Only`;
-        }
-      }
-      // If booking ID is closed (or check-out time is over) with clear due
-      else if (isClosed && !hasDue) {
-        readOnlyNotice.classList.add('hidden');
-        if (invBadge) invBadge.classList.remove('hidden');
-        if (invIdContainer) invIdContainer.classList.remove('hidden');
-        if (invPrintBtn) {
-          invPrintBtn.classList.remove('hidden');
-          invPrintBtn.disabled = false;
-          invPrintBtn.className = "px-4 py-1.5 bg-blue-600 text-white rounded-xl font-semibold shadow-sm flex items-center gap-1 transition hover:bg-blue-700 cursor-pointer";
-          invPrintBtn.innerHTML = `<i class="fa-solid fa-print"></i> Print Invoice`;
-        }
-      }
-      // If booking ID is closed (or check-out time is over) with due payment
-      else if (isClosed && hasDue) {
-        readOnlyNotice.classList.remove('hidden');
-        if (invBadge) invBadge.classList.add('hidden');
-        if (invIdContainer) invIdContainer.classList.add('hidden');
-        if (invPrintBtn) {
-          invPrintBtn.classList.remove('hidden');
-          invPrintBtn.disabled = true;
-          invPrintBtn.className = "px-4 py-1.5 bg-slate-200 text-slate-400 rounded-xl font-semibold cursor-not-allowed flex items-center gap-1 border border-slate-300";
-          invPrintBtn.innerHTML = `<i class="fa-solid fa-lock"></i> Read Only (Due Pending)`;
-        }
-      }
-      // Live or Upcoming bookings
-      else {
-        if (hasDue) {
-          readOnlyNotice.classList.add('hidden');
-          if (invBadge) invBadge.classList.add('hidden');
-          if (invIdContainer) invIdContainer.classList.add('hidden');
-          if (invPrintBtn) {
-            invPrintBtn.classList.remove('hidden');
-            invPrintBtn.disabled = true;
-            invPrintBtn.className = "px-4 py-1.5 bg-slate-200 text-slate-400 rounded-xl font-semibold cursor-not-allowed flex items-center gap-1 border border-slate-300";
-            invPrintBtn.innerHTML = `<i class="fa-solid fa-lock"></i> Read Only (Clear Due)`;
-          }
-        } 
-        else {
-          readOnlyNotice.classList.add('hidden');
-          if (invBadge) invBadge.classList.remove('hidden');
-          if (invIdContainer) invIdContainer.classList.remove('hidden');
-          if (invPrintBtn) {
-            invPrintBtn.classList.remove('hidden');
-            invPrintBtn.disabled = false;
-            invPrintBtn.className = "px-4 py-1.5 bg-blue-600 text-white rounded-xl font-semibold shadow-sm flex items-center gap-1 transition hover:bg-blue-700 cursor-pointer";
-            invPrintBtn.innerHTML = `<i class="fa-solid fa-print"></i> Print Invoice`;
-          }
-        }
+      // Static Print Option in Invoice Modal
+      if (invPrintBtn) {
+        invPrintBtn.classList.remove('hidden');
+        invPrintBtn.disabled = false;
+        invPrintBtn.className = "px-4 py-1.5 bg-blue-600 text-white rounded-xl font-semibold shadow-sm flex items-center gap-1 transition hover:bg-blue-700 cursor-pointer";
+        invPrintBtn.innerHTML = `<i class="fa-solid fa-print"></i> Print Invoice`;
       }
 
       document.getElementById('inv-booking-id').innerText = b.bookingCode || 'N/A';
@@ -1997,17 +1963,14 @@
       document.getElementById('inv-guest-name').innerText = formatTitleCase(b.name) || 'N/A';
       document.getElementById('inv-guest-address').innerText = `Address: ${fullLocation || 'N/A'}`;
       
-      const fullGuestPhone = `${b.countryCode || '+91'} ${b.contactNo || ''}`.trim();
-      document.getElementById('inv-guest-contact').innerText = `Contact: ${fullGuestPhone || 'N/A'}`;
+      const fullGuestPhone = b.contactNo ? `${b.countryCode || '+91'} ${b.contactNo}`.trim() : '-';
+      document.getElementById('inv-guest-contact').innerText = `Contact: ${fullGuestPhone}`;
       document.getElementById('inv-guest-id').innerText = `ID No: ${b.idNo || 'N/A'}`;
 
       document.getElementById('inv-room').innerText = `Room No: ${b.roomNo}`;
       document.getElementById('inv-checkin').innerText = `Check-in: ${formatDateTime(b.checkIn)}`;
-      
-      // Initial Check-Out Date
       document.getElementById('inv-checkout').innerText = `Check-out: ${formatDateTime(b.checkOut)}`;
 
-      // Hide extended check-out detail completely if the date was not extended
       const extCheckoutElem = document.getElementById('inv-ext-checkout');
       if (b.hasExtendedCheckout && b.extendedCheckOut) {
         extCheckoutElem.innerHTML = `Extended Check-out: ${formatDateTime(b.extendedCheckOut)} <span class="text-[9px] text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.2 rounded-full font-bold ml-1">Extended</span>`;
@@ -2021,15 +1984,12 @@
       tbody.innerHTML = '';
 
       const roomTotal = (b.noOfDays || 0) * (b.perDayPrice || 0) * (b.capacity || 1);
-      
-      // Check meal inclusion setting (defaults to true if undefined)
       const showMealsNote = b.includeMeals !== false;
       const mealNotesStr = showMealsNote ? '<span class="text-[9px] text-slate-500 block font-normal">(*Include Breakfast,Lunch,Evening snack & Dinner)</span>' : '';
 
       const stayDaysCount = parseInt(b.noOfDays) || 0;
       const daysFormattedStr = stayDaysCount === 1 ? '1 Day' : `${stayDaysCount} Days`;
 
-      // Room capacity count string for description
       const roomCapacityCount = parseInt(b.capacity) || 1;
       const roomCapacityLabel = roomCapacityCount === 1 ? 'Person' : 'Persons';
 
@@ -2045,7 +2005,6 @@
       `;
       tbody.appendChild(roomTr);
 
-      // ADD EXTRA PERSON ITEM IN INVOICE IF APPLICABLE
       if (b.extraPersons && b.extraPersons > 0 && b.extraPersonDays > 0) {
         const extraPersonTotal = b.extraPersons * b.extraPersonDays * (b.perDayPrice || 0);
         const extraJoinedFmt = b.extraPersonJoined ? formatDateTime(b.extraPersonJoined) : '';
@@ -2121,7 +2080,6 @@
         return;
       }
 
-      // Auto default to valid window time if date/time not specified
       if (!dateStr || !timeStr) {
         if (foodWin) {
           const now = new Date();
@@ -2275,18 +2233,12 @@
       document.getElementById('food-orders-container').innerHTML = '';
       populateAgentDropdown();
 
-      /* FIELD PERMISSIONS & ACCESSIBILITY RULES */
-
-      // 1. Guest Information Section
       setSectionEditability('sec-guest-info', !isClosedAndWithin3Days);
 
-      // 2. Room Selection & Stay Schedule Box
       if (isUpcomingBooking) {
         setSectionEditability('sec-room-dates', true);
       } else if (isLiveBooking) {
         setSectionEditability('sec-room-dates', true);
-
-        // Lock check-in and check-out date/time fields for primary stay
         setInputEnabled(document.getElementById('cust-checkin-date'), false);
         setInputEnabled(document.getElementById('cust-checkin-time'), false);
         setInputEnabled(document.getElementById('cust-checkout-date'), false);
@@ -2295,7 +2247,6 @@
         setSectionEditability('sec-room-dates', false);
       }
 
-      // 3. Extended Check-Out Field Control
       const extChkBox = document.getElementById('cust-has-extended-checkout');
       const extDateInput = document.getElementById('cust-ext-checkout-date');
       const extTimeInput = document.getElementById('cust-ext-checkout-time');
@@ -2327,13 +2278,11 @@
         }
       }
 
-      // 4. Meal Plan Inclusions Checkbox (Active for Upcoming, Live, & Closed)
       const mealsChkBox = document.getElementById('cust-include-meals');
       if (mealsChkBox) {
         mealsChkBox.disabled = isClosedAndWithin3Days;
       }
 
-      // 5. Extra Food Section
       const addFoodBtn = document.getElementById('btn-add-food-order');
       if (addFoodBtn) {
         addFoodBtn.disabled = isClosedAndWithin3Days;
@@ -2344,10 +2293,8 @@
         }
       }
 
-      // 6. Billing Summary Section
       setSectionEditability('sec-billing-summary', true);
 
-      // 7. ADDITIONAL PERSON FIELD INPUTS
       const extraPersonsInput = document.getElementById('cust-extra-persons');
       const extraPersonTimeWrapper = document.getElementById('sec-extra-person-time-wrapper');
       const extraPersonDateInput = document.getElementById('cust-extra-person-date');
@@ -2373,7 +2320,6 @@
         }
       }
 
-      /* POPULATE MODAL FIELDS WITH EXISTING BOOKING DATA */
       if (b) {
         document.getElementById('modal-title').innerText = isClosedAndWithin3Days 
           ? 'Closed Booking (Billing Active)' 
@@ -2541,7 +2487,6 @@
       const outDateInput = document.getElementById('cust-checkout-date');
       const extDateInput = document.getElementById('cust-ext-checkout-date');
 
-      // Rule: Extended check-out date cannot be backward of first check-out date
       if (outDateInput && extDateInput) {
         extDateInput.min = outDateInput.value;
         if (extDateInput.value && extDateInput.value < outDateInput.value) {
@@ -2550,7 +2495,6 @@
         }
       }
 
-      // Enforce date validation bounds only for new bookings
       if (!bookingModalId) {
         const today = new Date().toISOString().split('T')[0];
         const inDateInput = document.getElementById('cust-checkin-date');
@@ -2590,7 +2534,6 @@
       document.getElementById('cust-due').value = due;
     }
 
-    /* ADDITIONAL PERSON BILLING CALCULATION WITH CHECK-OUT VALIDATION AGAINST LATEST MAIN/EXTENDED CHECK-OUT */
     function calculateModalBilling() {
       const inDate = document.getElementById('cust-checkin-date').value;
       const inTime = document.getElementById('cust-checkin-time').value || '00:00';
@@ -2599,7 +2542,6 @@
       let outDate = document.getElementById('cust-checkout-date').value;
       let outTime = document.getElementById('cust-checkout-time').value || '00:00';
 
-      // Identify latest checkout date & time (Primary Check-out OR Extended Check-Out)
       if (hasExtCheckout) {
         const extDate = document.getElementById('cust-ext-checkout-date')?.value;
         const extTime = document.getElementById('cust-ext-checkout-time')?.value;
@@ -2620,7 +2562,6 @@
       const price = parseFloat(document.getElementById('cust-price').value) || 0;
       const capacity = parseFloat(document.getElementById('cust-capacity').value) || 1;
 
-      /* ADDITIONAL PERSON CALCULATION: VALIDATE AGAINST LATEST MAIN CHECK-OUT DATE & TIME */
       const extraPersons = parseInt(document.getElementById('cust-extra-persons')?.value) || 0;
       let extraPersonDays = 0;
 
@@ -2634,11 +2575,9 @@
           const epInDt = new Date(`${epInDate}T${epInTime}`);
           let epOutDt = new Date(`${epOutDate}T${epOutTime}`);
 
-          // RULE ENFORCED: Additional Person Check-Out date & time cannot be later than latest Main / Extended Check-Out date & time
           if (epOutDt > latestMainCheckoutDt) {
             alert(`⚠️ Additional Person Check-Out date & time (${formatDateTime(epOutDt.toISOString())}) cannot be later than the main Check-Out date & time (${formatDateTime(latestMainCheckoutDt.toISOString())})!`);
             
-            // Adjust back to latest main check-out date and time
             document.getElementById('cust-extra-person-out-date').value = outDate;
             document.getElementById('cust-extra-person-out-time').value = outTime;
             epOutDt = new Date(latestMainCheckoutDt.getTime());
@@ -2698,7 +2637,7 @@
       }
 
       const contactNoVal = document.getElementById('cust-contact').value.trim();
-      if (contactNoVal.length !== 10) {
+      if (contactNoVal && contactNoVal.length !== 10) {
         alert("⚠️ Please provide a valid 10-digit guest contact number.");
         return;
       }
@@ -2736,7 +2675,6 @@
 
       const includeMeals = document.getElementById('cust-include-meals')?.checked ?? true;
 
-      /* CAPTURE CUSTOM EXTRA PERSON DETAILS & COMPUTE DAYS WITH VALIDATION */
       const extraPersons = parseInt(document.getElementById('cust-extra-persons')?.value) || 0;
       let extraPersonJoined = null;
       let extraPersonOut = null;
@@ -2933,7 +2871,6 @@
       }
 
       const now = new Date().getTime();
-      const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
 
       const getStatusPriority = (b) => {
         const isMasterValid = isRoomInMaster(b.roomNo);
@@ -2980,9 +2917,7 @@
         const checkOutTime = getEffectiveCheckoutTime(b);
 
         const isClosed = now > checkOutTime;
-        const isExpiredOver3Days = isClosed && (now > (checkOutTime + threeDaysMs));
         const isInactive = b.inactive;
-        const hasDue = (b.totalDue || 0) > 0;
 
         let statusBgClass = "hover:bg-slate-50";
         let statusDotHtml = "";
@@ -3013,32 +2948,16 @@
         }
 
         const printOnClick = `printInvoice('${b.id}')`;
-        let actionButtonsHtml = "";
-
-        if (isInactive || isExpiredOver3Days) {
-          actionButtonsHtml = `
-            <div class="flex items-center justify-center space-x-1">
-              <button onclick="${printOnClick}" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-1 rounded-full text-[11px] font-bold transition shadow-xs" title="View Entry in Read-Only Mode">
-                <i class="fa-solid fa-eye text-[10px] mr-0.5"></i> Read Only
-              </button>
-            </div>
-          `;
-        } else {
-          let printBtnHtml = `<button onclick="${printOnClick}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-[11px] font-bold transition shadow-xs">Print</button>`;
-          
-          if (hasDue) {
-            printBtnHtml = `<button onclick="${printOnClick}" class="bg-slate-300 text-slate-600 cursor-not-allowed px-3 py-1 rounded-full text-[11px] font-bold shadow-xs" title="Print is in read-only mode until due is cleared">Read Only</button>`;
-          }
-
-          actionButtonsHtml = `
-            <div class="flex items-center justify-center space-x-1">
-              <button onclick="openBookingModal('${b.id}')" class="text-blue-600 hover:text-blue-800 p-1 text-sm" title="Edit Booking Details">
-                <i class="fa-solid fa-pen-to-square"></i>
-              </button>              
-              ${printBtnHtml}
-            </div>
-          `;
-        }
+        
+        // STATIC PRINT ACTION BUTTONS (ALWAYS SHOWS "Print")
+        let actionButtonsHtml = `
+          <div class="flex items-center justify-center space-x-1">
+            <button onclick="openBookingModal('${b.id}')" class="text-blue-600 hover:text-blue-800 p-1 text-sm" title="Edit Booking Details">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </button>              
+            <button onclick="${printOnClick}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-[11px] font-bold transition shadow-xs">Print</button>
+          </div>
+        `;
 
         let idProofCellHtml = `<span class="text-slate-400 italic text-[10px]">None</span>`;
         if (b.idProofBase64) {
@@ -3052,7 +2971,7 @@
         const tableCap = parseInt(b.capacity) || 1;
         const tableCapLabel = tableCap === 1 ? 'Person' : 'Persons';
         const extraPersonsText = (b.extraPersons && b.extraPersons > 0) ? `<span class="text-amber-700 font-bold block text-[9px]">(+${b.extraPersons} Extra)</span>` : '';
-        const contactDisplay = `${b.countryCode || '+91'} ${b.contactNo || '-'}`.trim();
+        const contactDisplay = b.contactNo ? `${b.countryCode || '+91'} ${b.contactNo}`.trim() : '-';
 
         const tr = document.createElement('tr');
         tr.className = `${statusBgClass} transition border-b border-slate-100`;
