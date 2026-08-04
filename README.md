@@ -1798,7 +1798,7 @@
       document.getElementById('dash-due').innerText = `₹${totalDue.toLocaleString('en-IN')}`;
     }
 
-    /* WHATSAPP RECEIPT SENDER WITH DIRECT WHATSAPP REDIRECTION & DRAFTED MESSAGE */
+    /* WHATSAPP RECEIPT SENDER WITH PAYMENT GATEWAY LINKS (RAZORPAY, PAYTM, PAYU) & PRE-APPROVED AMOUNT */
     function sendReceiptViaWhatsApp() {
       if (!activeModalBooking) {
         alert("⚠️ Booking information not found!");
@@ -1823,15 +1823,13 @@
 
       const fullPhoneNumber = rawCountryCode + phone;
 
-      const upiId = "kapil98.ram@okaxis";
-      const payeeName = encodeURIComponent("Aniruddha Homestay");
-      const transactionNote = encodeURIComponent(`Booking Advance ${b.bookingCode}`);
-      
       // Formatting amount without trailing zeros for whole numbers (e.g. 10 instead of 10.00)
       const formattedAmount = Number(advPayment) % 1 === 0 ? Number(advPayment).toString() : Number(advPayment).toFixed(2);
       
-      // Standardized NPCI compliant UPI Deep Link schema
-      const upiPayLink = `upi://pay?pa=${upiId}&pn=${payeeName}&am=${formattedAmount}&cu=INR&tn=${transactionNote}`;
+      // Payment Gateway Pre-approved links
+      const razorpayLink = `https://rzp.io/i/pay?amount=${formattedAmount}&reference_id=${b.bookingCode}`;
+      const paytmLink = `https://paytm.me/pay?amount=${formattedAmount}&reftransid=${b.bookingCode}`;
+      const payuLink = `https://pmny.in/pay?amount=${formattedAmount}&txnid=${b.bookingCode}`;
 
       const effectiveOut = (b.hasExtendedCheckout && b.extendedCheckOut) ? b.extendedCheckOut : b.checkOut;
       const roomCap = parseInt(b.capacity) || 1;
@@ -1849,8 +1847,10 @@
         `• Total Amount: ₹${b.totalAmount}\n` +
         `• Advance Received: ₹${advPayment}\n` +
         `• Balance Due: ₹${b.totalDue}\n\n` +
-        `*Pay via UPI:* You can complete payments using UPI ID: *${upiId}*\n` +
-        `Direct UPI Link: ${upiPayLink}\n\n` +
+        `*Pay via Payment Gateway (Pre-Approved Amount: ₹${formattedAmount}):*\n` +
+        `• Razorpay: ${razorpayLink}\n` +
+        `• Paytm: ${paytmLink}\n` +
+        `• PayU: ${payuLink}\n\n` +
         `We look forward to hosting you! 🏠`;
 
       const encodedMessage = encodeURIComponent(messageText);
@@ -2310,19 +2310,19 @@
           const initialCheckOutTime = new Date(b.checkOut).getTime();
           const timerNotice = document.getElementById('ext-checkout-timer-notice');
 
-          if (now > initialCheckOutTime && !b.hasExtendedCheckout) {
-            extChkBox.disabled = true;
-            if (timerNotice) {
-              timerNotice.innerText = "(Check-out time expired)";
-              timerNotice.classList.remove('hidden');
-              timerNotice.classList.add('text-rose-600');
-            }
-          } else {
+          // Active for upcoming & live bookings, and active until 1 hour after the first check out time for closed bookings
+          if (now <= (initialCheckOutTime + ONE_HOUR_MS)) {
             extChkBox.disabled = isClosedAndWithin3Days;
             if (timerNotice) {
-              timerNotice.innerText = "(Active post check-out)";
+              timerNotice.innerText = "(Active up to 1hr post check-out)";
+              timerNotice.classList.remove('hidden', 'text-rose-600');
+            }
+          } else {
+            extChkBox.disabled = true;
+            if (timerNotice) {
+              timerNotice.innerText = "(Check-out window expired)";
               timerNotice.classList.remove('hidden');
-              timerNotice.classList.remove('text-rose-600');
+              timerNotice.classList.add('text-rose-600');
             }
           }
 
