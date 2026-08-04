@@ -620,7 +620,7 @@
           <h4 class="text-[9px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
             <i class="fa-solid fa-bed text-blue-600"></i> Room Selection & Stay Dates
           </h4>
-          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <div>
               <label class="block font-semibold text-slate-600 mb-0.5">Room No</label>
               <select id="cust-room" onchange="autoCaptureRoomDetails()" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-blue-500 font-bold text-blue-600"></select>
@@ -636,7 +636,38 @@
               <input type="number" id="cust-capacity" min="1" value="1" oninput="calculateModalBilling()" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-blue-500 font-bold text-slate-700">
             </div>
 
-            <div class="sm:col-span-3 grid grid-cols-2 gap-2 pt-1 border-t border-slate-200/60">
+            <!-- EXTRA PERSON(S) COUNT FIELD -->
+            <div>
+              <label class="block font-semibold text-amber-700 mb-0.5 flex items-center gap-1">
+                <i class="fa-solid fa-user-plus text-amber-600"></i> Add Extra Person(s)
+              </label>
+              <input type="number" id="cust-extra-persons" min="0" value="0" placeholder="0" oninput="calculateModalBilling()" class="w-full bg-amber-50 border border-amber-300 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-amber-500 font-bold text-amber-900">
+            </div>
+
+            <!-- ADDITIONAL PERSON CUSTOM CHECK-IN & CHECK-OUT WINDOW -->
+            <div id="sec-extra-person-time-wrapper" class="sm:col-span-4 hidden bg-amber-50/70 p-2.5 rounded-2xl border border-amber-200/80 space-y-2">
+              <label class="block font-bold text-amber-900 mb-1 flex items-center gap-1">
+                <i class="fa-solid fa-clock-rotate-left text-amber-600"></i> Additional Person Stay Window
+              </label>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <label class="block font-semibold text-amber-800 text-[10px] mb-0.5">Extra Person Check-In</label>
+                  <div class="flex gap-1">
+                    <input type="date" id="cust-extra-person-date" onchange="calculateModalBilling()" class="w-2/3 bg-white border border-amber-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-amber-500 font-semibold text-amber-900">
+                    <input type="time" id="cust-extra-person-time" value="12:00" onchange="calculateModalBilling()" class="w-1/3 bg-white border border-amber-200 rounded-xl px-1.5 py-1.5 focus:outline-none focus:border-amber-500 font-semibold text-amber-900">
+                  </div>
+                </div>
+                <div>
+                  <label class="block font-semibold text-amber-800 text-[10px] mb-0.5">Extra Person Check-Out</label>
+                  <div class="flex gap-1">
+                    <input type="date" id="cust-extra-person-out-date" onchange="calculateModalBilling()" class="w-2/3 bg-white border border-amber-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-amber-500 font-semibold text-amber-900">
+                    <input type="time" id="cust-extra-person-out-time" value="11:00" onchange="calculateModalBilling()" class="w-1/3 bg-white border border-amber-200 rounded-xl px-1.5 py-1.5 focus:outline-none focus:border-amber-500 font-semibold text-amber-900">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="sm:col-span-4 grid grid-cols-2 gap-2 pt-1 border-t border-slate-200/60">
               <div>
                 <label class="block font-semibold text-slate-600 mb-0.5"><i class="fa-solid fa-plane-arrival text-emerald-600 mr-1"></i> Check In</label>
                 <div class="flex gap-1">
@@ -655,7 +686,7 @@
             </div>
 
             <!-- Extended Check Out Checkbox & Fields -->
-            <div id="sec-extended-checkout-wrapper" class="sm:col-span-3 pt-2 border-t border-slate-200/60">
+            <div id="sec-extended-checkout-wrapper" class="sm:col-span-4 pt-2 border-t border-slate-200/60">
               <div class="flex items-center gap-2 mb-1">
                 <input type="checkbox" id="cust-has-extended-checkout" onchange="toggleExtendedCheckoutFields(this.checked)" class="w-4 h-4 text-blue-600 rounded-md border-slate-300 focus:ring-blue-500 cursor-pointer">
                 <label for="cust-has-extended-checkout" id="lbl-has-extended-checkout" class="font-bold text-slate-700 cursor-pointer flex items-center gap-1 select-none text-[11px]">
@@ -675,11 +706,11 @@
             </div>
 
             <!-- Meal Plan Inclusions Checkbox -->
-            <div class="sm:col-span-3 pt-2 border-t border-slate-200/60">
+            <div class="sm:col-span-4 pt-2 border-t border-slate-200/60">
               <div class="flex items-center gap-2">
                 <input type="checkbox" id="cust-include-meals" checked class="w-4 h-4 text-blue-600 rounded-md border-slate-300 focus:ring-blue-500 cursor-pointer">
                 <label for="cust-include-meals" class="font-bold text-slate-700 cursor-pointer flex items-center gap-1 select-none text-[11px]">
-                  <i class="fa-solid fa-utensils text-emerald-600"></i> Include Meal Description in Invoice (*Include Breakfast, Lunch, Evening snack & Dinner)
+                  <i class="fa-solid fa-utensils text-emerald-600"></i> Include Meal (*Include Breakfast, Lunch, Evening snack & Dinner)
                 </label>
               </div>
             </div>
@@ -1313,6 +1344,9 @@
           "Pin/Zip Code": b.zipCode || "-",
           "Room No": b.roomNo || "-",
           "Capacity": b.capacity || 1,
+          "Extra Persons": b.extraPersons || 0,
+          "Extra Person Joined": b.extraPersonJoined ? formatDateTime(b.extraPersonJoined) : "N/A",
+          "Extra Person Check-Out": b.extraPersonOut ? formatDateTime(b.extraPersonOut) : "N/A",
           "Agent Info": b.agentInfo || "-",
           "Check-In": formatDateTime(b.checkIn),
           "Check-Out": formatDateTime(b.checkOut),
@@ -1833,14 +1867,13 @@
 
       const effectiveOut = (b.hasExtendedCheckout && b.extendedCheckOut) ? b.extendedCheckOut : b.checkOut;
       const roomCap = parseInt(b.capacity) || 1;
-      const roomCapLabel = roomCap === 1 ? 'Person' : 'Persons';
 
       const messageText = `*Aniruddha Homestay - Booking Receipt*\n\n` +
         `Dear *${b.name}*,\n` +
         `Thank you for booking with us! Here are your booking details:\n\n` +
         `*Reservation Details:*\n` +
         `• Booking ID: *${b.bookingCode}*\n` +
-        `• Room No: ${b.roomNo} (${roomCap} ${roomCapLabel})\n` +
+        `• Room No: ${b.roomNo}\n` +
         `• Check-In: ${formatDateTime(b.checkIn)}\n` +
         `• Check-Out: ${formatDateTime(effectiveOut)}\n\n` +
         `*Billing Summary:*\n` +
@@ -1981,10 +2014,7 @@
       document.getElementById('inv-guest-contact').innerText = `Contact: ${fullGuestPhone || 'N/A'}`;
       document.getElementById('inv-guest-id').innerText = `ID No: ${b.idNo || 'N/A'}`;
 
-      const roomCap = parseInt(b.capacity) || 1;
-      const roomCapLabel = roomCap === 1 ? 'Person' : 'Persons';
-
-      document.getElementById('inv-room').innerText = `Room No: ${b.roomNo} (${roomCap} ${roomCapLabel})`;
+      document.getElementById('inv-room').innerText = `Room No: ${b.roomNo}`;
       document.getElementById('inv-checkin').innerText = `Check-in: ${formatDateTime(b.checkIn)}`;
       
       // Initial Check-Out Date
@@ -2009,17 +2039,41 @@
       const showMealsNote = b.includeMeals !== false;
       const mealNotesStr = showMealsNote ? '<span class="text-[9px] text-slate-500 block font-normal">(*Include Breakfast,Lunch,Evening snack & Dinner)</span>' : '';
 
+      const stayDaysCount = parseInt(b.noOfDays) || 0;
+      const daysFormattedStr = stayDaysCount === 1 ? '1 Day' : `${stayDaysCount} Days`;
+
       const roomTr = document.createElement('tr');
       roomTr.innerHTML = `
         <td class="p-2.5 font-semibold text-slate-800">
-          Room ${b.roomNo} Accommodation (${roomCap} ${roomCapLabel}) ${b.hasExtendedCheckout ? '<span class="text-[9px] text-blue-600 block font-normal">(Includes extended stay duration)</span>' : ''}
+          Room ${b.roomNo} Accommodation ${b.hasExtendedCheckout ? '<span class="text-[9px] text-blue-600 block font-normal">(Includes extended stay duration)</span>' : ''}
           ${mealNotesStr}
         </td>
-        <td class="p-2.5 text-center">${b.noOfDays || 0} Days</td>
+        <td class="p-2.5 text-center">${daysFormattedStr}</td>
         <td class="p-2.5 text-right">₹${(b.perDayPrice || 0).toLocaleString('en-IN')}</td>
         <td class="p-2.5 text-right font-semibold text-slate-800">₹${roomTotal.toLocaleString('en-IN')}</td>
       `;
       tbody.appendChild(roomTr);
+
+      // ADD EXTRA PERSON ITEM IN INVOICE IF APPLICABLE
+      if (b.extraPersons && b.extraPersons > 0 && b.extraPersonDays > 0) {
+        const extraPersonTotal = b.extraPersons * b.extraPersonDays * (b.perDayPrice || 0);
+        const extraJoinedFmt = b.extraPersonJoined ? formatDateTime(b.extraPersonJoined) : '';
+        const extraOutFmt = b.extraPersonOut ? formatDateTime(b.extraPersonOut) : '';
+        const extraDaysCount = parseInt(b.extraPersonDays) || 0;
+        const extraDaysFormattedStr = extraDaysCount === 1 ? '1 Day' : `${extraDaysCount} Days`;
+
+        const extraTr = document.createElement('tr');
+        extraTr.innerHTML = `
+          <td class="p-2.5 font-semibold text-amber-900">
+            Additional Guest Accommodation (${b.extraPersons} ${b.extraPersons === 1 ? 'Person' : 'Persons'})
+            <span class="text-[9px] text-amber-700 font-normal block">Stay: ${extraJoinedFmt} to ${extraOutFmt || 'Check-Out'}</span>
+          </td>
+          <td class="p-2.5 text-center">${extraDaysFormattedStr}</td>
+          <td class="p-2.5 text-right">₹${(b.perDayPrice || 0).toLocaleString('en-IN')}</td>
+          <td class="p-2.5 text-right font-semibold text-amber-900">₹${extraPersonTotal.toLocaleString('en-IN')}</td>
+        `;
+        tbody.appendChild(extraTr);
+      }
 
       if (b.foodOrders && b.foodOrders.length > 0) {
         b.foodOrders.forEach(fo => {
@@ -2162,24 +2216,28 @@
       }
     }
 
+    function setInputEnabled(elem, isEnabled) {
+      if (!elem) return;
+      elem.disabled = !isEnabled;
+      if (!isEnabled) {
+        elem.classList.add('bg-slate-100', 'cursor-not-allowed', 'text-slate-500');
+        elem.classList.remove('bg-white', 'bg-amber-50');
+      } else {
+        elem.classList.remove('bg-slate-100', 'cursor-not-allowed', 'text-slate-500');
+      }
+    }
+
     function openBookingModal(bookingId = null) {
-      let isClosedAndWithin3Days = false;
       const now = new Date().getTime();
-      let isLiveOrClosedBooking = false;
+      let isLiveBooking = false;
+      let isClosedAndWithin3Days = false;
+      let isExpiredOver3Days = false;
+      let isUpcomingBooking = false;
 
+      let b = null;
       if (bookingId) {
-        const b = state.bookings.find(item => item.id === bookingId);
-        
+        b = state.bookings.find(item => item.id === bookingId);
         if (b) {
-          const effectiveCheckoutTime = getEffectiveCheckoutTime(b);
-          const checkInTime = new Date(b.checkIn).getTime();
-          const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
-
-          // Identify if booking is Live or Closed (including check-out time over)
-          if (now >= checkInTime) {
-            isLiveOrClosedBooking = true;
-          }
-
           if (b.inactive) {
             alert("This booking details are inactive and cannot be edited.");
             return;
@@ -2190,8 +2248,17 @@
             return;
           }
 
-          if (now > effectiveCheckoutTime) {
-            if (now > (effectiveCheckoutTime + threeDaysMs)) {
+          const effectiveOutTime = getEffectiveCheckoutTime(b);
+          const checkInTime = new Date(b.checkIn).getTime();
+          const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
+
+          if (now >= checkInTime && now <= effectiveOutTime) {
+            isLiveBooking = true;
+          } else if (now < checkInTime) {
+            isUpcomingBooking = true;
+          } else if (now > effectiveOutTime) {
+            if (now > (effectiveOutTime + threeDaysMs)) {
+              isExpiredOver3Days = true;
               alert("This booking closed more than 3 days ago. It is non-editable and can only be viewed or printed.");
               printInvoice(bookingId);
               return;
@@ -2200,6 +2267,8 @@
             }
           }
         }
+      } else {
+        isUpcomingBooking = true;
       }
 
       document.getElementById('modal-booking-id').value = bookingId || '';
@@ -2213,32 +2282,67 @@
       if (clearBillInput) clearBillInput.value = 0;
 
       document.getElementById('food-orders-container').innerHTML = '';
-
       populateAgentDropdown();
 
+      /* FIELD PERMISSIONS & ACCESSIBILITY RULES */
+
+      // 1. Guest Information Section
       setSectionEditability('sec-guest-info', !isClosedAndWithin3Days);
-      setSectionEditability('sec-room-dates', !isClosedAndWithin3Days);
 
-      // Lock check-in and check-out date/time fields if booking is Live or Closed
-      const checkInDateElem = document.getElementById('cust-checkin-date');
-      const checkInTimeElem = document.getElementById('cust-checkin-time');
-      const checkOutDateElem = document.getElementById('cust-checkout-date');
-      const checkOutTimeElem = document.getElementById('cust-checkout-time');
+      // 2. Room Selection & Stay Schedule Box
+      if (isUpcomingBooking) {
+        setSectionEditability('sec-room-dates', true);
+      } else if (isLiveBooking) {
+        setSectionEditability('sec-room-dates', true);
 
-      const dateFields = [checkInDateElem, checkInTimeElem, checkOutDateElem, checkOutTimeElem];
+        // Lock check-in and check-out date/time fields for primary stay
+        setInputEnabled(document.getElementById('cust-checkin-date'), false);
+        setInputEnabled(document.getElementById('cust-checkin-time'), false);
+        setInputEnabled(document.getElementById('cust-checkout-date'), false);
+        setInputEnabled(document.getElementById('cust-checkout-time'), false);
+      } else if (isClosedAndWithin3Days) {
+        setSectionEditability('sec-room-dates', false);
+      }
 
-      dateFields.forEach(el => {
-        if (el) {
-          if (isLiveOrClosedBooking) {
-            el.disabled = true;
-            el.classList.add('bg-slate-100', 'cursor-not-allowed', 'text-slate-500');
-          } else {
-            el.disabled = false;
-            el.classList.remove('bg-slate-100', 'cursor-not-allowed', 'text-slate-500');
+      // 3. Extended Check-Out Field Control
+      const extChkBox = document.getElementById('cust-has-extended-checkout');
+      const extDateInput = document.getElementById('cust-ext-checkout-date');
+      const extTimeInput = document.getElementById('cust-ext-checkout-time');
+      const timerNotice = document.getElementById('ext-checkout-timer-notice');
+
+      let canToggleExtendedCheckout = false;
+      if (b) {
+        const initialCheckOutTime = new Date(b.checkOut).getTime();
+        const isWithin1HrPastCheckout = now > initialCheckOutTime && now <= (initialCheckOutTime + ONE_HOUR_MS);
+
+        if (isLiveBooking || isWithin1HrPastCheckout) {
+          canToggleExtendedCheckout = true;
+        }
+      }
+
+      if (extChkBox) {
+        extChkBox.disabled = !canToggleExtendedCheckout;
+        if (canToggleExtendedCheckout) {
+          if (timerNotice) {
+            timerNotice.innerText = isLiveBooking ? "(Active for Live Booking)" : "(Active up to 1hr post check-out)";
+            timerNotice.classList.remove('hidden', 'text-rose-600');
+          }
+        } else {
+          if (timerNotice) {
+            timerNotice.innerText = isClosedAndWithin3Days ? "(Closed Booking - Inactive)" : "(Selectable only for Live Booking)";
+            timerNotice.classList.remove('hidden');
+            timerNotice.classList.add('text-rose-600');
           }
         }
-      });
-      
+      }
+
+      // 4. Meal Plan Inclusions Checkbox (Active for Upcoming, Live, & Closed)
+      const mealsChkBox = document.getElementById('cust-include-meals');
+      if (mealsChkBox) {
+        mealsChkBox.disabled = isClosedAndWithin3Days;
+      }
+
+      // 5. Extra Food Section
       const addFoodBtn = document.getElementById('btn-add-food-order');
       if (addFoodBtn) {
         addFoodBtn.disabled = isClosedAndWithin3Days;
@@ -2249,108 +2353,133 @@
         }
       }
 
-      const extChkBox = document.getElementById('cust-has-extended-checkout');
-      const extDateInput = document.getElementById('cust-ext-checkout-date');
-      const extTimeInput = document.getElementById('cust-ext-checkout-time');
-      const mealsChkBox = document.getElementById('cust-include-meals');
+      // 6. Billing Summary Section
+      setSectionEditability('sec-billing-summary', true);
 
-      if (bookingId) {
-        const b = state.bookings.find(item => item.id === bookingId);
-        if (b) {
-          document.getElementById('modal-title').innerText = isClosedAndWithin3Days 
-            ? 'Closed Booking' 
-            : 'Edit Booking Details';
-          
-          document.getElementById('modal-booking-id').value = b.id;
-          document.getElementById('cust-name').value = formatTitleCase(b.name);
-          document.getElementById('cust-address').value = formatTitleCase(b.address || '');
-          document.getElementById('cust-city').value = formatTitleCase(b.city || '');
-          document.getElementById('cust-state').value = formatTitleCase(b.state || '');
-          document.getElementById('cust-country').value = formatTitleCase(b.country || '');
-          document.getElementById('cust-zip').value = b.zipCode || '';
-          document.getElementById('cust-id').value = b.idNo || '';
-          document.getElementById('cust-country-code').value = b.countryCode || '+91';
-          document.getElementById('cust-contact').value = b.contactNo || '';
+      // 7. ADDITIONAL PERSON FIELD INPUTS
+      const extraPersonsInput = document.getElementById('cust-extra-persons');
+      const extraPersonTimeWrapper = document.getElementById('sec-extra-person-time-wrapper');
+      const extraPersonDateInput = document.getElementById('cust-extra-person-date');
+      const extraPersonTimeInput = document.getElementById('cust-extra-person-time');
+      const extraPersonOutDateInput = document.getElementById('cust-extra-person-out-date');
+      const extraPersonOutTimeInput = document.getElementById('cust-extra-person-out-time');
 
-          if (b.idProofBase64) {
-            document.getElementById('cust-id-file-base64').value = b.idProofBase64;
-            document.getElementById('cust-id-file-name').value = b.idProofFileName || 'Attached_ID_Proof.pdf';
-            document.getElementById('cust-id-file-status').innerHTML = `<span class="text-emerald-600 font-semibold"><i class="fa-solid fa-circle-check"></i> Attached: ${b.idProofFileName || 'Attached_ID_Proof.pdf'}</span>`;
-            document.getElementById('cust-id-file-remove').classList.remove('hidden');
-          }
-          
-          populateRoomDropdown(b.roomNo);
-          populateAgentDropdown(b.agentInfo);
-          document.getElementById('cust-capacity').value = b.capacity || 1;
+      if (extraPersonsInput) {
+        setInputEnabled(extraPersonsInput, isLiveBooking || isUpcomingBooking);
+      }
+      if (extraPersonDateInput) setInputEnabled(extraPersonDateInput, isLiveBooking || isUpcomingBooking);
+      if (extraPersonTimeInput) setInputEnabled(extraPersonTimeInput, isLiveBooking || isUpcomingBooking);
+      if (extraPersonOutDateInput) setInputEnabled(extraPersonOutDateInput, isLiveBooking || isUpcomingBooking);
+      if (extraPersonOutTimeInput) setInputEnabled(extraPersonOutTimeInput, isLiveBooking || isUpcomingBooking);
 
-          if (b.checkIn) {
-            const [inDate, inTime] = b.checkIn.split('T');
-            document.getElementById('cust-checkin-date').value = inDate || '';
-            document.getElementById('cust-checkin-time').value = inTime || '12:00';
-          }
-          if (b.checkOut) {
-            const [outDate, outTime] = b.checkOut.split('T');
-            document.getElementById('cust-checkout-date').value = outDate || '';
-            document.getElementById('cust-checkout-time').value = outTime || '11:00';
-            if (extDateInput) extDateInput.min = outDate || '';
-          }
-
-          extChkBox.checked = !!b.hasExtendedCheckout;
-          toggleExtendedCheckoutFields(extChkBox.checked);
-          if (b.hasExtendedCheckout && b.extendedCheckOut) {
-            const [eDate, eTime] = b.extendedCheckOut.split('T');
-            extDateInput.value = eDate || '';
-            extTimeInput.value = eTime || '12:00';
-          }
-
-          if (mealsChkBox) {
-            mealsChkBox.checked = b.includeMeals !== undefined ? !!b.includeMeals : true;
-          }
-
-          const initialCheckOutTime = new Date(b.checkOut).getTime();
-          const timerNotice = document.getElementById('ext-checkout-timer-notice');
-
-          // Active for upcoming & live bookings, and active until 1 hour after the first check out time for closed bookings
-          if (now <= (initialCheckOutTime + ONE_HOUR_MS)) {
-            extChkBox.disabled = isClosedAndWithin3Days;
-            if (timerNotice) {
-              timerNotice.innerText = "(Active up to 1hr post check-out)";
-              timerNotice.classList.remove('hidden', 'text-rose-600');
-            }
-          } else {
-            extChkBox.disabled = true;
-            if (timerNotice) {
-              timerNotice.innerText = "(Check-out window expired)";
-              timerNotice.classList.remove('hidden');
-              timerNotice.classList.add('text-rose-600');
-            }
-          }
-
-          if (b.foodOrders && b.foodOrders.length > 0) {
-            b.foodOrders.forEach(fo => {
-              let fDate = '', fTime = '';
-              if (fo.foodDateTime) {
-                const parts = fo.foodDateTime.split('T');
-                fDate = parts[0] || '';
-                fTime = parts[1] || '';
-              }
-              addFoodOrderItem(fo.foodDesc || '', fo.plates || 1, fo.itemPrice || 0, fo.foodCharge || 0, fDate, fTime, isClosedAndWithin3Days);
-            });
-          }
-
-          document.getElementById('cust-price').value = b.perDayPrice;
-          
-          const advanceElem = document.getElementById('cust-advance');
-          const baseAdv = b.initialAdv !== undefined ? b.initialAdv : b.advanced;
-          advanceElem.value = baseAdv;
-          advanceElem.setAttribute('data-initial-adv', baseAdv);
-
-          if (b.clearedDue) {
-            document.getElementById('cust-clear-bill').value = b.clearedDue;
-          }
-
-          calculateModalBilling();
+      if (isLiveBooking || isUpcomingBooking) {
+        if (extraPersonTimeWrapper) extraPersonTimeWrapper.classList.remove('hidden');
+      } else {
+        if (extraPersonTimeWrapper && (!b || !b.extraPersons || b.extraPersons <= 0)) {
+          extraPersonTimeWrapper.classList.add('hidden');
+        } else if (extraPersonTimeWrapper) {
+          extraPersonTimeWrapper.classList.remove('hidden');
         }
+      }
+
+      /* POPULATE MODAL FIELDS WITH EXISTING BOOKING DATA */
+      if (b) {
+        document.getElementById('modal-title').innerText = isClosedAndWithin3Days 
+          ? 'Closed Booking (Billing Active)' 
+          : 'Edit Booking Details';
+        
+        document.getElementById('modal-booking-id').value = b.id;
+        document.getElementById('cust-name').value = formatTitleCase(b.name);
+        document.getElementById('cust-address').value = formatTitleCase(b.address || '');
+        document.getElementById('cust-city').value = formatTitleCase(b.city || '');
+        document.getElementById('cust-state').value = formatTitleCase(b.state || '');
+        document.getElementById('cust-country').value = formatTitleCase(b.country || '');
+        document.getElementById('cust-zip').value = b.zipCode || '';
+        document.getElementById('cust-id').value = b.idNo || '';
+        document.getElementById('cust-country-code').value = b.countryCode || '+91';
+        document.getElementById('cust-contact').value = b.contactNo || '';
+
+        if (b.idProofBase64) {
+          document.getElementById('cust-id-file-base64').value = b.idProofBase64;
+          document.getElementById('cust-id-file-name').value = b.idProofFileName || 'Attached_ID_Proof.pdf';
+          document.getElementById('cust-id-file-status').innerHTML = `<span class="text-emerald-600 font-semibold"><i class="fa-solid fa-circle-check"></i> Attached: ${b.idProofFileName || 'Attached_ID_Proof.pdf'}</span>`;
+          document.getElementById('cust-id-file-remove').classList.remove('hidden');
+        }
+        
+        populateRoomDropdown(b.roomNo);
+        populateAgentDropdown(b.agentInfo);
+        document.getElementById('cust-capacity').value = b.capacity || 1;
+
+        if (extraPersonsInput) extraPersonsInput.value = b.extraPersons || 0;
+        
+        if (b.extraPersonJoined) {
+          const [epDate, epTime] = b.extraPersonJoined.split('T');
+          if (extraPersonDateInput) extraPersonDateInput.value = epDate || '';
+          if (extraPersonTimeInput) extraPersonTimeInput.value = epTime || '12:00';
+        } else {
+          const todayStr = new Date().toISOString().split('T')[0];
+          if (extraPersonDateInput) extraPersonDateInput.value = todayStr;
+          if (extraPersonTimeInput) extraPersonTimeInput.value = '12:00';
+        }
+
+        if (b.extraPersonOut) {
+          const [epOutDate, epOutTime] = b.extraPersonOut.split('T');
+          if (extraPersonOutDateInput) extraPersonOutDateInput.value = epOutDate || '';
+          if (extraPersonOutTimeInput) extraPersonOutTimeInput.value = epOutTime || '11:00';
+        } else if (b.checkOut) {
+          const [outDate, outTime] = b.checkOut.split('T');
+          if (extraPersonOutDateInput) extraPersonOutDateInput.value = outDate || '';
+          if (extraPersonOutTimeInput) extraPersonOutTimeInput.value = outTime || '11:00';
+        }
+
+        if (b.checkIn) {
+          const [inDate, inTime] = b.checkIn.split('T');
+          document.getElementById('cust-checkin-date').value = inDate || '';
+          document.getElementById('cust-checkin-time').value = inTime || '12:00';
+        }
+        if (b.checkOut) {
+          const [outDate, outTime] = b.checkOut.split('T');
+          document.getElementById('cust-checkout-date').value = outDate || '';
+          document.getElementById('cust-checkout-time').value = outTime || '11:00';
+          if (extDateInput) extDateInput.min = outDate || '';
+        }
+
+        extChkBox.checked = !!b.hasExtendedCheckout;
+        toggleExtendedCheckoutFields(extChkBox.checked);
+        if (b.hasExtendedCheckout && b.extendedCheckOut) {
+          const [eDate, eTime] = b.extendedCheckOut.split('T');
+          extDateInput.value = eDate || '';
+          extTimeInput.value = eTime || '12:00';
+        }
+
+        if (mealsChkBox) {
+          mealsChkBox.checked = b.includeMeals !== undefined ? !!b.includeMeals : true;
+        }
+
+        if (b.foodOrders && b.foodOrders.length > 0) {
+          b.foodOrders.forEach(fo => {
+            let fDate = '', fTime = '';
+            if (fo.foodDateTime) {
+              const parts = fo.foodDateTime.split('T');
+              fDate = parts[0] || '';
+              fTime = parts[1] || '';
+            }
+            addFoodOrderItem(fo.foodDesc || '', fo.plates || 1, fo.itemPrice || 0, fo.foodCharge || 0, fDate, fTime, isClosedAndWithin3Days);
+          });
+        }
+
+        document.getElementById('cust-price').value = b.perDayPrice;
+        
+        const advanceElem = document.getElementById('cust-advance');
+        const baseAdv = b.initialAdv !== undefined ? b.initialAdv : b.advanced;
+        advanceElem.value = baseAdv;
+        advanceElem.setAttribute('data-initial-adv', baseAdv);
+
+        if (b.clearedDue) {
+          document.getElementById('cust-clear-bill').value = b.clearedDue;
+        }
+
+        calculateModalBilling();
       } else {
         document.getElementById('modal-title').innerText = 'Add New Booking';
         document.getElementById('modal-booking-id').value = '';
@@ -2360,11 +2489,24 @@
         document.getElementById('cust-country-code').value = "+91";
         document.getElementById('cust-checkin-time').value = "12:00";
         document.getElementById('cust-checkout-time').value = "11:00";
+
+        if (extraPersonsInput) extraPersonsInput.value = 0;
+
         extChkBox.checked = false;
-        extChkBox.disabled = false;
+        extChkBox.disabled = true;
+        
+        if (timerNotice) {
+          timerNotice.innerText = "(Selectable only for Live Booking)";
+          timerNotice.classList.remove('hidden');
+          timerNotice.classList.add('text-rose-600');
+        }
+
         toggleExtendedCheckoutFields(false);
 
-        if (mealsChkBox) mealsChkBox.checked = true;
+        if (mealsChkBox) {
+          mealsChkBox.checked = true;
+          mealsChkBox.disabled = false;
+        }
 
         document.getElementById('cust-price').value = 1200;
         
@@ -2457,6 +2599,7 @@
       document.getElementById('cust-due').value = due;
     }
 
+    /* ADDITIONAL PERSON BILLING CALCULATION WITH CHECK-OUT VALIDATION AGAINST LATEST MAIN/EXTENDED CHECK-OUT */
     function calculateModalBilling() {
       const inDate = document.getElementById('cust-checkin-date').value;
       const inTime = document.getElementById('cust-checkin-time').value || '00:00';
@@ -2465,7 +2608,7 @@
       let outDate = document.getElementById('cust-checkout-date').value;
       let outTime = document.getElementById('cust-checkout-time').value || '00:00';
 
-      // Rule: Calculate days from check-in date to extended check-out time if extended check-out is active
+      // Identify latest checkout date & time (Primary Check-out OR Extended Check-Out)
       if (hasExtCheckout) {
         const extDate = document.getElementById('cust-ext-checkout-date')?.value;
         const extTime = document.getElementById('cust-ext-checkout-time')?.value;
@@ -2474,28 +2617,69 @@
       }
 
       let days = 0;
+      let latestMainCheckoutDt = null;
+
       if (inDate && outDate) {
         const d1 = new Date(`${inDate}T${inTime}`);
-        const d2 = new Date(`${outDate}T${outTime}`);
-        const diff = d2 - d1;
+        latestMainCheckoutDt = new Date(`${outDate}T${outTime}`);
+        const diff = latestMainCheckoutDt - d1;
         days = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
       }
 
       const price = parseFloat(document.getElementById('cust-price').value) || 0;
       const capacity = parseFloat(document.getElementById('cust-capacity').value) || 1;
-      
+
+      /* ADDITIONAL PERSON CALCULATION: VALIDATE AGAINST LATEST MAIN CHECK-OUT DATE & TIME */
+      const extraPersons = parseInt(document.getElementById('cust-extra-persons')?.value) || 0;
+      let extraPersonDays = 0;
+
+      if (extraPersons > 0 && latestMainCheckoutDt) {
+        const epInDate = document.getElementById('cust-extra-person-date')?.value || inDate;
+        const epInTime = document.getElementById('cust-extra-person-time')?.value || '12:00';
+        let epOutDate = document.getElementById('cust-extra-person-out-date')?.value || outDate;
+        let epOutTime = document.getElementById('cust-extra-person-out-time')?.value || '11:00';
+
+        if (epInDate && epOutDate) {
+          const epInDt = new Date(`${epInDate}T${epInTime}`);
+          let epOutDt = new Date(`${epOutDate}T${epOutTime}`);
+
+          // RULE ENFORCED: Additional Person Check-Out date & time cannot be later than latest Main / Extended Check-Out date & time
+          if (epOutDt > latestMainCheckoutDt) {
+            alert(`⚠️ Additional Person Check-Out date & time (${formatDateTime(epOutDt.toISOString())}) cannot be later than the main Check-Out date & time (${formatDateTime(latestMainCheckoutDt.toISOString())})!`);
+            
+            // Adjust back to latest main check-out date and time
+            document.getElementById('cust-extra-person-out-date').value = outDate;
+            document.getElementById('cust-extra-person-out-time').value = outTime;
+            epOutDt = new Date(latestMainCheckoutDt.getTime());
+          }
+
+          if (epInDt < epOutDt) {
+            const epDiff = epOutDt - epInDt;
+            extraPersonDays = Math.max(1, Math.ceil(epDiff / (1000 * 60 * 60 * 24)));
+          } else {
+            alert("⚠️ Additional Person Check-In date & time cannot be after their Check-Out date & time!");
+            document.getElementById('cust-extra-person-date').value = inDate;
+            document.getElementById('cust-extra-person-out-date').value = outDate;
+            extraPersonDays = days;
+          }
+        } else {
+          extraPersonDays = days;
+        }
+      }
+
+      const roomTotal = days * price * capacity;
+      const extraPersonTotal = extraPersons * extraPersonDays * price;
+
       let foodTotalCharge = 0;
       document.querySelectorAll('.cust-food-charge').forEach(input => {
         foodTotalCharge += parseFloat(input.value) || 0;
       });
 
-      const roomTotal = days * price * capacity;
-      const total = roomTotal + foodTotalCharge;
+      const total = roomTotal + extraPersonTotal + foodTotalCharge;
 
       const advanceInput = document.getElementById('cust-advance');
       let currentAdvVal = parseFloat(advanceInput.value) || 0;
 
-      // Validation Rule: Advance payment cannot exceed total amount
       if (currentAdvVal > total) {
         alert(`⚠️ Advance payment (₹${currentAdvVal}) cannot exceed the total bill amount (₹${total})!`);
         currentAdvVal = total;
@@ -2554,6 +2738,38 @@
       }
 
       const includeMeals = document.getElementById('cust-include-meals')?.checked ?? true;
+
+      /* CAPTURE CUSTOM EXTRA PERSON DETAILS & COMPUTE DAYS WITH VALIDATION */
+      const extraPersons = parseInt(document.getElementById('cust-extra-persons')?.value) || 0;
+      let extraPersonJoined = null;
+      let extraPersonOut = null;
+      let extraPersonDays = 0;
+
+      const latestCheckoutStr = (hasExtendedCheckout && extendedCheckOut) ? extendedCheckOut : checkOut;
+      const latestCheckoutDt = new Date(latestCheckoutStr);
+
+      if (extraPersons > 0) {
+        const epDate = document.getElementById('cust-extra-person-date')?.value || inDate;
+        const epTime = document.getElementById('cust-extra-person-time')?.value || '12:00';
+        let epOutDate = document.getElementById('cust-extra-person-out-date')?.value || outDate;
+        let epOutTime = document.getElementById('cust-extra-person-out-time')?.value || '11:00';
+
+        extraPersonJoined = `${epDate}T${epTime}`;
+        extraPersonOut = `${epOutDate}T${epOutTime}`;
+
+        const epInDt = new Date(extraPersonJoined);
+        let epOutDt = new Date(extraPersonOut);
+
+        if (epOutDt > latestCheckoutDt) {
+          alert(`⚠️ Additional Person Check-Out date & time cannot exceed main/extended Check-Out date & time (${formatDateTime(latestCheckoutStr)}).`);
+          extraPersonOut = latestCheckoutStr;
+          epOutDt = latestCheckoutDt;
+        }
+
+        if (epInDt < epOutDt) {
+          extraPersonDays = Math.max(1, Math.ceil((epOutDt - epInDt) / (1000 * 60 * 60 * 24)));
+        }
+      }
 
       const foodWin = getModalFoodWindow();
       const foodOrdersList = [];
@@ -2643,7 +2859,6 @@
       const clearedDueAmt = parseFloat(document.getElementById('cust-clear-bill').value) || 0;
 
       const totalPaid = initialAdvAmt + clearedDueAmt;
-      
       const countryCodeVal = document.getElementById('cust-country-code').value.trim() || '+91';
 
       const newBooking = {
@@ -2664,6 +2879,10 @@
         roomNo: roomNo,
         agentInfo: document.getElementById('cust-agent').value,
         capacity: parseInt(document.getElementById('cust-capacity').value) || 1,
+        extraPersons: extraPersons,
+        extraPersonJoined: extraPersonJoined,
+        extraPersonOut: extraPersonOut,
+        extraPersonDays: extraPersonDays,
         checkIn: checkIn,
         checkOut: checkOut,
         hasExtendedCheckout: hasExtendedCheckout,
@@ -2799,8 +3018,7 @@
         const printOnClick = `printInvoice('${b.id}')`;
         let actionButtonsHtml = "";
 
-        // Inactive Booking
-        if (isInactive) {
+        if (isInactive || isExpiredOver3Days) {
           actionButtonsHtml = `
             <div class="flex items-center justify-center space-x-1">
               <button onclick="${printOnClick}" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-1 rounded-full text-[11px] font-bold transition shadow-xs" title="View Entry in Read-Only Mode">
@@ -2808,19 +3026,7 @@
               </button>
             </div>
           `;
-        } 
-        // Closed post 3 days
-        else if (isExpiredOver3Days) {
-          actionButtonsHtml = `
-            <div class="flex items-center justify-center space-x-1">
-              <button onclick="${printOnClick}" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-1 rounded-full text-[11px] font-bold transition shadow-xs" title="Non-editable (Closed over 3 days)">
-                <i class="fa-solid fa-eye text-[10px] mr-0.5"></i> Read Only
-              </button>
-            </div>
-          `;
-        }
-        // Live, Upcoming, or Closed within 3 days
-        else {
+        } else {
           let printBtnHtml = `<button onclick="${printOnClick}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-[11px] font-bold transition shadow-xs">Print</button>`;
           
           if (hasDue) {
@@ -2848,6 +3054,7 @@
 
         const tableCap = parseInt(b.capacity) || 1;
         const tableCapLabel = tableCap === 1 ? 'Person' : 'Persons';
+        const extraPersonsText = (b.extraPersons && b.extraPersons > 0) ? `<span class="text-amber-700 font-bold block text-[9px]">(+${b.extraPersons} Extra)</span>` : '';
         const contactDisplay = `${b.countryCode || '+91'} ${b.contactNo || '-'}`.trim();
 
         const tr = document.createElement('tr');
@@ -2866,7 +3073,7 @@
           <td class="py-2.5 px-3 font-mono text-[10px]">${b.idNo || '-'}</td>
           <td class="py-2.5 px-3">${idProofCellHtml}</td>
           <td class="py-2.5 px-3"><span class="bg-blue-50 text-blue-700 font-bold px-2 py-0.5 rounded-full text-[10px]">Room ${b.roomNo}</span></td>
-          <td class="py-2.5 px-3 font-bold text-slate-700">${tableCap} ${tableCapLabel}</td>
+          <td class="py-2.5 px-3 font-bold text-slate-700">${tableCap} ${tableCapLabel} ${extraPersonsText}</td>
           <td class="py-2.5 px-3 ${!isMasterValid ? 'text-rose-900' : 'text-slate-600'} text-[10px]">${b.agentInfo || '-'}</td>
           <td class="py-2.5 px-3 text-[10px]">
             <div class="font-semibold ${!isMasterValid ? 'text-rose-950' : 'text-slate-700'}">${checkInFmt}</div>
