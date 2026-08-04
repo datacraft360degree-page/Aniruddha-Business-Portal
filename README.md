@@ -1832,7 +1832,7 @@
       document.getElementById('dash-due').innerText = `₹${totalDue.toLocaleString('en-IN')}`;
     }
 
-    /* WHATSAPP RECEIPT SENDER WITH PAYMENT GATEWAY LINKS (RAZORPAY, PAYTM, PAYU) & PRE-APPROVED AMOUNT */
+    /* WHATSAPP RECEIPT SENDER WITH AUTOMATIC ADVANCE PAYMENT UPI LINK */
     function sendReceiptViaWhatsApp() {
       if (!activeModalBooking) {
         alert("⚠️ Booking information not found!");
@@ -1857,16 +1857,13 @@
 
       const fullPhoneNumber = rawCountryCode + phone;
 
-      // Formatting amount without trailing zeros for whole numbers (e.g. 10 instead of 10.00)
+      // Formatting advance amount for UPI URL link
       const formattedAmount = Number(advPayment) % 1 === 0 ? Number(advPayment).toString() : Number(advPayment).toFixed(2);
       
-      // Payment Gateway Pre-approved links
-      const razorpayLink = `https://rzp.io/i/pay?amount=${formattedAmount}&reference_id=${b.bookingCode}`;
-      const paytmLink = `https://paytm.me/pay?amount=${formattedAmount}&reftransid=${b.bookingCode}`;
-      const payuLink = `https://pmny.in/pay?amount=${formattedAmount}&txnid=${b.bookingCode}`;
+      // Automatic UPI payment link targeting kapil98.ram@okaxis
+      const upiPayLink = `upi://pay?pa=kapil98.ram@okaxis&pn=Aniruddha%20Homestay&am=${formattedAmount}&cu=INR&tn=Advance%20Booking%20Payment%20${b.bookingCode}`;
 
       const effectiveOut = (b.hasExtendedCheckout && b.extendedCheckOut) ? b.extendedCheckOut : b.checkOut;
-      const roomCap = parseInt(b.capacity) || 1;
 
       const messageText = `*Aniruddha Homestay - Booking Receipt*\n\n` +
         `Dear *${b.name}*,\n` +
@@ -1880,10 +1877,8 @@
         `• Total Amount: ₹${b.totalAmount}\n` +
         `• Advance Received: ₹${advPayment}\n` +
         `• Balance Due: ₹${b.totalDue}\n\n` +
-        `*Pay via Payment Gateway (Pre-Approved Amount: ₹${formattedAmount}):*\n` +
-        `• Razorpay: ${razorpayLink}\n` +
-        `• Paytm: ${paytmLink}\n` +
-        `• PayU: ${payuLink}\n\n` +
+        `*Pay Advance Payment via UPI (₹${formattedAmount}):*\n` +
+        `${upiPayLink}\n\n` +
         `We look forward to hosting you! 🏠`;
 
       const encodedMessage = encodeURIComponent(messageText);
@@ -2042,10 +2037,14 @@
       const stayDaysCount = parseInt(b.noOfDays) || 0;
       const daysFormattedStr = stayDaysCount === 1 ? '1 Day' : `${stayDaysCount} Days`;
 
+      // Room capacity count string for description
+      const roomCapacityCount = parseInt(b.capacity) || 1;
+      const roomCapacityLabel = roomCapacityCount === 1 ? 'Person' : 'Persons';
+
       const roomTr = document.createElement('tr');
       roomTr.innerHTML = `
         <td class="p-2.5 font-semibold text-slate-800">
-          Room ${b.roomNo} Accommodation ${b.hasExtendedCheckout ? '<span class="text-[9px] text-blue-600 block font-normal">(Includes extended stay duration)</span>' : ''}
+          Room ${b.roomNo} Accommodation (${roomCapacityCount} ${roomCapacityLabel}) ${b.hasExtendedCheckout ? '<span class="text-[9px] text-blue-600 block font-normal">(Includes extended stay duration)</span>' : ''}
           ${mealNotesStr}
         </td>
         <td class="p-2.5 text-center">${daysFormattedStr}</td>
