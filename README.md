@@ -592,12 +592,12 @@
               <label class="block font-semibold text-slate-600 mb-0.5">ID Number</label>
               <input type="text" id="cust-id" maxlength="16" pattern="[A-Za-z0-9\s]*" oninput="this.value = this.value.replace(/[^A-Za-z0-9\s]/g, '')" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-blue-500">
             </div>
-            <!-- EDITABLE COUNTRY CODE & GUEST CONTACT NUMBER -->
+            <!-- EDITABLE COUNTRY CODE & GUEST CONTACT NUMBER (LIMIT 10 DIGITS) -->
             <div>
               <label class="block font-semibold text-slate-600 mb-0.5">Contact No</label>
               <div class="flex gap-1">
                 <input type="text" id="cust-country-code" value="+91" placeholder="+91" class="w-1/3 bg-white border border-slate-200 rounded-xl px-1.5 py-1.5 focus:outline-none focus:border-blue-500 font-bold text-center text-blue-700">
-                <input type="text" id="cust-contact" maxlength="12" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '')" placeholder="Mobile No" class="w-2/3 bg-white border border-slate-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-blue-500">
+                <input type="text" id="cust-contact" maxlength="10" pattern="[0-9]*" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10)" placeholder="Mobile No" class="w-2/3 bg-white border border-slate-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-blue-500">
               </div>
             </div>
             <div class="sm:col-span-2">
@@ -866,7 +866,7 @@
 
       <div class="flex flex-wrap justify-end space-x-2 gap-y-2 pt-2 no-print border-t border-slate-100">
         <button type="button" onclick="closeInvoiceModal()" class="px-4 py-1.5 bg-slate-100 text-slate-700 rounded-xl font-semibold transition hover:bg-slate-200">Close</button>
-        <!-- SEND VIA WHATSAPP BUTTON (VISIBLE ONLY FOR UPCOMING/LIVE BOOKINGS) -->
+        <!-- SEND VIA WHATSAPP BUTTON -->
         <button type="button" id="inv-whatsapp-btn" onclick="sendReceiptViaWhatsApp()" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold shadow-sm flex items-center gap-1.5 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
           <i class="fa-brands fa-whatsapp text-sm"></i> Send receipt via WhatsApp
         </button>
@@ -1832,7 +1832,7 @@
       document.getElementById('dash-due').innerText = `₹${totalDue.toLocaleString('en-IN')}`;
     }
 
-    /* WHATSAPP RECEIPT SENDER WITH AUTOMATIC ADVANCE PAYMENT UPI LINK */
+    /* WHATSAPP RECEIPT SENDER WITH ADVANCED AMOUNT & WITHOUT QR CODE */
     function sendReceiptViaWhatsApp() {
       if (!activeModalBooking) {
         alert("⚠️ Booking information not found!");
@@ -1840,28 +1840,22 @@
       }
 
       const b = activeModalBooking;
-      const advPayment = b.initialAdv !== undefined ? b.initialAdv : b.advanced;
-
-      if (advPayment <= 0) {
-        alert("⚠️ WhatsApp receipt can only be sent if Advance Payment is greater than ₹0!");
-        return;
-      }
 
       let rawCountryCode = b.countryCode ? b.countryCode.replace(/\D/g, '') : '91';
       let phone = b.contactNo ? b.contactNo.replace(/\D/g, '') : '';
       
-      if (!phone) {
-        alert("⚠️ Please provide a valid guest contact number to send WhatsApp receipt.");
+      if (!phone || phone.length !== 10) {
+        alert("⚠️ Please provide a valid 10-digit guest contact number to send WhatsApp receipt.");
+        return;
+      }
+
+      if (!(parseFloat(b.advanced) > 0)) {
+        alert("⚠️ Advanced payment must be greater than 0 to send WhatsApp receipt.");
         return;
       }
 
       const fullPhoneNumber = rawCountryCode + phone;
-
-      // Formatting advance amount for UPI URL link
-      const formattedAmount = Number(advPayment) % 1 === 0 ? Number(advPayment).toString() : Number(advPayment).toFixed(2);
-      
-      // Automatic UPI payment link targeting kapil98.ram@okaxis
-      const upiPayLink = `upi://pay?pa=kapil98.ram@okaxis&pn=Aniruddha%20Homestay&am=${formattedAmount}&cu=INR&tn=Advance%20Booking%20Payment%20${b.bookingCode}`;
+      const upiId = "kapil98.ram@okaxis";
 
       const effectiveOut = (b.hasExtendedCheckout && b.extendedCheckOut) ? b.extendedCheckOut : b.checkOut;
 
@@ -1875,10 +1869,10 @@
         `• Check-Out: ${formatDateTime(effectiveOut)}\n\n` +
         `*Billing Summary:*\n` +
         `• Total Amount: ₹${b.totalAmount}\n` +
-        `• Advance Received: ₹${advPayment}\n` +
+        `• Advance Amount: ₹${b.advanced}\n` +
         `• Balance Due: ₹${b.totalDue}\n\n` +
-        `*Pay Advance Payment via UPI (₹${formattedAmount}):*\n` +
-        `${upiPayLink}\n\n` +
+        `*UPI Payment Details:*\n` +
+        `• UPI ID: *${upiId}*\n\n` +
         `We look forward to hosting you! 🏠`;
 
       const encodedMessage = encodeURIComponent(messageText);
@@ -1914,21 +1908,19 @@
       const invBadge = document.getElementById('inv-badge');
       const invIdContainer = document.getElementById('inv-id-container');
 
-      const advPaid = b.initialAdv !== undefined ? b.initialAdv : b.advanced;
-
-      // WHATSAPP BUTTON VISIBILITY: ONLY VISIBLE FOR UPCOMING / LIVE BOOKINGS (NOT CLOSED OR INACTIVE)
+      // WHATSAPP BUTTON ACTIVATION LOGIC:
+      // Activated only if advanced payment > 0 and 10-digit guest contact number provided (and status allows)
       if (waBtn) {
-        if (isLiveOrUpcoming) {
+        const contactDigits = b.contactNo ? b.contactNo.replace(/\D/g, '') : '';
+        const hasValidContact = contactDigits.length === 10;
+        const hasAdvanced = (parseFloat(b.advanced) || 0) > 0;
+
+        if (isLiveOrUpcoming && hasValidContact && hasAdvanced) {
           waBtn.classList.remove('hidden');
-          if (advPaid > 0) {
-            waBtn.disabled = false;
-            waBtn.title = "Send Receipt via WhatsApp";
-          } else {
-            waBtn.disabled = true;
-            waBtn.title = "WhatsApp Receipt requires Advance Payment > ₹0";
-          }
+          waBtn.disabled = false;
+          waBtn.title = "Send Receipt via WhatsApp";
         } else {
-          waBtn.classList.add('hidden'); // Hide for Closed or Inactive status
+          waBtn.classList.add('hidden'); // Hidden or disabled if conditions are not met
         }
       }
 
@@ -2705,6 +2697,12 @@
         return;
       }
 
+      const contactNoVal = document.getElementById('cust-contact').value.trim();
+      if (contactNoVal.length !== 10) {
+        alert("⚠️ Please provide a valid 10-digit guest contact number.");
+        return;
+      }
+
       const today = new Date().toISOString().split('T')[0];
       const inDate = document.getElementById('cust-checkin-date').value;
       const outDate = document.getElementById('cust-checkout-date').value;
@@ -2872,7 +2870,7 @@
         zipCode: document.getElementById('cust-zip').value.trim(),
         idNo: document.getElementById('cust-id').value.trim(),
         countryCode: countryCodeVal,
-        contactNo: document.getElementById('cust-contact').value.trim(),
+        contactNo: contactNoVal,
         idProofBase64: document.getElementById('cust-id-file-base64').value,
         idProofFileName: document.getElementById('cust-id-file-name').value,
         roomNo: roomNo,
