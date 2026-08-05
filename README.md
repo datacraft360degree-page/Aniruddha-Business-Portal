@@ -196,13 +196,13 @@
         <button onclick="closeExportModal()" class="text-slate-400 hover:text-slate-600 p-0.5 text-base"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="space-y-3 text-[11px]">
-        <p class="text-slate-500">Select a date range to download booking details. Available from 1st Aug 2026 to 2085.</p>
+        <p class="text-slate-500">Select a specific period to download booking details. Available from 1st Aug 2026 to 31st Dec 2085.</p>
         <div>
-          <label class="block font-semibold text-slate-600 mb-0.5">Start Date</label>
-          <input type="date" id="export-start-date" min="2026-08-01" max="2085-12-31" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-emerald-500 font-medium">
+          <label class="block font-semibold text-slate-600 mb-0.5">Check-In Date</label>
+          <input type="date" id="export-start-date" min="2026-08-01" max="2085-12-31" onchange="document.getElementById('export-end-date').min = this.value || '2026-08-01'" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-emerald-500 font-medium">
         </div>
         <div>
-          <label class="block font-semibold text-slate-600 mb-0.5">End Date</label>
+          <label class="block font-semibold text-slate-600 mb-0.5">Check-Out Date</label>
           <input type="date" id="export-end-date" min="2026-08-01" max="2085-12-31" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-emerald-500 font-medium">
         </div>
       </div>
@@ -1349,7 +1349,7 @@
       const endDateStr = document.getElementById('export-end-date').value;
 
       if (!startDateStr || !endDateStr) {
-        alert("Please select both start and end dates.");
+        alert("Please select both Check-In and Check-Out dates.");
         return;
       }
 
@@ -1357,12 +1357,12 @@
       const maxAllowedDate = "2085-12-31";
 
       if (startDateStr < minAllowedDate || endDateStr > maxAllowedDate) {
-        alert("Please select dates within the valid range (1st Aug 2026 to 2085).");
+        alert("Please select dates within the valid range (1st Aug 2026 to 31st Dec 2085).");
         return;
       }
 
       if (startDateStr > endDateStr) {
-        alert("Start Date cannot be after End Date.");
+        alert("Check-In Date cannot be after Check-Out Date.");
         return;
       }
 
@@ -1376,10 +1376,11 @@
       }
 
       const now = new Date().getTime();
-      const filterStartDt = new Date(startDateStr).getTime();
+      const filterStartDt = new Date(startDateStr + "T00:00:00").getTime();
       const filterEndDt = new Date(endDateStr + "T23:59:59").getTime();
 
       const filteredBookings = state.bookings.filter(b => {
+        if(!b.checkIn) return false;
         const cIn = new Date(b.checkIn).getTime();
         const cOut = getEffectiveCheckoutTime(b);
         // Overlap logic: Booking ends after/on the start date AND begins before/on the end date
@@ -3358,4 +3359,3 @@
   </script>
 </body>
 </html>
-```[cite: 1]
