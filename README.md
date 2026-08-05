@@ -2805,6 +2805,15 @@
       const includeMeals = document.getElementById('cust-include-meals')?.checked ?? true;
 
       const extraPersons = parseInt(document.getElementById('cust-extra-persons')?.value) || 0;
+      
+      const epDateCheck = document.getElementById('cust-extra-person-date')?.value;
+      const epOutDateCheck = document.getElementById('cust-extra-person-out-date')?.value;
+      
+      if (extraPersons === 0 && (epDateCheck || epOutDateCheck)) {
+        alert("⚠️ You have entered Additional Person stay dates, but the 'Add Extra Person(s)' count is 0. Please update the person count or clear the dates.");
+        return;
+      }
+
       let extraPersonJoined = null;
       let extraPersonOut = null;
       let extraPersonDays = 0;
