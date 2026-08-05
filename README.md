@@ -198,11 +198,11 @@
       <div class="space-y-3 text-[11px]">
         <p class="text-slate-500">Select a specific period to download booking details. Available from 1st Aug 2026 to 31st Dec 2085.</p>
         <div>
-          <label class="block font-semibold text-slate-600 mb-0.5">Check-In Date</label>
+          <label class="block font-semibold text-slate-600 mb-0.5">Start Date</label>
           <input type="date" id="export-start-date" min="2026-08-01" max="2085-12-31" onchange="validateExportDates()" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-emerald-500 font-medium">
         </div>
         <div>
-          <label class="block font-semibold text-slate-600 mb-0.5">Check-Out Date</label>
+          <label class="block font-semibold text-slate-600 mb-0.5">End Date</label>
           <input type="date" id="export-end-date" min="2026-08-01" max="2085-12-31" onchange="validateExportDates()" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-emerald-500 font-medium">
         </div>
       </div>
@@ -1352,15 +1352,15 @@
       const endInput = document.getElementById('export-end-date');
 
       if (startInput.value && (startInput.value < minDate || startInput.value > maxDate)) {
-        alert(`⚠️ Please select a Check-In Date between ${formatDate(minDate)} and ${formatDate(maxDate)}.`);
+        alert(`⚠️ Please select a Start Date between ${formatDate(minDate)} and ${formatDate(maxDate)}.`);
         startInput.value = "";
       }
       if (endInput.value && (endInput.value < minDate || endInput.value > maxDate)) {
-        alert(`⚠️ Please select a Check-Out Date between ${formatDate(minDate)} and ${formatDate(maxDate)}.`);
+        alert(`⚠️ Please select an End Date between ${formatDate(minDate)} and ${formatDate(maxDate)}.`);
         endInput.value = "";
       }
       if (startInput.value && endInput.value && startInput.value > endInput.value) {
-        alert("⚠️ Check-In Date cannot be after Check-Out Date.");
+        alert("⚠️ Start Date cannot be after End Date.");
         endInput.value = "";
       }
     }
@@ -1370,7 +1370,7 @@
       const endDateStr = document.getElementById('export-end-date').value;
 
       if (!startDateStr || !endDateStr) {
-        alert("Please select both Check-In and Check-Out dates.");
+        alert("Please select both Start and End dates.");
         return;
       }
 
@@ -1389,15 +1389,14 @@
         if(!b.checkIn) return false;
         
         const bIn = b.checkIn.split('T')[0];
-        const bOutFull = (b.hasExtendedCheckout && b.extendedCheckOut) ? b.extendedCheckOut : b.checkOut;
-        const bOut = bOutFull.split('T')[0];
 
-        // Ensure that the booking strictly falls inside or overlaps the requested download boundary dates
-        return (bIn <= endDateStr) && (bOut >= startDateStr);
+        // Ensure that the booking's Check-In date falls strictly between or on the selected Start and End dates
+        // The check-out date is completely ignored for this filter requirement
+        return (bIn >= startDateStr) && (bIn <= endDateStr);
       });
 
       if (filteredBookings.length === 0) {
-        alert(`No booking records found overlapping with ${formatDate(startDateStr)} and ${formatDate(endDateStr)}!`);
+        alert(`No booking records found with a Check-In date between ${formatDate(startDateStr)} and ${formatDate(endDateStr)}!`);
         return;
       }
 
