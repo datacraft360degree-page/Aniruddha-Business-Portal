@@ -186,6 +186,37 @@
     </div>
   </div>
 
+  <!-- EXPORT TO EXCEL DATE RANGE MODAL -->
+  <div id="export-modal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4 no-print">
+    <div class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-sm w-full p-5 space-y-4 text-left">
+      <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+        <h3 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+          <i class="fa-solid fa-file-excel text-emerald-600"></i> Export to Excel
+        </h3>
+        <button onclick="closeExportModal()" class="text-slate-400 hover:text-slate-600 p-0.5 text-base"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="space-y-3 text-[11px]">
+        <p class="text-slate-500">Select a date range to download booking details. Available from 1st Aug 2026 to 2085.</p>
+        <div>
+          <label class="block font-semibold text-slate-600 mb-0.5">Start Date</label>
+          <input type="date" id="export-start-date" min="2026-08-01" max="2085-12-31" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-emerald-500 font-medium">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-600 mb-0.5">End Date</label>
+          <input type="date" id="export-end-date" min="2026-08-01" max="2085-12-31" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-emerald-500 font-medium">
+        </div>
+      </div>
+      <div class="flex space-x-2 pt-2 border-t border-slate-100">
+        <button type="button" onclick="closeExportModal()" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2 rounded-xl text-[11px] transition">
+          Cancel
+        </button>
+        <button type="button" onclick="processExport()" class="w-1/2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl shadow-sm transition text-[11px] flex items-center justify-center gap-1">
+          <i class="fa-solid fa-download text-[10px]"></i> Download
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Excel Comment Box Popout -->
   <div id="excel-comment-box" onclick="event.stopPropagation()" class="excel-comment-box hidden absolute z-50 bg-slate-900 text-white text-[11px] rounded-2xl p-3 shadow-2xl border border-slate-800 space-y-2 w-64 transition-all duration-150">
     <div class="font-bold text-blue-400 border-b border-slate-800 pb-1.5 flex justify-between items-center text-[10px]">
@@ -232,7 +263,7 @@
         <button onclick="saveChanges()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-full text-[11px] font-semibold flex items-center gap-1 transition">
           <i class="fa-solid fa-floppy-disk text-[10px]"></i> Save
         </button>
-        <button onclick="exportToExcel()" class="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-full text-[11px] font-semibold flex items-center gap-1 transition">
+        <button onclick="openExportModal()" class="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-full text-[11px] font-semibold flex items-center gap-1 transition">
           <i class="fa-solid fa-file-excel text-[10px]"></i> Export
         </button>
         <button onclick="logoutUser()" title="Logout" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-3 py-1.5 rounded-full text-[11px] font-semibold flex items-center gap-1 transition">
@@ -1298,16 +1329,69 @@
       return state.roomsCapacity.some(m => String(m.roomNo) === String(roomNo));
     }
 
-    /* EXPORT TO EXCEL */
-    function exportToExcel() {
+    /* EXPORT TO EXCEL DATE MODAL FUNCTIONS */
+    function openExportModal() {
+      if (!state.bookings || state.bookings.length === 0) {
+        alert("No booking records available to export!");
+        return;
+      }
+      document.getElementById('export-start-date').value = '';
+      document.getElementById('export-end-date').value = '';
+      document.getElementById('export-modal').classList.remove('hidden');
+    }
+
+    function closeExportModal() {
+      document.getElementById('export-modal').classList.add('hidden');
+    }
+
+    function processExport() {
+      const startDateStr = document.getElementById('export-start-date').value;
+      const endDateStr = document.getElementById('export-end-date').value;
+
+      if (!startDateStr || !endDateStr) {
+        alert("Please select both start and end dates.");
+        return;
+      }
+
+      const minAllowedDate = "2026-08-01";
+      const maxAllowedDate = "2085-12-31";
+
+      if (startDateStr < minAllowedDate || endDateStr > maxAllowedDate) {
+        alert("Please select dates within the valid range (1st Aug 2026 to 2085).");
+        return;
+      }
+
+      if (startDateStr > endDateStr) {
+        alert("Start Date cannot be after End Date.");
+        return;
+      }
+
+      exportToExcel(startDateStr, endDateStr);
+    }
+
+    function exportToExcel(startDateStr, endDateStr) {
       if (!state.bookings || state.bookings.length === 0) {
         alert("No booking records available to export!");
         return;
       }
 
       const now = new Date().getTime();
+      const filterStartDt = new Date(startDateStr).getTime();
+      const filterEndDt = new Date(endDateStr + "T23:59:59").getTime();
 
-      const exportData = state.bookings.map(b => {
+      const filteredBookings = state.bookings.filter(b => {
+        const cIn = new Date(b.checkIn).getTime();
+        const cOut = getEffectiveCheckoutTime(b);
+        // Overlap logic: Booking ends after/on the start date AND begins before/on the end date
+        return (cIn <= filterEndDt) && (cOut >= filterStartDt);
+      });
+
+      if (filteredBookings.length === 0) {
+        alert(`No booking records found between ${startDateStr} and ${endDateStr}!`);
+        return;
+      }
+
+      const exportData = filteredBookings.map(b => {
         const cIn = new Date(b.checkIn).getTime();
         const cOut = getEffectiveCheckoutTime(b);
 
@@ -1369,7 +1453,8 @@
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Bookings");
 
-      XLSX.writeFile(workbook, `Booking_Report_${formatDate(new Date())}.xlsx`);
+      XLSX.writeFile(workbook, `Booking_Report_${startDateStr}_to_${endDateStr}.xlsx`);
+      closeExportModal();
     }
 
     function searchBookingByDate() {
@@ -3273,3 +3358,4 @@
   </script>
 </body>
 </html>
+```[cite: 1]
