@@ -199,11 +199,11 @@
         <p class="text-slate-500">Select a specific period to download booking details. Available from 1st Aug 2026 to 31st Dec 2085.</p>
         <div>
           <label class="block font-semibold text-slate-600 mb-0.5">Check-In Date</label>
-          <input type="date" id="export-start-date" min="2026-08-01" max="2085-12-31" onchange="document.getElementById('export-end-date').min = this.value || '2026-08-01'" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-emerald-500 font-medium">
+          <input type="date" id="export-start-date" min="2026-08-01" max="2085-12-31" onchange="validateExportDates()" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-emerald-500 font-medium">
         </div>
         <div>
           <label class="block font-semibold text-slate-600 mb-0.5">Check-Out Date</label>
-          <input type="date" id="export-end-date" min="2026-08-01" max="2085-12-31" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-emerald-500 font-medium">
+          <input type="date" id="export-end-date" min="2026-08-01" max="2085-12-31" onchange="validateExportDates()" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-emerald-500 font-medium">
         </div>
       </div>
       <div class="flex space-x-2 pt-2 border-t border-slate-100">
@@ -678,21 +678,21 @@
             <!-- ADDITIONAL PERSON CUSTOM CHECK-IN & CHECK-OUT WINDOW -->
             <div id="sec-extra-person-time-wrapper" class="sm:col-span-4 hidden bg-amber-50/70 p-2.5 rounded-2xl border border-amber-200/80 space-y-2">
               <label class="block font-bold text-amber-900 mb-1 flex items-center gap-1">
-                <i class="fa-solid fa-clock-rotate-left text-amber-600"></i> Additional Person Stay Window
+                <i class="fa-solid fa-clock-rotate-left text-amber-600"></i> Additional Person Stay Window (Custom Dates Required)
               </label>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div>
                   <label class="block font-semibold text-amber-800 text-[10px] mb-0.5">Extra Person Check-In</label>
                   <div class="flex gap-1">
-                    <input type="date" id="cust-extra-person-date" onchange="calculateModalBilling()" class="w-2/3 bg-white border border-amber-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-amber-500 font-semibold text-amber-900">
-                    <input type="time" id="cust-extra-person-time" value="12:00" onchange="calculateModalBilling()" class="w-1/3 bg-white border border-amber-200 rounded-xl px-1.5 py-1.5 focus:outline-none focus:border-amber-500 font-semibold text-amber-900">
+                    <input type="date" id="cust-extra-person-date" onchange="handleExtraPersonDatesChange()" class="w-2/3 bg-white border border-amber-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-amber-500 font-semibold text-amber-900">
+                    <input type="time" id="cust-extra-person-time" onchange="handleExtraPersonDatesChange()" class="w-1/3 bg-white border border-amber-200 rounded-xl px-1.5 py-1.5 focus:outline-none focus:border-amber-500 font-semibold text-amber-900">
                   </div>
                 </div>
                 <div>
                   <label class="block font-semibold text-amber-800 text-[10px] mb-0.5">Extra Person Check-Out</label>
                   <div class="flex gap-1">
-                    <input type="date" id="cust-extra-person-out-date" onchange="calculateModalBilling()" class="w-2/3 bg-white border border-amber-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-amber-500 font-semibold text-amber-900">
-                    <input type="time" id="cust-extra-person-out-time" value="11:00" onchange="calculateModalBilling()" class="w-1/3 bg-white border border-amber-200 rounded-xl px-1.5 py-1.5 focus:outline-none focus:border-amber-500 font-semibold text-amber-900">
+                    <input type="date" id="cust-extra-person-out-date" onchange="handleExtraPersonDatesChange()" class="w-2/3 bg-white border border-amber-200 rounded-xl px-2 py-1.5 focus:outline-none focus:border-amber-500 font-semibold text-amber-900">
+                    <input type="time" id="cust-extra-person-out-time" onchange="handleExtraPersonDatesChange()" class="w-1/3 bg-white border border-amber-200 rounded-xl px-1.5 py-1.5 focus:outline-none focus:border-amber-500 font-semibold text-amber-900">
                   </div>
                 </div>
               </div>
@@ -1086,6 +1086,7 @@
       }
       
       calculateModalBilling();
+      handleExtraPersonDatesChange();
     }
 
     let isLoggedIn = false;
@@ -1344,25 +1345,32 @@
       document.getElementById('export-modal').classList.add('hidden');
     }
 
+    function validateExportDates() {
+      const minDate = "2026-08-01";
+      const maxDate = "2085-12-31";
+      const startInput = document.getElementById('export-start-date');
+      const endInput = document.getElementById('export-end-date');
+
+      if (startInput.value && (startInput.value < minDate || startInput.value > maxDate)) {
+        alert(`⚠️ Please select a Check-In Date between ${formatDate(minDate)} and ${formatDate(maxDate)}.`);
+        startInput.value = "";
+      }
+      if (endInput.value && (endInput.value < minDate || endInput.value > maxDate)) {
+        alert(`⚠️ Please select a Check-Out Date between ${formatDate(minDate)} and ${formatDate(maxDate)}.`);
+        endInput.value = "";
+      }
+      if (startInput.value && endInput.value && startInput.value > endInput.value) {
+        alert("⚠️ Check-In Date cannot be after Check-Out Date.");
+        endInput.value = "";
+      }
+    }
+
     function processExport() {
       const startDateStr = document.getElementById('export-start-date').value;
       const endDateStr = document.getElementById('export-end-date').value;
 
       if (!startDateStr || !endDateStr) {
         alert("Please select both Check-In and Check-Out dates.");
-        return;
-      }
-
-      const minAllowedDate = "2026-08-01";
-      const maxAllowedDate = "2085-12-31";
-
-      if (startDateStr < minAllowedDate || endDateStr > maxAllowedDate) {
-        alert("Please select dates within the valid range (1st Aug 2026 to 31st Dec 2085).");
-        return;
-      }
-
-      if (startDateStr > endDateStr) {
-        alert("Check-In Date cannot be after Check-Out Date.");
         return;
       }
 
@@ -1376,19 +1384,20 @@
       }
 
       const now = new Date().getTime();
-      const filterStartDt = new Date(startDateStr + "T00:00:00").getTime();
-      const filterEndDt = new Date(endDateStr + "T23:59:59").getTime();
 
       const filteredBookings = state.bookings.filter(b => {
         if(!b.checkIn) return false;
-        const cIn = new Date(b.checkIn).getTime();
-        const cOut = getEffectiveCheckoutTime(b);
-        // Overlap logic: Booking ends after/on the start date AND begins before/on the end date
-        return (cIn <= filterEndDt) && (cOut >= filterStartDt);
+        
+        const bIn = b.checkIn.split('T')[0];
+        const bOutFull = (b.hasExtendedCheckout && b.extendedCheckOut) ? b.extendedCheckOut : b.checkOut;
+        const bOut = bOutFull.split('T')[0];
+
+        // Ensure that the booking strictly falls inside or overlaps the requested download boundary dates
+        return (bIn <= endDateStr) && (bOut >= startDateStr);
       });
 
       if (filteredBookings.length === 0) {
-        alert(`No booking records found between ${startDateStr} and ${endDateStr}!`);
+        alert(`No booking records found overlapping with ${formatDate(startDateStr)} and ${formatDate(endDateStr)}!`);
         return;
       }
 
@@ -2438,21 +2447,19 @@
         if (b.extraPersonJoined) {
           const [epDate, epTime] = b.extraPersonJoined.split('T');
           if (extraPersonDateInput) extraPersonDateInput.value = epDate || '';
-          if (extraPersonTimeInput) extraPersonTimeInput.value = epTime || '12:00';
+          if (extraPersonTimeInput) extraPersonTimeInput.value = epTime || '';
         } else {
-          const todayStr = new Date().toISOString().split('T')[0];
-          if (extraPersonDateInput) extraPersonDateInput.value = todayStr;
-          if (extraPersonTimeInput) extraPersonTimeInput.value = '12:00';
+          if (extraPersonDateInput) extraPersonDateInput.value = '';
+          if (extraPersonTimeInput) extraPersonTimeInput.value = '';
         }
 
         if (b.extraPersonOut) {
           const [epOutDate, epOutTime] = b.extraPersonOut.split('T');
           if (extraPersonOutDateInput) extraPersonOutDateInput.value = epOutDate || '';
-          if (extraPersonOutTimeInput) extraPersonOutTimeInput.value = epOutTime || '11:00';
-        } else if (b.checkOut) {
-          const [outDate, outTime] = b.checkOut.split('T');
-          if (extraPersonOutDateInput) extraPersonOutDateInput.value = outDate || '';
-          if (extraPersonOutTimeInput) extraPersonOutTimeInput.value = outTime || '11:00';
+          if (extraPersonOutTimeInput) extraPersonOutTimeInput.value = epOutTime || '';
+        } else {
+          if (extraPersonOutDateInput) extraPersonOutDateInput.value = '';
+          if (extraPersonOutTimeInput) extraPersonOutTimeInput.value = '';
         }
 
         if (b.checkIn) {
@@ -2514,6 +2521,11 @@
         document.getElementById('cust-checkout-time').value = "11:00";
 
         if (extraPersonsInput) extraPersonsInput.value = 0;
+        
+        if (extraPersonDateInput) extraPersonDateInput.value = "";
+        if (extraPersonTimeInput) extraPersonTimeInput.value = "";
+        if (extraPersonOutDateInput) extraPersonOutDateInput.value = "";
+        if (extraPersonOutTimeInput) extraPersonOutTimeInput.value = "";
 
         extChkBox.checked = false;
         extChkBox.disabled = true;
@@ -2568,6 +2580,40 @@
       document.getElementById('booking-modal').classList.add('hidden');
     }
 
+    function handleExtraPersonDatesChange() {
+      const mainOutDate = document.getElementById('cust-checkout-date')?.value;
+      const mainOutTime = document.getElementById('cust-checkout-time')?.value || '11:00';
+      const hasExt = document.getElementById('cust-has-extended-checkout')?.checked;
+      
+      let latestOutD = mainOutDate;
+      let latestOutT = mainOutTime;
+
+      if (hasExt) {
+        const extD = document.getElementById('cust-ext-checkout-date')?.value;
+        const extT = document.getElementById('cust-ext-checkout-time')?.value;
+        if (extD) {
+          latestOutD = extD;
+          latestOutT = extT || '12:00';
+        }
+      }
+
+      const epOutDateElem = document.getElementById('cust-extra-person-out-date');
+      const epOutTimeElem = document.getElementById('cust-extra-person-out-time');
+
+      if (epOutDateElem && epOutDateElem.value && latestOutD) {
+        const epOutFull = new Date(`${epOutDateElem.value}T${epOutTimeElem.value || '11:00'}`);
+        const mainOutFull = new Date(`${latestOutD}T${latestOutT}`);
+
+        if (epOutFull > mainOutFull) {
+          alert(`⚠️ Additional person check-out date cannot be later than the main/extended check-out date (${formatDateTime(mainOutFull.toISOString())}).`);
+          epOutDateElem.value = latestOutD;
+          epOutTimeElem.value = latestOutT;
+        }
+      }
+      
+      calculateModalBilling();
+    }
+
     function handleStayDatesChange() {
       const bookingModalId = document.getElementById('modal-booking-id')?.value;
       const outDateInput = document.getElementById('cust-checkout-date');
@@ -2595,7 +2641,7 @@
         }
       }
 
-      calculateModalBilling();
+      handleExtraPersonDatesChange(); 
     }
 
     function handleClearBillPayment(clearAmountVal) {
@@ -2652,18 +2698,18 @@
       let extraPersonDays = 0;
 
       if (extraPersons > 0 && latestMainCheckoutDt) {
-        const epInDate = document.getElementById('cust-extra-person-date')?.value || inDate;
-        const epInTime = document.getElementById('cust-extra-person-time')?.value || '12:00';
-        let epOutDate = document.getElementById('cust-extra-person-out-date')?.value || outDate;
-        let epOutTime = document.getElementById('cust-extra-person-out-time')?.value || '11:00';
+        const epInDate = document.getElementById('cust-extra-person-date')?.value;
+        const epInTime = document.getElementById('cust-extra-person-time')?.value;
+        let epOutDate = document.getElementById('cust-extra-person-out-date')?.value;
+        let epOutTime = document.getElementById('cust-extra-person-out-time')?.value;
 
-        if (epInDate && epOutDate) {
+        if (epInDate && epOutDate && epInTime && epOutTime) {
           const epInDt = new Date(`${epInDate}T${epInTime}`);
           let epOutDt = new Date(`${epOutDate}T${epOutTime}`);
 
           if (epOutDt > latestMainCheckoutDt) {
-            alert(`⚠️ Additional Person Check-Out date & time (${formatDateTime(epOutDt.toISOString())}) cannot be later than the main Check-Out date & time (${formatDateTime(latestMainCheckoutDt.toISOString())})!`);
-            
+            epOutDate = outDate;
+            epOutTime = outTime;
             document.getElementById('cust-extra-person-out-date').value = outDate;
             document.getElementById('cust-extra-person-out-time').value = outTime;
             epOutDt = new Date(latestMainCheckoutDt.getTime());
@@ -2674,12 +2720,10 @@
             extraPersonDays = Math.max(1, Math.ceil(epDiff / (1000 * 60 * 60 * 24)));
           } else {
             alert("⚠️ Additional Person Check-In date & time cannot be after their Check-Out date & time!");
-            document.getElementById('cust-extra-person-date').value = inDate;
-            document.getElementById('cust-extra-person-out-date').value = outDate;
-            extraPersonDays = days;
+            extraPersonDays = 0;
           }
         } else {
-          extraPersonDays = days;
+           extraPersonDays = 0; 
         }
       }
 
@@ -2770,10 +2814,15 @@
       const latestCheckoutDt = new Date(latestCheckoutStr);
 
       if (extraPersons > 0) {
-        const epDate = document.getElementById('cust-extra-person-date')?.value || inDate;
-        const epTime = document.getElementById('cust-extra-person-time')?.value || '12:00';
-        let epOutDate = document.getElementById('cust-extra-person-out-date')?.value || outDate;
-        let epOutTime = document.getElementById('cust-extra-person-out-time')?.value || '11:00';
+        const epDate = document.getElementById('cust-extra-person-date')?.value;
+        const epTime = document.getElementById('cust-extra-person-time')?.value;
+        let epOutDate = document.getElementById('cust-extra-person-out-date')?.value;
+        let epOutTime = document.getElementById('cust-extra-person-out-time')?.value;
+
+        if (!epDate || !epTime || !epOutDate || !epOutTime) {
+          alert("⚠️ Please specify custom Check-In and Check-Out dates & times for the Additional Person(s).");
+          return;
+        }
 
         extraPersonJoined = `${epDate}T${epTime}`;
         extraPersonOut = `${epOutDate}T${epOutTime}`;
